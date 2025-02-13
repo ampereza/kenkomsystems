@@ -23,6 +23,12 @@ export function Navbar() {
               Sort Stock
             </Link>
             <Link 
+              to="/stock/receive-sorted" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Receive Sorted
+            </Link>
+            <Link 
               to="/stock/suppliers" 
               className="text-sm hover:text-primary/80 transition-colors"
             >

@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      received_sorted_stock: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          processing_status: Database["public"]["Enums"]["processing_status"]
+          quantity: number
+          received_date: string | null
+          sorted_stock_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processing_status?: Database["public"]["Enums"]["processing_status"]
+          quantity: number
+          received_date?: string | null
+          sorted_stock_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          processing_status?: Database["public"]["Enums"]["processing_status"]
+          quantity?: number
+          received_date?: string | null
+          sorted_stock_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "received_sorted_stock_sorted_stock_id_fkey"
+            columns: ["sorted_stock_id"]
+            isOneToOne: false
+            referencedRelation: "sorted_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sorted_stock: {
         Row: {
           category: Database["public"]["Enums"]["pole_category"]
@@ -142,6 +180,7 @@ export type Database = {
         | "high_voltage"
         | "rejected"
       pole_size: "small" | "medium" | "stout"
+      processing_status: "pending" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
