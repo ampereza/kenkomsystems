@@ -1,12 +1,19 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { StockCategories } from "@/components/stock/StockCategories";
+import { QuickActions } from "@/components/stock/QuickActions";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="container mx-auto p-6 animate-fade-in">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Stock Management</h1>
+        <p className="mt-2 text-muted-foreground">
+          Monitor and manage your pole inventory efficiently
+        </p>
       </div>
+
+      <StockCategories />
+      <QuickActions />
     </div>
   );
 };
