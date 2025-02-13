@@ -9,7 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      sorted_stock: {
+        Row: {
+          category: Database["public"]["Enums"]["pole_category"]
+          created_at: string | null
+          diameter_mm: number | null
+          id: string
+          length_unit: string
+          length_value: number
+          notes: string | null
+          quantity: number
+          size: Database["public"]["Enums"]["pole_size"]
+          sorting_date: string | null
+          unsorted_stock_id: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["pole_category"]
+          created_at?: string | null
+          diameter_mm?: number | null
+          id?: string
+          length_unit: string
+          length_value: number
+          notes?: string | null
+          quantity: number
+          size: Database["public"]["Enums"]["pole_size"]
+          sorting_date?: string | null
+          unsorted_stock_id?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["pole_category"]
+          created_at?: string | null
+          diameter_mm?: number | null
+          id?: string
+          length_unit?: string
+          length_value?: number
+          notes?: string | null
+          quantity?: number
+          size?: Database["public"]["Enums"]["pole_size"]
+          sorting_date?: string | null
+          unsorted_stock_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sorted_stock_unsorted_stock_id_fkey"
+            columns: ["unsorted_stock_id"]
+            isOneToOne: false
+            referencedRelation: "unsorted_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unsorted_stock: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          received_date: string | null
+          supplier: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity: number
+          received_date?: string | null
+          supplier?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          received_date?: string | null
+          supplier?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +94,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      pole_category: "fencing" | "telecom" | "distribution" | "high_voltage"
+      pole_size: "small" | "medium" | "stout"
     }
     CompositeTypes: {
       [_ in never]: never
