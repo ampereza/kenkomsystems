@@ -1,19 +1,112 @@
 
-import { StockCategories } from "@/components/stock/StockCategories";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { StockMetricCard } from "@/components/stock/StockMetricCard";
 import { QuickActions } from "@/components/stock/QuickActions";
+import { Navbar } from "@/components/Navbar";
 
 const Index = () => {
-  return (
-    <div className="container mx-auto p-6 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Stock Management</h1>
-        <p className="mt-2 text-muted-foreground">
-          Monitor and manage your pole inventory efficiently
-        </p>
-      </div>
+  const { data: unsortedStock } = useQuery({
+    queryKey: ["unsorted-stock"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("unsorted_stock")
+        .select("quantity")
+        .not("quantity", "eq", 0);
+      
+      if (error) throw error;
+      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+    },
+  });
 
-      <StockCategories />
-      <QuickActions />
+  const { data: sortedStock } = useQuery({
+    queryKey: ["sorted-stock"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sorted_stock")
+        .select("quantity")
+        .not("quantity", "eq", 0);
+      
+      if (error) throw error;
+      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+    },
+  });
+
+  const { data: rejects } = useQuery({
+    queryKey: ["rejects"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sorted_stock")
+        .select("quantity")
+        .eq("category", "rejected")
+        .not("quantity", "eq", 0);
+      
+      if (error) throw error;
+      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+    },
+  });
+
+  const { data: treatment } = useQuery({
+    queryKey: ["treatment"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sorted_stock")
+        .select("quantity")
+        .eq("category", "treatment")
+        .not("quantity", "eq", 0);
+      
+      if (error) throw error;
+      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+    },
+  });
+
+  const categories = [
+    {
+      title: "Unsorted Stock",
+      value: unsortedStock || 0,
+      change: { value: 0, type: "increase" as const },
+    },
+    {
+      title: "Sorted Stock",
+      value: sortedStock || 0,
+      change: { value: 0, type: "increase" as const },
+    },
+    {
+      title: "Rejects",
+      value: rejects || 0,
+      change: { value: 0, type: "decrease" as const },
+    },
+    {
+      title: "Client Treatment",
+      value: treatment || 0,
+      change: { value: 0, type: "increase" as const },
+    },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex-1 container mx-auto p-6 animate-fade-in">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Stock Overview</h1>
+          <p className="mt-2 text-muted-foreground">
+            Monitor and manage your pole inventory efficiently
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {categories.map((category) => (
+            <StockMetricCard
+              key={category.title}
+              title={category.title}
+              value={category.value}
+              change={category.change}
+            />
+          ))}
+        </div>
+
+        <QuickActions />
+      </div>
     </div>
   );
 };
