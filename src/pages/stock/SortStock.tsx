@@ -14,14 +14,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const categories = [
+type PoleCategory = "fencing" | "telecom" | "distribution" | "high_voltage";
+type PoleSize = "small" | "medium" | "stout";
+type LengthUnit = "ft" | "m";
+
+const categories: { value: PoleCategory; label: string }[] = [
   { value: "fencing", label: "Fencing Poles" },
   { value: "telecom", label: "Telecom Poles" },
   { value: "distribution", label: "Distribution Poles" },
   { value: "high_voltage", label: "High Voltage Poles" },
 ];
 
-const sizes = [
+const sizes: { value: PoleSize; label: string }[] = [
   { value: "small", label: "Small" },
   { value: "medium", label: "Medium" },
   { value: "stout", label: "Stout" },
@@ -35,11 +39,22 @@ interface UnsortedStock {
   notes: string | null;
 }
 
+interface FormData {
+  unsorted_stock_id: string;
+  category: PoleCategory | "";
+  size: PoleSize | "";
+  length_value: string;
+  length_unit: LengthUnit | "";
+  diameter_mm: string;
+  quantity: string;
+  notes: string;
+}
+
 const SortStock = () => {
   const { toast } = useToast();
   const [unsortedStocks, setUnsortedStocks] = useState<UnsortedStock[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     unsorted_stock_id: "",
     category: "",
     size: "",
@@ -76,19 +91,27 @@ const SortStock = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (!formData.category || !formData.size || !formData.length_unit) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.from("sorted_stock").insert([
-        {
-          unsorted_stock_id: formData.unsorted_stock_id,
-          category: formData.category,
-          size: formData.size,
-          length_value: parseFloat(formData.length_value),
-          length_unit: formData.length_unit,
-          diameter_mm: formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
-          quantity: parseInt(formData.quantity),
-          notes: formData.notes || null,
-        },
-      ]);
+      const { error } = await supabase.from("sorted_stock").insert({
+        unsorted_stock_id: formData.unsorted_stock_id,
+        category: formData.category,
+        size: formData.size,
+        length_value: parseFloat(formData.length_value),
+        length_unit: formData.length_unit,
+        diameter_mm: formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
+        quantity: parseInt(formData.quantity),
+        notes: formData.notes || null,
+      });
 
       if (error) throw error;
 
@@ -119,7 +142,7 @@ const SortStock = () => {
     }
   };
 
-  const getLengthUnit = (category: string) => {
+  const getLengthUnit = (category: string): LengthUnit => {
     return category === "fencing" ? "ft" : "m";
   };
 
@@ -161,7 +184,7 @@ const SortStock = () => {
           <label className="text-sm font-medium">Category*</label>
           <Select
             value={formData.category}
-            onValueChange={(value) =>
+            onValueChange={(value: PoleCategory) =>
               setFormData({
                 ...formData,
                 category: value,
@@ -188,7 +211,9 @@ const SortStock = () => {
           <label className="text-sm font-medium">Size*</label>
           <Select
             value={formData.size}
-            onValueChange={(value) => setFormData({ ...formData, size: value })}
+            onValueChange={(value: PoleSize) =>
+              setFormData({ ...formData, size: value })
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select size" />
