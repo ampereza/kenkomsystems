@@ -59,6 +59,39 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       unsorted_stock: {
         Row: {
           created_at: string | null
@@ -66,7 +99,7 @@ export type Database = {
           notes: string | null
           quantity: number
           received_date: string | null
-          supplier: string | null
+          supplier_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -74,7 +107,7 @@ export type Database = {
           notes?: string | null
           quantity: number
           received_date?: string | null
-          supplier?: string | null
+          supplier_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -82,9 +115,17 @@ export type Database = {
           notes?: string | null
           quantity?: number
           received_date?: string | null
-          supplier?: string | null
+          supplier_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "unsorted_stock_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
