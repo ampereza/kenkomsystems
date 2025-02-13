@@ -34,9 +34,10 @@ const sizes: { value: PoleSize; label: string }[] = [
 interface UnsortedStock {
   id: string;
   quantity: number;
-  supplier: string | null;
+  supplier_id: string | null;
   received_date: string;
   notes: string | null;
+  created_at: string | null;
 }
 
 interface FormData {
@@ -72,7 +73,7 @@ const SortStock = () => {
   const fetchUnsortedStock = async () => {
     const { data, error } = await supabase
       .from("unsorted_stock")
-      .select("*")
+      .select("*, suppliers(name)")
       .order("received_date", { ascending: false });
 
     if (error) {
@@ -171,7 +172,8 @@ const SortStock = () => {
               <SelectGroup>
                 {unsortedStocks.map((stock) => (
                   <SelectItem key={stock.id} value={stock.id}>
-                    {stock.quantity} poles from {stock.supplier || "Unknown"} (
+                    {stock.quantity} poles from{" "}
+                    {(stock as any).suppliers?.name || "Unknown"} (
                     {new Date(stock.received_date).toLocaleDateString()})
                   </SelectItem>
                 ))}
