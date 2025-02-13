@@ -25,7 +25,8 @@ const Index = () => {
       const { data, error } = await supabase
         .from("sorted_stock")
         .select("quantity")
-        .not("quantity", "eq", 0);
+        .not("quantity", "eq", 0)
+        .neq("category", "rejected");
       
       if (error) throw error;
       return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
@@ -39,20 +40,6 @@ const Index = () => {
         .from("sorted_stock")
         .select("quantity")
         .eq("category", "rejected")
-        .not("quantity", "eq", 0);
-      
-      if (error) throw error;
-      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
-    },
-  });
-
-  const { data: treatment } = useQuery({
-    queryKey: ["treatment"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sorted_stock")
-        .select("quantity")
-        .eq("category", "treatment")
         .not("quantity", "eq", 0);
       
       if (error) throw error;
@@ -76,11 +63,6 @@ const Index = () => {
       value: rejects || 0,
       change: { value: 0, type: "decrease" as const },
     },
-    {
-      title: "Client Treatment",
-      value: treatment || 0,
-      change: { value: 0, type: "increase" as const },
-    },
   ];
 
   return (
@@ -94,7 +76,7 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {categories.map((category) => (
             <StockMetricCard
               key={category.title}

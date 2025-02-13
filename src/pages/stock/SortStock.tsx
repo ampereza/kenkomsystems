@@ -44,9 +44,9 @@ interface UnsortedStock {
 interface FormData {
   unsorted_stock_id: string;
   category: PoleCategory | "";
-  size: PoleSize | "";
+  size: PoleSize | null;
   length_value: string;
-  length_unit: LengthUnit | "";
+  length_unit: LengthUnit | null;
   diameter_mm: string;
   quantity: string;
   notes: string;
@@ -59,9 +59,9 @@ const SortStock = () => {
   const [formData, setFormData] = useState<FormData>({
     unsorted_stock_id: "",
     category: "",
-    size: "",
+    size: null,
     length_value: "",
-    length_unit: "",
+    length_unit: null,
     diameter_mm: "",
     quantity: "",
     notes: "",
@@ -108,7 +108,7 @@ const SortStock = () => {
         unsorted_stock_id: formData.unsorted_stock_id,
         category: formData.category,
         size: formData.category === "rejected" ? null : formData.size,
-        length_value: formData.category === "rejected" ? null : parseFloat(formData.length_value),
+        length_value: formData.category === "rejected" ? null : (formData.length_value ? parseFloat(formData.length_value) : null),
         length_unit: formData.category === "rejected" ? null : formData.length_unit,
         diameter_mm: formData.category === "rejected" ? null : (formData.diameter_mm ? parseInt(formData.diameter_mm) : null),
         quantity: parseInt(formData.quantity),
@@ -128,9 +128,9 @@ const SortStock = () => {
       setFormData({
         unsorted_stock_id: "",
         category: "",
-        size: "",
+        size: null,
         length_value: "",
-        length_unit: "",
+        length_unit: null,
         diameter_mm: "",
         quantity: "",
         notes: "",
@@ -196,7 +196,10 @@ const SortStock = () => {
               setFormData({
                 ...formData,
                 category: value,
-                length_unit: value === "rejected" ? "" : getLengthUnit(value),
+                length_unit: value === "rejected" ? null : getLengthUnit(value),
+                size: value === "rejected" ? null : formData.size,
+                length_value: value === "rejected" ? "" : formData.length_value,
+                diameter_mm: value === "rejected" ? "" : formData.diameter_mm,
               })
             }
           >
@@ -220,7 +223,7 @@ const SortStock = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium">Size*</label>
               <Select
-                value={formData.size}
+                value={formData.size || ""}
                 onValueChange={(value: PoleSize) =>
                   setFormData({ ...formData, size: value })
                 }
