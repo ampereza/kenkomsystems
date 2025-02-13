@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-type PoleCategory = "fencing" | "telecom" | "distribution" | "high_voltage";
+type PoleCategory = "fencing" | "telecom" | "distribution" | "high_voltage" | "rejected";
 type PoleSize = "small" | "medium" | "stout";
 type LengthUnit = "ft" | "m";
 
@@ -23,6 +23,7 @@ const categories: { value: PoleCategory; label: string }[] = [
   { value: "telecom", label: "Telecom Poles" },
   { value: "distribution", label: "Distribution Poles" },
   { value: "high_voltage", label: "High Voltage Poles" },
+  { value: "rejected", label: "Rejected Poles" },
 ];
 
 const sizes: { value: PoleSize; label: string }[] = [
@@ -92,7 +93,7 @@ const SortStock = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!formData.category || !formData.size || !formData.length_unit) {
+    if (!formData.category || (!formData.size && formData.category !== "rejected") || !formData.quantity) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -103,16 +104,18 @@ const SortStock = () => {
     }
 
     try {
-      const { error } = await supabase.from("sorted_stock").insert({
+      const insertData = {
         unsorted_stock_id: formData.unsorted_stock_id,
         category: formData.category,
-        size: formData.size,
-        length_value: parseFloat(formData.length_value),
-        length_unit: formData.length_unit,
-        diameter_mm: formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
+        size: formData.category === "rejected" ? null : formData.size,
+        length_value: formData.category === "rejected" ? null : parseFloat(formData.length_value),
+        length_unit: formData.category === "rejected" ? null : formData.length_unit,
+        diameter_mm: formData.category === "rejected" ? null : (formData.diameter_mm ? parseInt(formData.diameter_mm) : null),
         quantity: parseInt(formData.quantity),
         notes: formData.notes || null,
-      });
+      };
+
+      const { error } = await supabase.from("sorted_stock").insert(insertData);
 
       if (error) throw error;
 
@@ -132,6 +135,9 @@ const SortStock = () => {
         quantity: "",
         notes: "",
       });
+
+      // Refresh unsorted stock list
+      fetchUnsortedStock();
     } catch (error) {
       toast({
         title: "Error",
@@ -190,7 +196,7 @@ const SortStock = () => {
               setFormData({
                 ...formData,
                 category: value,
-                length_unit: getLengthUnit(value),
+                length_unit: value === "rejected" ? "" : getLengthUnit(value),
               })
             }
           >
@@ -209,62 +215,66 @@ const SortStock = () => {
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Size*</label>
-          <Select
-            value={formData.size}
-            onValueChange={(value: PoleSize) =>
-              setFormData({ ...formData, size: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {sizes.map((size) => (
-                  <SelectItem key={size.value} value={size.value}>
-                    {size.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        {formData.category !== "rejected" && (
+          <>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Size*</label>
+              <Select
+                value={formData.size}
+                onValueChange={(value: PoleSize) =>
+                  setFormData({ ...formData, size: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {sizes.map((size) => (
+                      <SelectItem key={size.value} value={size.value}>
+                        {size.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="length">
-            Length* ({formData.length_unit})
-          </label>
-          <Input
-            id="length"
-            type="number"
-            step="0.01"
-            required
-            value={formData.length_value}
-            onChange={(e) =>
-              setFormData({ ...formData, length_value: e.target.value })
-            }
-          />
-        </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="length">
+                Length* ({formData.length_unit})
+              </label>
+              <Input
+                id="length"
+                type="number"
+                step="0.01"
+                required
+                value={formData.length_value}
+                onChange={(e) =>
+                  setFormData({ ...formData, length_value: e.target.value })
+                }
+              />
+            </div>
 
-        {formData.category !== "fencing" && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="diameter">
-              Diameter (mm)*
-            </label>
-            <Input
-              id="diameter"
-              type="number"
-              required
-              min="150"
-              max="240"
-              value={formData.diameter_mm}
-              onChange={(e) =>
-                setFormData({ ...formData, diameter_mm: e.target.value })
-              }
-            />
-          </div>
+            {formData.category !== "fencing" && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="diameter">
+                  Diameter (mm)*
+                </label>
+                <Input
+                  id="diameter"
+                  type="number"
+                  required
+                  min="150"
+                  max="240"
+                  value={formData.diameter_mm}
+                  onChange={(e) =>
+                    setFormData({ ...formData, diameter_mm: e.target.value })
+                  }
+                />
+              </div>
+            )}
+          </>
         )}
 
         <div className="space-y-2">

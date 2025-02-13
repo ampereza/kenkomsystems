@@ -15,11 +15,11 @@ export type Database = {
           created_at: string | null
           diameter_mm: number | null
           id: string
-          length_unit: string
-          length_value: number
+          length_unit: string | null
+          length_value: number | null
           notes: string | null
           quantity: number
-          size: Database["public"]["Enums"]["pole_size"]
+          size: Database["public"]["Enums"]["pole_size"] | null
           sorting_date: string | null
           unsorted_stock_id: string | null
         }
@@ -28,11 +28,11 @@ export type Database = {
           created_at?: string | null
           diameter_mm?: number | null
           id?: string
-          length_unit: string
-          length_value: number
+          length_unit?: string | null
+          length_value?: number | null
           notes?: string | null
           quantity: number
-          size: Database["public"]["Enums"]["pole_size"]
+          size?: Database["public"]["Enums"]["pole_size"] | null
           sorting_date?: string | null
           unsorted_stock_id?: string | null
         }
@@ -41,11 +41,11 @@ export type Database = {
           created_at?: string | null
           diameter_mm?: number | null
           id?: string
-          length_unit?: string
-          length_value?: number
+          length_unit?: string | null
+          length_value?: number | null
           notes?: string | null
           quantity?: number
-          size?: Database["public"]["Enums"]["pole_size"]
+          size?: Database["public"]["Enums"]["pole_size"] | null
           sorting_date?: string | null
           unsorted_stock_id?: string | null
         }
@@ -135,7 +135,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      pole_category: "fencing" | "telecom" | "distribution" | "high_voltage"
+      pole_category:
+        | "fencing"
+        | "telecom"
+        | "distribution"
+        | "high_voltage"
+        | "rejected"
       pole_size: "small" | "medium" | "stout"
     }
     CompositeTypes: {
