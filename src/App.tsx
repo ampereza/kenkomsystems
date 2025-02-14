@@ -10,6 +10,9 @@ import ReceiveStock from "./pages/stock/ReceiveStock";
 import SortStock from "./pages/stock/SortStock";
 import Suppliers from "./pages/stock/Suppliers";
 import ReceiveSortedStock from "./pages/stock/ReceiveSortedStock";
+import Transactions from "./pages/finance/Transactions";
+import Expenses from "./pages/finance/Expenses";
+import Employees from "./pages/finance/Employees";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/stock/sort" element={<SortStock />} />
           <Route path="/stock/suppliers" element={<Suppliers />} />
           <Route path="/stock/receive-sorted" element={<ReceiveSortedStock />} />
+          <Route path="/finance/transactions" element={<Transactions />} />
+          <Route path="/finance/expenses" element={<Expenses />} />
+          <Route path="/finance/employees" element={<Employees />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
