@@ -1,10 +1,10 @@
 
 import { Navbar } from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
+import { TransactionDialog } from "@/components/transactions/TransactionDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { DollarSign, Plus } from "lucide-react";
+import { DollarSign } from "lucide-react";
 
 export default function Transactions() {
   const { toast } = useToast();
@@ -46,10 +46,7 @@ export default function Transactions() {
       <main className="container py-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Transactions</h1>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Transaction
-          </Button>
+          <TransactionDialog />
         </div>
 
         {isLoading ? (
