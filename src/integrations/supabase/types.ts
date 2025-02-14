@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      employees: {
+        Row: {
+          contact_number: string | null
+          created_at: string | null
+          email: string | null
+          hire_date: string
+          id: string
+          name: string
+          position: string
+        }
+        Insert: {
+          contact_number?: string | null
+          created_at?: string | null
+          email?: string | null
+          hire_date: string
+          id?: string
+          name: string
+          position: string
+        }
+        Update: {
+          contact_number?: string | null
+          created_at?: string | null
+          email?: string | null
+          hire_date?: string
+          id?: string
+          name?: string
+          position?: string
+        }
+        Relationships: []
+      }
       received_sorted_stock: {
         Row: {
           created_at: string | null
@@ -43,6 +73,44 @@ export type Database = {
             columns: ["sorted_stock_id"]
             isOneToOne: false
             referencedRelation: "sorted_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salary_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          employee_id: string
+          id: string
+          payment_date: string
+          payment_period_end: string
+          payment_period_start: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          payment_date: string
+          payment_period_end: string
+          payment_period_start: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          payment_date?: string
+          payment_period_end?: string
+          payment_period_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_payments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -130,6 +198,133 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          notes: string | null
+          reference_number: string | null
+          sorted_stock_id: string | null
+          supplier_id: string | null
+          transaction_date: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          reference_number?: string | null
+          sorted_stock_id?: string | null
+          supplier_id?: string | null
+          transaction_date?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          notes?: string | null
+          reference_number?: string | null
+          sorted_stock_id?: string | null
+          supplier_id?: string | null
+          transaction_date?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_sorted_stock_id_fkey"
+            columns: ["sorted_stock_id"]
+            isOneToOne: false
+            referencedRelation: "sorted_stock"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_costs: {
+        Row: {
+          amount: number
+          cost_type: string
+          created_at: string | null
+          id: string
+          treatment_id: string
+        }
+        Insert: {
+          amount: number
+          cost_type: string
+          created_at?: string | null
+          id?: string
+          treatment_id: string
+        }
+        Update: {
+          amount?: number
+          cost_type?: string
+          created_at?: string | null
+          id?: string
+          treatment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_costs_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatments: {
+        Row: {
+          chemical_used: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          sorted_stock_id: string
+          status: Database["public"]["Enums"]["treatment_status"] | null
+          treatment_date: string | null
+        }
+        Insert: {
+          chemical_used?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity: number
+          sorted_stock_id: string
+          status?: Database["public"]["Enums"]["treatment_status"] | null
+          treatment_date?: string | null
+        }
+        Update: {
+          chemical_used?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          sorted_stock_id?: string
+          status?: Database["public"]["Enums"]["treatment_status"] | null
+          treatment_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatments_sorted_stock_id_fkey"
+            columns: ["sorted_stock_id"]
+            isOneToOne: false
+            referencedRelation: "sorted_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unsorted_stock: {
         Row: {
           created_at: string | null
@@ -181,6 +376,13 @@ export type Database = {
         | "rejected"
       pole_size: "small" | "medium" | "stout"
       processing_status: "pending" | "completed" | "cancelled"
+      transaction_type:
+        | "purchase"
+        | "sale"
+        | "expense"
+        | "salary"
+        | "treatment_income"
+      treatment_status: "pending" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
