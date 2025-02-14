@@ -32,22 +32,33 @@ import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
+// Define the allowed transaction types
+const TransactionType = z.enum([
+  "purchase",
+  "sale",
+  "expense",
+  "salary",
+  "treatment_income",
+]);
+
 const transactionFormSchema = z.object({
-  type: z.string(),
-  amount: z.string().transform((val) => parseFloat(val)),
+  type: TransactionType,
+  amount: z.coerce.number().positive(),
   description: z.string().optional(),
   reference_number: z.string().optional(),
   notes: z.string().optional(),
 });
 
+type TransactionFormValues = z.infer<typeof transactionFormSchema>;
+
 export function TransactionDialog() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const form = useForm<z.infer<typeof transactionFormSchema>>({
+  const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       type: "purchase",
-      amount: "",
+      amount: 0,
       description: "",
       reference_number: "",
       notes: "",
@@ -55,16 +66,14 @@ export function TransactionDialog() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: z.infer<typeof transactionFormSchema>) => {
-      const { data, error } = await supabase.from("transactions").insert([
-        {
-          type: values.type,
-          amount: values.amount,
-          description: values.description,
-          reference_number: values.reference_number,
-          notes: values.notes,
-        },
-      ]);
+    mutationFn: async (values: TransactionFormValues) => {
+      const { data, error } = await supabase.from("transactions").insert({
+        type: values.type,
+        amount: values.amount,
+        description: values.description,
+        reference_number: values.reference_number,
+        notes: values.notes,
+      });
 
       if (error) throw error;
       return data;
@@ -86,7 +95,7 @@ export function TransactionDialog() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof transactionFormSchema>) {
+  function onSubmit(values: TransactionFormValues) {
     mutation.mutate(values);
   }
 
