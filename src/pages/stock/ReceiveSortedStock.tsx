@@ -35,7 +35,7 @@ const ReceiveSortedStock = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sorted_stock")
-        .select("*, suppliers(name)")
+        .select("*")
         .neq("category", "rejected")
         .order("sorting_date", { ascending: false });
 
