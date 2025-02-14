@@ -5,9 +5,8 @@ import {
   ArrowRightLeft,
   ArrowLeftRight,
   Users,
-  Bank,
-  TestTube2,
   DollarSign,
+  TestTube2,
   Users2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +64,7 @@ export function QuickActions() {
             className="h-auto flex-col gap-2 p-6 hover:bg-secondary"
             onClick={() => navigate("/finance/transactions")}
           >
-            <Bank className="h-6 w-6" />
+            <DollarSign className="h-6 w-6" />
             <span>Transactions</span>
           </Button>
           <Button
