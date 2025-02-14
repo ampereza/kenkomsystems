@@ -1,8 +1,11 @@
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ArrowRightLeft, AlertTriangle, Truck } from "lucide-react";
+import { ArrowDownToLine, ArrowRightLeft, ArrowLeftRight, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function QuickActions() {
+  const navigate = useNavigate();
+
   return (
     <div className="mt-8">
       <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
@@ -10,13 +13,15 @@ export function QuickActions() {
         <Button
           variant="outline"
           className="h-auto flex-col gap-2 p-6 hover:bg-secondary"
+          onClick={() => navigate("/stock/receive")}
         >
-          <PlusCircle className="h-6 w-6" />
-          <span>Add Stock</span>
+          <ArrowDownToLine className="h-6 w-6" />
+          <span>Receive Stock</span>
         </Button>
         <Button
           variant="outline"
           className="h-auto flex-col gap-2 p-6 hover:bg-secondary"
+          onClick={() => navigate("/stock/sort")}
         >
           <ArrowRightLeft className="h-6 w-6" />
           <span>Sort Stock</span>
@@ -24,16 +29,18 @@ export function QuickActions() {
         <Button
           variant="outline"
           className="h-auto flex-col gap-2 p-6 hover:bg-secondary"
+          onClick={() => navigate("/stock/receive-sorted")}
         >
-          <AlertTriangle className="h-6 w-6" />
-          <span>Mark Rejects</span>
+          <ArrowLeftRight className="h-6 w-6" />
+          <span>Receive Sorted</span>
         </Button>
         <Button
           variant="outline"
           className="h-auto flex-col gap-2 p-6 hover:bg-secondary"
+          onClick={() => navigate("/stock/suppliers")}
         >
-          <Truck className="h-6 w-6" />
-          <span>Client Treatment</span>
+          <Users className="h-6 w-6" />
+          <span>Suppliers</span>
         </Button>
       </div>
     </div>
