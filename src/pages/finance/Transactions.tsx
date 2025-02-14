@@ -58,6 +58,7 @@ export default function Transactions() {
                 <tr>
                   <th className="text-left p-4">Date</th>
                   <th className="text-left p-4">Type</th>
+                  <th className="text-left p-4">Quantity</th>
                   <th className="text-left p-4">Amount</th>
                   <th className="text-left p-4">Description</th>
                   <th className="text-left p-4">Reference</th>
