@@ -53,6 +53,18 @@ export function Navbar() {
             >
               Stock Report
             </Link>
+            <Link 
+              to="/reports/suppliers" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Supplier Report
+            </Link>
+            <Link 
+              to="/reports/employees" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Employee Report
+            </Link>
           </div>
         </div>
       </div>
