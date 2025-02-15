@@ -40,6 +40,19 @@ export function Navbar() {
             >
               Rejected Poles
             </Link>
+            <div className="border-l mx-2 h-6" />
+            <Link 
+              to="/reports/financial" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Financial Report
+            </Link>
+            <Link 
+              to="/reports/stock" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Stock Report
+            </Link>
           </div>
         </div>
       </div>

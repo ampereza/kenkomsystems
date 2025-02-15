@@ -403,7 +403,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      employee_payments: {
+        Row: {
+          amount: number | null
+          employee_name: string | null
+          payment_date: string | null
+          payment_period_end: string | null
+          payment_period_start: string | null
+          position: string | null
+        }
+        Relationships: []
+      }
+      financial_summary: {
+        Row: {
+          date: string | null
+          total_amount: number | null
+          transaction_count: number | null
+          type: Database["public"]["Enums"]["transaction_type"] | null
+        }
+        Relationships: []
+      }
+      rejected_poles_summary: {
+        Row: {
+          date: string | null
+          pending_collections: number | null
+          supplier_name: string | null
+          total_quantity: number | null
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          category: Database["public"]["Enums"]["pole_category"] | null
+          date: string | null
+          size: Database["public"]["Enums"]["pole_size"] | null
+          total_quantity: number | null
+        }
+        Relationships: []
+      }
+      supplier_transactions: {
+        Row: {
+          amount: number | null
+          reference_number: string | null
+          supplier_name: string | null
+          transaction_date: string | null
+          type: Database["public"]["Enums"]["transaction_type"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

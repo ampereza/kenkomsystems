@@ -14,6 +14,10 @@ import RejectedPoles from "./pages/stock/RejectedPoles";
 import Transactions from "./pages/finance/Transactions";
 import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
+import FinancialReport from "./pages/reports/FinancialReport";
+import StockReport from "./pages/reports/StockReport";
+import SupplierReport from "./pages/reports/SupplierReport";
+import EmployeeReport from "./pages/reports/EmployeeReport";
 
 const queryClient = new QueryClient();
 
@@ -33,7 +37,10 @@ const App = () => (
           <Route path="/finance/transactions" element={<Transactions />} />
           <Route path="/finance/expenses" element={<Expenses />} />
           <Route path="/finance/employees" element={<Employees />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/reports/financial" element={<FinancialReport />} />
+          <Route path="/reports/stock" element={<StockReport />} />
+          <Route path="/reports/suppliers" element={<SupplierReport />} />
+          <Route path="/reports/employees" element={<EmployeeReport />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
