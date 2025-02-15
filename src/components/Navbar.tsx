@@ -42,6 +42,12 @@ export function Navbar() {
             </Link>
             <div className="border-l mx-2 h-6" />
             <Link 
+              to="/reports/ledger" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              General Ledger
+            </Link>
+            <Link 
               to="/reports/financial" 
               className="text-sm hover:text-primary/80 transition-colors"
             >

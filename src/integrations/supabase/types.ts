@@ -39,6 +39,102 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          entry_date: string | null
+          id: string
+          posted: boolean | null
+          reference_number: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          entry_date?: string | null
+          id?: string
+          posted?: boolean | null
+          reference_number?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          entry_date?: string | null
+          id?: string
+          posted?: boolean | null
+          reference_number?: string | null
+        }
+        Relationships: []
+      }
+      journal_entry_lines: {
+        Row: {
+          account_id: string | null
+          created_at: string | null
+          credit_amount: number | null
+          debit_amount: number | null
+          description: string | null
+          id: string
+          journal_entry_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string | null
+          credit_amount?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: string
+          journal_entry_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string | null
+          credit_amount?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: string
+          journal_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_accounts: {
+        Row: {
+          account_code: string
+          account_name: string
+          account_type: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          account_code: string
+          account_name: string
+          account_type: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          account_code?: string
+          account_name?: string
+          account_type?: string
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       received_sorted_stock: {
         Row: {
           created_at: string | null
@@ -403,6 +499,15 @@ export type Database = {
       }
     }
     Views: {
+      balance_sheet: {
+        Row: {
+          account_code: string | null
+          account_name: string | null
+          account_type: string | null
+          balance: number | null
+        }
+        Relationships: []
+      }
       employee_payments: {
         Row: {
           amount: number | null
@@ -420,6 +525,15 @@ export type Database = {
           total_amount: number | null
           transaction_count: number | null
           type: Database["public"]["Enums"]["transaction_type"] | null
+        }
+        Relationships: []
+      }
+      income_statement: {
+        Row: {
+          account_code: string | null
+          account_name: string | null
+          account_type: string | null
+          balance: number | null
         }
         Relationships: []
       }

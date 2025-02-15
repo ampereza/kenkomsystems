@@ -18,6 +18,7 @@ import FinancialReport from "./pages/reports/FinancialReport";
 import StockReport from "./pages/reports/StockReport";
 import SupplierReport from "./pages/reports/SupplierReport";
 import EmployeeReport from "./pages/reports/EmployeeReport";
+import GeneralLedger from "./pages/reports/GeneralLedger";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/reports/stock" element={<StockReport />} />
           <Route path="/reports/suppliers" element={<SupplierReport />} />
           <Route path="/reports/employees" element={<EmployeeReport />} />
+          <Route path="/reports/ledger" element={<GeneralLedger />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
