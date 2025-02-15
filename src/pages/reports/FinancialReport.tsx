@@ -22,8 +22,15 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, DollarSign } from "lucide-react";
+import { exportToExcel } from "@/utils/exportUtils";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
@@ -66,6 +73,30 @@ export default function FinancialReport() {
     },
   });
 
+  const { data: balanceSheet } = useQuery({
+    queryKey: ["balance-sheet"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("balance_sheet")
+        .select("*");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: incomeStatement } = useQuery({
+    queryKey: ["income-statement"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("income_statement")
+        .select("*");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const totals = financialData?.reduce(
     (acc, curr) => {
       if (curr.type === "expense" || curr.type === "salary") {
@@ -83,6 +114,16 @@ export default function FinancialReport() {
     amount: Number(item.total_amount),
     type: item.type,
   }));
+
+  const handleExportBalanceSheet = () => {
+    if (!balanceSheet) return;
+    exportToExcel(balanceSheet, `balance-sheet-${new Date().toISOString().split('T')[0]}`);
+  };
+
+  const handleExportIncomeStatement = () => {
+    if (!incomeStatement) return;
+    exportToExcel(incomeStatement, `income-statement-${new Date().toISOString().split('T')[0]}`);
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -141,6 +182,78 @@ export default function FinancialReport() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Balance Sheet</CardTitle>
+              <Button onClick={handleExportBalanceSheet}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Account Code</TableHead>
+                    <TableHead>Account Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {balanceSheet?.map((account, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{account.account_code}</TableCell>
+                      <TableCell>{account.account_name}</TableCell>
+                      <TableCell className="capitalize">
+                        {account.account_type}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${Number(account.balance).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Income Statement</CardTitle>
+              <Button onClick={handleExportIncomeStatement}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Account Code</TableHead>
+                    <TableHead>Account Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {incomeStatement?.map((account, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{account.account_code}</TableCell>
+                      <TableCell>{account.account_name}</TableCell>
+                      <TableCell className="capitalize">
+                        {account.account_type}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ${Number(account.balance).toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
