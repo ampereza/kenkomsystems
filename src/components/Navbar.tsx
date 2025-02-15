@@ -34,6 +34,12 @@ export function Navbar() {
             >
               Suppliers
             </Link>
+            <Link 
+              to="/stock/rejected-poles" 
+              className="text-sm hover:text-primary/80 transition-colors"
+            >
+              Rejected Poles
+            </Link>
           </div>
         </div>
       </div>
