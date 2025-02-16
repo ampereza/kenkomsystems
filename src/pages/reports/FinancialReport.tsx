@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, DollarSign } from "lucide-react";
 import { exportToExcel } from "@/utils/exportUtils";
+import { PreviewDialog } from "@/components/ui/previewDialog";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
@@ -186,10 +186,17 @@ export default function FinancialReport() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Balance Sheet</CardTitle>
-              <Button onClick={handleExportBalanceSheet}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
+              <PreviewDialog
+                title="Balance Sheet Preview"
+                data={balanceSheet || []}
+                columns={[
+                  { key: "account_code", label: "Account Code" },
+                  { key: "account_name", label: "Account Name" },
+                  { key: "account_type", label: "Type" },
+                  { key: "balance", label: "Balance" },
+                ]}
+                onExport={handleExportBalanceSheet}
+              />
             </CardHeader>
             <CardContent>
               <Table>
@@ -222,10 +229,17 @@ export default function FinancialReport() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Income Statement</CardTitle>
-              <Button onClick={handleExportIncomeStatement}>
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
+              <PreviewDialog
+                title="Income Statement Preview"
+                data={incomeStatement || []}
+                columns={[
+                  { key: "account_code", label: "Account Code" },
+                  { key: "account_name", label: "Account Name" },
+                  { key: "account_type", label: "Type" },
+                  { key: "balance", label: "Amount" },
+                ]}
+                onExport={handleExportIncomeStatement}
+              />
             </CardHeader>
             <CardContent>
               <Table>
