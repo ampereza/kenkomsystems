@@ -135,6 +135,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
       received_sorted_stock: {
         Row: {
           created_at: string | null
@@ -585,6 +609,12 @@ export type Database = {
         | "salary"
         | "treatment_income"
       treatment_status: "pending" | "in_progress" | "completed" | "cancelled"
+      user_role:
+        | "general_manager"
+        | "managing_director"
+        | "accountant"
+        | "stock_manager"
+        | "production_manager"
     }
     CompositeTypes: {
       [_ in never]: never
