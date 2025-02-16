@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, DollarSign } from "lucide-react";
 import { exportToExcel } from "@/utils/exportUtils";
-import { PreviewDialog } from "@/components/ui/previewDialog";
+import { PreviewDialog } from "@/components/reports/PreviewDialog";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
