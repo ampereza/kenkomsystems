@@ -57,14 +57,31 @@ export default function AuthPage() {
         if (!result.error) {
           toast({
             title: "Account created",
-            description: "Your account has been created with default access. A manager will update your role soon.",
+            description: "Please check your email to confirm your account before logging in.",
           });
+          setIsSignUp(false); // Switch to login view
         }
       } else {
         result = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
+        if (result.error?.message === "Email not confirmed") {
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+          });
+
+          toast({
+            variant: "destructive",
+            title: "Email not confirmed",
+            description: resendError 
+              ? "Error resending confirmation email. Please try again."
+              : "Please check your email to confirm your account. We've sent a new confirmation link.",
+          });
+          return;
+        }
       }
 
       if (result.error) {
@@ -76,7 +93,9 @@ export default function AuthPage() {
         return;
       }
 
-      navigate(from);
+      if (!isSignUp && !result.error) {
+        navigate(from);
+      }
     } catch (error) {
       toast({
         variant: "destructive",
