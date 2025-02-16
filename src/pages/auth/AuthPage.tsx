@@ -9,16 +9,28 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import type { UserRole } from '@/lib/auth';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [requestedRole, setRequestedRole] = useState<UserRole>('stock_manager');
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +47,19 @@ export default function AuthPage() {
         result = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              requested_role: requestedRole
+            }
+          }
         });
+
+        if (!result.error) {
+          toast({
+            title: "Account created",
+            description: "Your account has been created with default access. A manager will update your role soon.",
+          });
+        }
       } else {
         result = await supabase.auth.signInWithPassword({
           email,
@@ -71,7 +95,7 @@ export default function AuthPage() {
           <CardTitle>{isSignUp ? 'Create Account' : 'Login'}</CardTitle>
           <CardDescription>
             {isSignUp
-              ? 'Enter your email below to create your account'
+              ? 'Enter your details below to create your account'
               : 'Enter your email below to login to your account'}
           </CardDescription>
         </CardHeader>
@@ -97,22 +121,50 @@ export default function AuthPage() {
                 required
               />
             </div>
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="role">Requested Role</Label>
+                <Select
+                  value={requestedRole}
+                  onValueChange={(value) => setRequestedRole(value as UserRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general_manager">General Manager</SelectItem>
+                    <SelectItem value="managing_director">Managing Director</SelectItem>
+                    <SelectItem value="accountant">Accountant</SelectItem>
+                    <SelectItem value="stock_manager">Stock Manager</SelectItem>
+                    <SelectItem value="production_manager">Production Manager</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Login'}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm"
-            >
-              {isSignUp
-                ? 'Already have an account? Login'
-                : "Don't have an account? Sign Up"}
-            </Button>
-          </div>
         </CardContent>
+        <CardFooter className="flex flex-col gap-4">
+          {isSignUp && (
+            <Alert variant="default" className="bg-muted">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                New accounts are created with limited access. A manager will review and update your role.
+              </AlertDescription>
+            </Alert>
+          )}
+          <Button
+            variant="link"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm"
+          >
+            {isSignUp
+              ? 'Already have an account? Login'
+              : "Don't have an account? Sign Up"}
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
