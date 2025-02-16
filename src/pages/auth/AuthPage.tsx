@@ -55,12 +55,25 @@ export default function AuthPage() {
           }
         });
 
-        if (!result.error) {
+        if (result.error?.status === 422 && result.error.message.includes("already registered")) {
+          toast({
+            variant: "destructive",
+            title: "Account exists",
+            description: "An account with this email already exists. Please log in instead.",
+          });
+          setIsSignUp(false); // Switch to login view
+        } else if (!result.error) {
           toast({
             title: "Account created",
             description: "Please check your email to confirm your account before logging in.",
           });
           setIsSignUp(false); // Switch to login view
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: result.error.message,
+          });
         }
       } else {
         result = await supabase.auth.signInWithPassword({
