@@ -31,6 +31,7 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [requestedRole, setRequestedRole] = useState<UserRole>('stock_manager');
+  const [resendTimeout, setResendTimeout] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,32 +69,57 @@ export default function AuthPage() {
         });
 
         if (result.error?.message === "Email not confirmed") {
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email,
-          });
+          if (!resendTimeout) {
+            const { error: resendError } = await supabase.auth.resend({
+              type: 'signup',
+              email,
+            });
 
+            if (resendError) {
+              // Check if it's a rate limit error
+              if (resendError.status === 429) {
+                const waitSeconds = resendError.message.match(/\d+/)?.[0] || '60';
+                toast({
+                  variant: "destructive",
+                  title: "Please wait",
+                  description: `You can request another confirmation email in ${waitSeconds} seconds.`,
+                });
+                setResendTimeout(true);
+                setTimeout(() => setResendTimeout(false), parseInt(waitSeconds) * 1000);
+              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Error",
+                  description: "Error resending confirmation email. Please try again later.",
+                });
+              }
+            } else {
+              toast({
+                title: "Confirmation email sent",
+                description: "Please check your email to confirm your account. We've sent a new confirmation link.",
+              });
+              setResendTimeout(true);
+              setTimeout(() => setResendTimeout(false), 60000); // Default 60s timeout
+            }
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Please wait",
+              description: "Please wait before requesting another confirmation email.",
+            });
+          }
+          return;
+        }
+
+        if (result.error) {
           toast({
             variant: "destructive",
-            title: "Email not confirmed",
-            description: resendError 
-              ? "Error resending confirmation email. Please try again."
-              : "Please check your email to confirm your account. We've sent a new confirmation link.",
+            title: "Error",
+            description: result.error.message,
           });
           return;
         }
-      }
 
-      if (result.error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: result.error.message,
-        });
-        return;
-      }
-
-      if (!isSignUp && !result.error) {
         navigate(from);
       }
     } catch (error) {
