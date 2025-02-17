@@ -557,7 +557,26 @@ export type Database = {
           account_code: string | null
           account_name: string | null
           account_type: string | null
-          balance: number | null
+          amount: number | null
+          description: string | null
+          entry_date: string | null
+          reference_number: string | null
+        }
+        Relationships: []
+      }
+      income_statement_by_account: {
+        Row: {
+          account_code: string | null
+          account_name: string | null
+          account_type: string | null
+          total_amount: number | null
+        }
+        Relationships: []
+      }
+      income_statement_summary: {
+        Row: {
+          account_type: string | null
+          total_amount: number | null
         }
         Relationships: []
       }

@@ -1,14 +1,14 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, startOfDay, endOfDay } from "date-fns";
 import { exportToExcel } from "@/utils/exportUtils";
 import { FinancialMetrics } from "@/components/reports/FinancialMetrics";
 import { FinancialStatements } from "@/components/reports/FinancialStatements";
 import { FinancialTrends } from "@/components/reports/FinancialTrends";
 import { DetailedTransactions } from "@/components/reports/DetailedTransactions";
+import { IncomeStatement } from "@/components/reports/IncomeStatement";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
@@ -120,6 +120,8 @@ export default function FinancialReport() {
       ) : (
         <div className="space-y-6">
           <FinancialMetrics totals={totals} />
+          
+          <IncomeStatement />
           
           <FinancialStatements
             balanceSheet={balanceSheet}
