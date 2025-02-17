@@ -7,7 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const { data: unsortedStock, error: unsortedError } = useQuery({
+  const { data: unsortedStock } = useQuery({
     queryKey: ["unsorted-stock"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,16 +21,12 @@ const Index = () => {
       }
       return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to fetch unsorted stock data",
-        variant: "destructive",
-      });
-    },
+    meta: {
+      errorMessage: "Failed to fetch unsorted stock data"
+    }
   });
 
-  const { data: sortedStock, error: sortedError } = useQuery({
+  const { data: sortedStock } = useQuery({
     queryKey: ["sorted-stock"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -45,16 +41,12 @@ const Index = () => {
       }
       return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to fetch sorted stock data",
-        variant: "destructive",
-      });
-    },
+    meta: {
+      errorMessage: "Failed to fetch sorted stock data"
+    }
   });
 
-  const { data: rejects, error: rejectsError } = useQuery({
+  const { data: rejects } = useQuery({
     queryKey: ["rejects"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,13 +61,9 @@ const Index = () => {
       }
       return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to fetch rejects data",
-        variant: "destructive",
-      });
-    },
+    meta: {
+      errorMessage: "Failed to fetch rejects data"
+    }
   });
 
   const categories = [

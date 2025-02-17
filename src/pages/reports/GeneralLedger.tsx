@@ -53,13 +53,8 @@ export default function GeneralLedger() {
       console.log("Fetched journal entries:", entries);
       return entries;
     },
-    onError: (error) => {
-      console.error("Query error:", error);
-      toast({
-        title: "Error fetching journal entries",
-        description: "There was a problem loading the general ledger entries.",
-        variant: "destructive",
-      });
+    meta: {
+      errorMessage: "There was a problem loading the general ledger entries."
     }
   });
 
@@ -79,6 +74,15 @@ export default function GeneralLedger() {
 
     exportToExcel(exportData, `general-ledger-${startDate.toISOString().split('T')[0]}`);
   };
+
+  // Show error toast if there's an error
+  if (error) {
+    toast({
+      title: "Error fetching journal entries",
+      description: "There was a problem loading the general ledger entries.",
+      variant: "destructive",
+    });
+  }
 
   return (
     <div className="container mx-auto py-6">
