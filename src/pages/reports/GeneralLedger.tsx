@@ -21,14 +21,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { exportToExcel } from "@/utils/exportUtils";
+import { toast } from "@/components/ui/use-toast";
 
 export default function GeneralLedger() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
   const [endDate, setEndDate] = useState(endOfMonth(new Date()));
 
-  const { data: journalEntries, isLoading } = useQuery({
+  const { data: journalEntries, isLoading, error } = useQuery({
     queryKey: ["journal-entries", startDate, endDate],
     queryFn: async () => {
+      console.log("Fetching journal entries for date range:", { startDate, endDate });
+      
       const { data: entries, error } = await supabase
         .from("journal_entries")
         .select(`
@@ -42,9 +45,22 @@ export default function GeneralLedger() {
         .lte("entry_date", endDate.toISOString())
         .order("entry_date");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching journal entries:", error);
+        throw error;
+      }
+
+      console.log("Fetched journal entries:", entries);
       return entries;
     },
+    onError: (error) => {
+      console.error("Query error:", error);
+      toast({
+        title: "Error fetching journal entries",
+        description: "There was a problem loading the general ledger entries.",
+        variant: "destructive",
+      });
+    }
   });
 
   const handleExport = () => {
@@ -84,6 +100,14 @@ export default function GeneralLedger() {
 
       {isLoading ? (
         <div className="text-center py-8">Loading ledger entries...</div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-500">
+          Error loading ledger entries. Please try again.
+        </div>
+      ) : journalEntries?.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No journal entries found for the selected date range
+        </div>
       ) : (
         <Card>
           <CardHeader>
