@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { StockMetricCard } from "@/components/stock/StockMetricCard";
 import { QuickActions } from "@/components/stock/QuickActions";
 import { Navbar } from "@/components/Navbar";
+import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const { data: unsortedStock } = useQuery({
+  const { data: unsortedStock, error: unsortedError } = useQuery({
     queryKey: ["unsorted-stock"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -14,12 +15,22 @@ const Index = () => {
         .select("quantity")
         .not("quantity", "eq", 0);
       
-      if (error) throw error;
-      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+      if (error) {
+        console.error("Error fetching unsorted stock:", error);
+        throw error;
+      }
+      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch unsorted stock data",
+        variant: "destructive",
+      });
     },
   });
 
-  const { data: sortedStock } = useQuery({
+  const { data: sortedStock, error: sortedError } = useQuery({
     queryKey: ["sorted-stock"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -28,12 +39,22 @@ const Index = () => {
         .not("quantity", "eq", 0)
         .neq("category", "rejected");
       
-      if (error) throw error;
-      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+      if (error) {
+        console.error("Error fetching sorted stock:", error);
+        throw error;
+      }
+      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch sorted stock data",
+        variant: "destructive",
+      });
     },
   });
 
-  const { data: rejects } = useQuery({
+  const { data: rejects, error: rejectsError } = useQuery({
     queryKey: ["rejects"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,8 +63,18 @@ const Index = () => {
         .eq("category", "rejected")
         .not("quantity", "eq", 0);
       
-      if (error) throw error;
-      return data.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+      if (error) {
+        console.error("Error fetching rejects:", error);
+        throw error;
+      }
+      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to fetch rejects data",
+        variant: "destructive",
+      });
     },
   });
 
