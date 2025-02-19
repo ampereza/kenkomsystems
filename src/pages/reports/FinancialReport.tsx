@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +9,7 @@ import { FinancialStatements } from "@/components/reports/FinancialStatements";
 import { FinancialTrends } from "@/components/reports/FinancialTrends";
 import { DetailedTransactions } from "@/components/reports/DetailedTransactions";
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
+import type { DetailedIncomeStatement } from "@/components/reports/income-statement/types";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = React.useState(startOfMonth(new Date()));
@@ -72,7 +72,7 @@ export default function FinancialReport() {
         .select("*");
 
       if (error) throw error;
-      return data;
+      return data as DetailedIncomeStatement[];
     },
   });
 

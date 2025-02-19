@@ -8,38 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
-
-interface BaseIncomeStatement {
-  account_type: string;
-  total_amount: number;
-}
-
-interface DetailedIncomeStatement {
-  account_code: string;
-  account_name: string;
-  account_type: string;
-  entry_date: string;
-  reference_number: string;
-  description: string;
-  amount: number;
-}
-
-interface AccountIncomeStatement {
-  account_code: string;
-  account_name: string;
-  account_type: string;
-  total_amount: number;
-}
+import { SummaryView } from "./income-statement/SummaryView";
+import { AccountView } from "./income-statement/AccountView";
+import { DetailedView } from "./income-statement/DetailedView";
+import { calculateNetIncome } from "./income-statement/utils";
+import type { BaseIncomeStatement, AccountIncomeStatement, DetailedIncomeStatement } from "./income-statement/types";
 
 export function IncomeStatement() {
   const [activeView, setActiveView] = React.useState("summary");
@@ -54,9 +28,6 @@ export function IncomeStatement() {
       if (error) throw error;
       return data as DetailedIncomeStatement[];
     },
-    meta: {
-      errorMessage: "Failed to fetch detailed income statement"
-    }
   });
 
   const { data: byAccountData, isLoading: byAccountLoading } = useQuery({
@@ -69,9 +40,6 @@ export function IncomeStatement() {
       if (error) throw error;
       return data as AccountIncomeStatement[];
     },
-    meta: {
-      errorMessage: "Failed to fetch income statement by account"
-    }
   });
 
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
@@ -84,22 +52,7 @@ export function IncomeStatement() {
       if (error) throw error;
       return data as BaseIncomeStatement[];
     },
-    meta: {
-      errorMessage: "Failed to fetch income statement summary"
-    }
   });
-
-  const calculateNetIncome = (data: (BaseIncomeStatement | AccountIncomeStatement | DetailedIncomeStatement)[]) => {
-    return data?.reduce((acc, curr) => {
-      const amount = 'total_amount' in curr ? curr.total_amount : ('amount' in curr ? curr.amount : 0);
-      if (curr.account_type === 'revenue') {
-        return acc + Number(amount || 0);
-      } else if (curr.account_type === 'expense') {
-        return acc - Number(amount || 0);
-      }
-      return acc;
-    }, 0) || 0;
-  };
 
   const isLoading = detailedLoading || byAccountLoading || summaryLoading;
 
@@ -121,96 +74,15 @@ export function IncomeStatement() {
           </TabsList>
 
           <TabsContent value="summary">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {summaryData?.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="capitalize">{item.account_type}</TableCell>
-                    <TableCell className="text-right">
-                      ${Number(item.total_amount).toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow className="font-bold">
-                  <TableCell>Net Income</TableCell>
-                  <TableCell className="text-right">
-                    ${calculateNetIncome(summaryData || []).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <SummaryView data={summaryData || []} calculateNetIncome={calculateNetIncome} />
           </TabsContent>
 
           <TabsContent value="by-account">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Account Code</TableHead>
-                  <TableHead>Account Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {byAccountData?.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.account_code}</TableCell>
-                    <TableCell>{item.account_name}</TableCell>
-                    <TableCell className="capitalize">{item.account_type}</TableCell>
-                    <TableCell className="text-right">
-                      ${Number(item.total_amount).toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow className="font-bold">
-                  <TableCell colSpan={3}>Net Income</TableCell>
-                  <TableCell className="text-right">
-                    ${calculateNetIncome(byAccountData || []).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <AccountView data={byAccountData || []} calculateNetIncome={calculateNetIncome} />
           </TabsContent>
 
           <TabsContent value="detailed">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {detailedData?.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{new Date(item.entry_date).toLocaleDateString()}</TableCell>
-                    <TableCell>{item.reference_number}</TableCell>
-                    <TableCell>{item.description}</TableCell>
-                    <TableCell>{item.account_name}</TableCell>
-                    <TableCell className="capitalize">{item.account_type}</TableCell>
-                    <TableCell className="text-right">
-                      ${Number(item.amount).toFixed(2)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow className="font-bold">
-                  <TableCell colSpan={5}>Net Income</TableCell>
-                  <TableCell className="text-right">
-                    ${calculateNetIncome(detailedData || []).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            <DetailedView data={detailedData || []} calculateNetIncome={calculateNetIncome} />
           </TabsContent>
         </Tabs>
       </CardContent>
