@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
@@ -11,8 +12,8 @@ import { DetailedTransactions } from "@/components/reports/DetailedTransactions"
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
 
 export default function FinancialReport() {
-  const [startDate, setStartDate] = useState(startOfMonth(new Date()));
-  const [endDate, setEndDate] = useState(endOfMonth(new Date()));
+  const [startDate, setStartDate] = React.useState(startOfMonth(new Date()));
+  const [endDate, setEndDate] = React.useState(endOfMonth(new Date()));
 
   const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
     const now = new Date();

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -19,19 +19,30 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 
-interface IncomeStatementEntry {
+interface BaseIncomeStatement {
+  account_type: string;
+  total_amount: number;
+}
+
+interface DetailedIncomeStatement {
   account_code: string;
   account_name: string;
   account_type: string;
-  entry_date?: string;
-  reference_number?: string;
-  description?: string;
+  entry_date: string;
+  reference_number: string;
+  description: string;
   amount: number;
-  total_amount?: number;
+}
+
+interface AccountIncomeStatement {
+  account_code: string;
+  account_name: string;
+  account_type: string;
+  total_amount: number;
 }
 
 export function IncomeStatement() {
-  const [activeView, setActiveView] = useState("summary");
+  const [activeView, setActiveView] = React.useState("summary");
 
   const { data: detailedData, isLoading: detailedLoading } = useQuery({
     queryKey: ["income-statement-detailed"],
@@ -41,7 +52,7 @@ export function IncomeStatement() {
         .select("*");
 
       if (error) throw error;
-      return data;
+      return data as DetailedIncomeStatement[];
     },
     meta: {
       errorMessage: "Failed to fetch detailed income statement"
@@ -56,7 +67,7 @@ export function IncomeStatement() {
         .select("*");
 
       if (error) throw error;
-      return data;
+      return data as AccountIncomeStatement[];
     },
     meta: {
       errorMessage: "Failed to fetch income statement by account"
@@ -71,19 +82,20 @@ export function IncomeStatement() {
         .select("*");
 
       if (error) throw error;
-      return data;
+      return data as BaseIncomeStatement[];
     },
     meta: {
       errorMessage: "Failed to fetch income statement summary"
     }
   });
 
-  const calculateNetIncome = (data: any[]) => {
+  const calculateNetIncome = (data: (BaseIncomeStatement | AccountIncomeStatement | DetailedIncomeStatement)[]) => {
     return data?.reduce((acc, curr) => {
+      const amount = 'total_amount' in curr ? curr.total_amount : ('amount' in curr ? curr.amount : 0);
       if (curr.account_type === 'revenue') {
-        return acc + Number(curr.total_amount || 0);
+        return acc + Number(amount || 0);
       } else if (curr.account_type === 'expense') {
-        return acc - Number(curr.total_amount || 0);
+        return acc - Number(amount || 0);
       }
       return acc;
     }, 0) || 0;
@@ -117,7 +129,7 @@ export function IncomeStatement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {summaryData?.map((item: IncomeStatementEntry, index: number) => (
+                {summaryData?.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell className="capitalize">{item.account_type}</TableCell>
                     <TableCell className="text-right">
@@ -128,7 +140,7 @@ export function IncomeStatement() {
                 <TableRow className="font-bold">
                   <TableCell>Net Income</TableCell>
                   <TableCell className="text-right">
-                    ${calculateNetIncome(summaryData).toFixed(2)}
+                    ${calculateNetIncome(summaryData || []).toFixed(2)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -146,7 +158,7 @@ export function IncomeStatement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {byAccountData?.map((item: IncomeStatementEntry, index: number) => (
+                {byAccountData?.map((item, index) => (
                   <TableRow key={index}>
                     <TableCell>{item.account_code}</TableCell>
                     <TableCell>{item.account_name}</TableCell>
@@ -159,7 +171,7 @@ export function IncomeStatement() {
                 <TableRow className="font-bold">
                   <TableCell colSpan={3}>Net Income</TableCell>
                   <TableCell className="text-right">
-                    ${calculateNetIncome(byAccountData).toFixed(2)}
+                    ${calculateNetIncome(byAccountData || []).toFixed(2)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -179,9 +191,9 @@ export function IncomeStatement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {detailedData?.map((item: IncomeStatementEntry, index: number) => (
+                {detailedData?.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{new Date(item.entry_date!).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(item.entry_date).toLocaleDateString()}</TableCell>
                     <TableCell>{item.reference_number}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>{item.account_name}</TableCell>
@@ -194,7 +206,7 @@ export function IncomeStatement() {
                 <TableRow className="font-bold">
                   <TableCell colSpan={5}>Net Income</TableCell>
                   <TableCell className="text-right">
-                    ${calculateNetIncome(detailedData).toFixed(2)}
+                    ${calculateNetIncome(detailedData || []).toFixed(2)}
                   </TableCell>
                 </TableRow>
               </TableBody>
