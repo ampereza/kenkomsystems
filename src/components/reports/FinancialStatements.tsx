@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PreviewDialog } from "./PreviewDialog";
+import type { DetailedIncomeStatement } from "./income-statement/types";
 
 interface Account {
   account_code: string;
@@ -19,7 +20,7 @@ interface Account {
 
 interface FinancialStatementsProps {
   balanceSheet: Account[] | undefined;
-  incomeStatement: Account[] | undefined;
+  incomeStatement: DetailedIncomeStatement[] | undefined;
   onExportBalanceSheet: () => void;
   onExportIncomeStatement: () => void;
 }
@@ -83,7 +84,7 @@ export function FinancialStatements({
               { key: "account_code", label: "Account Code" },
               { key: "account_name", label: "Account Name" },
               { key: "account_type", label: "Type" },
-              { key: "balance", label: "Amount" },
+              { key: "amount", label: "Amount" },
             ]}
             onExport={onExportIncomeStatement}
           />
@@ -105,7 +106,7 @@ export function FinancialStatements({
                   <TableCell>{account.account_name}</TableCell>
                   <TableCell className="capitalize">{account.account_type}</TableCell>
                   <TableCell className="text-right">
-                    ${Number(account.balance).toFixed(2)}
+                    ${Number(account.amount).toFixed(2)}
                   </TableCell>
                 </TableRow>
               ))}
