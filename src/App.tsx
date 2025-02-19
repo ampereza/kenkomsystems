@@ -21,6 +21,13 @@ import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
 import Clients from "./pages/treatments/Clients";
 
+// Import Dashboards
+import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
+import StockDashboard from "./pages/dashboards/StockDashboard";
+import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
+import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
+import MDDashboard from "./pages/dashboards/MDDashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -31,6 +38,13 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          
+          {/* Dashboard Routes */}
+          <Route path="/dashboards/financial" element={<FinancialDashboard />} />
+          <Route path="/dashboards/stock" element={<StockDashboard />} />
+          <Route path="/dashboards/treatment" element={<TreatmentDashboard />} />
+          <Route path="/dashboards/general-manager" element={<GeneralManagerDashboard />} />
+          <Route path="/dashboards/md" element={<MDDashboard />} />
           
           {/* Stock Management Routes */}
           <Route path="/stock/receive" element={<ReceiveStock />} />
