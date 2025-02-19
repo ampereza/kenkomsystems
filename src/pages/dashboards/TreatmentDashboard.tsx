@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Flask, Users, Cylinder, Activity } from "lucide-react";
+import { TestTube2, Users, Cylinder, Activity } from "lucide-react";
 
 export default function TreatmentDashboard() {
   const { data: treatmentSummary } = useQuery({
@@ -26,7 +26,7 @@ export default function TreatmentDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Treatments</CardTitle>
-            <Flask className="h-4 w-4 text-muted-foreground" />
+            <TestTube2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">5</div>
