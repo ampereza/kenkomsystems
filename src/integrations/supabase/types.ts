@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           contact_number: string | null
@@ -440,43 +473,121 @@ export type Database = {
             foreignKeyName: "treatment_costs_treatment_id_fkey"
             columns: ["treatment_id"]
             isOneToOne: false
+            referencedRelation: "treatment_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_costs_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
             referencedRelation: "treatments"
             referencedColumns: ["id"]
           },
         ]
       }
+      treatment_cylinders: {
+        Row: {
+          capacity_liters: number
+          created_at: string | null
+          cylinder_number: number
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          capacity_liters: number
+          created_at?: string | null
+          cylinder_number: number
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          capacity_liters?: number
+          created_at?: string | null
+          cylinder_number?: number
+          id?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       treatments: {
         Row: {
+          chemical_strength: number | null
           chemical_used: string | null
+          client_id: string | null
           created_at: string | null
+          cylinder_id: string | null
+          distribution_poles: number | null
+          facing_poles: number | null
+          high_voltage_poles: number | null
           id: string
+          kegs_added: number | null
+          kegs_remaining: number | null
           notes: string | null
           quantity: number
           sorted_stock_id: string
           status: Database["public"]["Enums"]["treatment_status"] | null
+          telecom_poles: number | null
+          total_poles: number | null
           treatment_date: string | null
+          water_added_liters: number | null
         }
         Insert: {
+          chemical_strength?: number | null
           chemical_used?: string | null
+          client_id?: string | null
           created_at?: string | null
+          cylinder_id?: string | null
+          distribution_poles?: number | null
+          facing_poles?: number | null
+          high_voltage_poles?: number | null
           id?: string
+          kegs_added?: number | null
+          kegs_remaining?: number | null
           notes?: string | null
           quantity: number
           sorted_stock_id: string
           status?: Database["public"]["Enums"]["treatment_status"] | null
+          telecom_poles?: number | null
+          total_poles?: number | null
           treatment_date?: string | null
+          water_added_liters?: number | null
         }
         Update: {
+          chemical_strength?: number | null
           chemical_used?: string | null
+          client_id?: string | null
           created_at?: string | null
+          cylinder_id?: string | null
+          distribution_poles?: number | null
+          facing_poles?: number | null
+          high_voltage_poles?: number | null
           id?: string
+          kegs_added?: number | null
+          kegs_remaining?: number | null
           notes?: string | null
           quantity?: number
           sorted_stock_id?: string
           status?: Database["public"]["Enums"]["treatment_status"] | null
+          telecom_poles?: number | null
+          total_poles?: number | null
           treatment_date?: string | null
+          water_added_liters?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "treatments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatments_cylinder_id_fkey"
+            columns: ["cylinder_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_cylinders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "treatments_sorted_stock_id_fkey"
             columns: ["sorted_stock_id"]
@@ -605,6 +716,27 @@ export type Database = {
           supplier_name: string | null
           transaction_date: string | null
           type: Database["public"]["Enums"]["transaction_type"] | null
+        }
+        Relationships: []
+      }
+      treatment_summary: {
+        Row: {
+          chemical_strength: number | null
+          chemical_used: string | null
+          client_name: string | null
+          cylinder_number: number | null
+          distribution_poles: number | null
+          facing_poles: number | null
+          high_voltage_poles: number | null
+          id: string | null
+          kegs_added: number | null
+          kegs_remaining: number | null
+          notes: string | null
+          status: Database["public"]["Enums"]["treatment_status"] | null
+          telecom_poles: number | null
+          total_poles: number | null
+          treatment_date: string | null
+          water_added_liters: number | null
         }
         Relationships: []
       }

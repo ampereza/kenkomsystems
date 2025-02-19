@@ -19,6 +19,7 @@ import StockReport from "./pages/reports/StockReport";
 import SupplierReport from "./pages/reports/SupplierReport";
 import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
+import Clients from "./pages/treatments/Clients";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,9 @@ const App = () => (
           <Route path="/reports/suppliers" element={<SupplierReport />} />
           <Route path="/reports/employees" element={<EmployeeReport />} />
           <Route path="/reports/ledger" element={<GeneralLedger />} />
+
+          {/* Treatment Routes */}
+          <Route path="/treatments/clients" element={<Clients />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
