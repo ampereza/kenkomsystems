@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 
 type TreatmentFormValues = {
@@ -42,6 +43,7 @@ type TreatmentFormValues = {
   notes: string;
   sortedStockId: string;
   quantity: number;
+  isClientOwnedPoles: boolean;
 };
 
 export default function TreatmentLog() {
@@ -60,6 +62,7 @@ export default function TreatmentLog() {
       distributionPoles: 0,
       highVoltagePoles: 0,
       quantity: 0,
+      isClientOwnedPoles: false,
     },
   });
 
@@ -102,7 +105,7 @@ export default function TreatmentLog() {
         Number(values.distributionPoles) + 
         Number(values.highVoltagePoles);
 
-      const { error } = await supabase.from("treatments").insert({
+      const treatmentData = {
         treatment_date: values.treatmentDate,
         cylinder_id: values.cylinderId,
         client_id: values.clientId,
@@ -117,9 +120,18 @@ export default function TreatmentLog() {
         high_voltage_poles: values.highVoltagePoles,
         total_poles: totalPoles,
         notes: values.notes,
-        sorted_stock_id: values.sortedStockId,
-        quantity: values.quantity,
-      });
+        is_client_owned: values.isClientOwnedPoles,
+      };
+
+      // Only include sorted_stock_id and quantity if these are NOT client-owned poles
+      if (!values.isClientOwnedPoles) {
+        Object.assign(treatmentData, {
+          sorted_stock_id: values.sortedStockId,
+          quantity: values.quantity,
+        });
+      }
+
+      const { error } = await supabase.from("treatments").insert(treatmentData);
 
       if (error) throw error;
       
@@ -133,6 +145,9 @@ export default function TreatmentLog() {
       setIsSubmitting(false);
     }
   };
+
+  // Watch for changes in the isClientOwnedPoles field
+  const isClientOwnedPoles = form.watch("isClientOwnedPoles");
 
   return (
     <>
@@ -229,6 +244,28 @@ export default function TreatmentLog() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="isClientOwnedPoles"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Client-Owned Poles</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Toggle if these poles are owned by the client and won't affect your stock.
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <FormField
@@ -360,49 +397,51 @@ export default function TreatmentLog() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="sortedStockId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Stock Category</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select stock" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {sortedStock?.map((stock) => (
-                                <SelectItem key={stock.id} value={stock.id}>
-                                  {stock.category} - {stock.size} ({stock.quantity} available)
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {!isClientOwnedPoles && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="sortedStockId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Stock Category</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select stock" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {sortedStock?.map((stock) => (
+                                  <SelectItem key={stock.id} value={stock.id}>
+                                    {stock.category} - {stock.size} ({stock.quantity} available)
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="quantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Quantity to Use</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="quantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Quantity to Use</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
                   <FormField
                     control={form.control}
