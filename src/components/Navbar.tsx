@@ -1,4 +1,5 @@
 
+
 import { Link } from "react-router-dom";
 
 export function Navbar() {
@@ -28,6 +29,9 @@ export function Navbar() {
               </Link>
               <Link to="/dashboards/treatment" className="text-sm hover:text-primary/80 transition-colors">
                 Treatment
+              </Link>
+              <Link to="/treatment/operations" className="text-sm hover:text-primary/80 transition-colors">
+                Treatment Ops
               </Link>
             </>
 

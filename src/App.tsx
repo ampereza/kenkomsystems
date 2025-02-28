@@ -67,6 +67,7 @@ const App = () => (
 
           {/* Treatment Routes */}
           <Route path="/treatments/clients" element={<Clients />} />
+          <Route path="/treatment/operations" element={<TreatmentDashboard />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
