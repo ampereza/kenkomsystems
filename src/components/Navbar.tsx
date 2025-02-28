@@ -1,5 +1,4 @@
 
-
 import { Link } from "react-router-dom";
 
 export function Navbar() {
@@ -32,6 +31,9 @@ export function Navbar() {
               </Link>
               <Link to="/treatment/operations" className="text-sm hover:text-primary/80 transition-colors">
                 Treatment Ops
+              </Link>
+              <Link to="/treatment/log" className="text-sm hover:text-primary/80 transition-colors">
+                Treatment Log
               </Link>
             </>
 
@@ -74,6 +76,15 @@ export function Navbar() {
               </Link>
               <Link to="/reports/employees" className="text-sm hover:text-primary/80 transition-colors">
                 Employee Report
+              </Link>
+            </>
+
+            <div className="border-l mx-2 h-6" />
+
+            {/* Treatment Links */}
+            <>
+              <Link to="/treatments/clients" className="text-sm hover:text-primary/80 transition-colors">
+                Clients
               </Link>
             </>
           </div>

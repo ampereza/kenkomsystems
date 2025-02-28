@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -105,6 +106,60 @@ const TableCaption = React.forwardRef<
 ))
 TableCaption.displayName = "TableCaption"
 
+// Enhanced components for treatment table
+const TreatmentTable = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto border rounded-md">
+    <table
+      ref={ref}
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  </div>
+))
+TreatmentTable.displayName = "TreatmentTable"
+
+const TreatmentTableHeader = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <thead 
+    ref={ref} 
+    className={cn("sticky top-0 bg-background z-10 [&_tr]:border-b", className)} 
+    {...props} 
+  />
+))
+TreatmentTableHeader.displayName = "TreatmentTableHeader"
+
+const TreatmentTableHead = React.forwardRef<
+  HTMLTableCellElement,
+  React.ThHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <th
+    ref={ref}
+    className={cn(
+      "h-10 px-2 py-1 text-center align-middle text-xs font-medium text-muted-foreground border-r last:border-r-0",
+      className
+    )}
+    {...props}
+  />
+))
+TreatmentTableHead.displayName = "TreatmentTableHead"
+
+const TreatmentTableCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <td
+    ref={ref}
+    className={cn("px-2 py-1 text-center align-middle text-xs border-r last:border-r-0", className)}
+    {...props}
+  />
+))
+TreatmentTableCell.displayName = "TreatmentTableCell"
+
 export {
   Table,
   TableHeader,
@@ -114,4 +169,8 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  TreatmentTable,
+  TreatmentTableHeader,
+  TreatmentTableHead,
+  TreatmentTableCell,
 }
