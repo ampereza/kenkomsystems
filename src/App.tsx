@@ -21,6 +21,7 @@ import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
 import Clients from "./pages/treatments/Clients";
 import TreatmentLog from "./pages/treatments/TreatmentLog";
+import ClientStock from "./pages/treatments/ClientStock";
 
 // Import Dashboards
 import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
@@ -68,6 +69,7 @@ const App = () => (
 
           {/* Treatment Routes */}
           <Route path="/treatments/clients" element={<Clients />} />
+          <Route path="/treatments/stock" element={<ClientStock />} />
           <Route path="/treatment/operations" element={<TreatmentDashboard />} />
           <Route path="/treatment/log" element={<TreatmentLog />} />
           

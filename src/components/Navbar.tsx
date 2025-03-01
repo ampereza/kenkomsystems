@@ -86,6 +86,9 @@ export function Navbar() {
               <Link to="/treatments/clients" className="text-sm hover:text-primary/80 transition-colors">
                 Clients
               </Link>
+              <Link to="/treatments/stock" className="text-sm hover:text-primary/80 transition-colors">
+                Client Stock
+              </Link>
             </>
           </div>
         </div>
