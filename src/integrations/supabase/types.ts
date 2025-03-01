@@ -9,6 +9,157 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_deliveries: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          delivery_date: string | null
+          delivery_note_number: string | null
+          id: string
+          notes: string | null
+          poles_10m: number | null
+          poles_11m: number | null
+          poles_12m: number | null
+          poles_14m: number | null
+          poles_16m: number | null
+          poles_9m: number | null
+          telecom_poles: number | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          delivery_date?: string | null
+          delivery_note_number?: string | null
+          id?: string
+          notes?: string | null
+          poles_10m?: number | null
+          poles_11m?: number | null
+          poles_12m?: number | null
+          poles_14m?: number | null
+          poles_16m?: number | null
+          poles_9m?: number | null
+          telecom_poles?: number | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          delivery_date?: string | null
+          delivery_note_number?: string | null
+          id?: string
+          notes?: string | null
+          poles_10m?: number | null
+          poles_11m?: number | null
+          poles_12m?: number | null
+          poles_14m?: number | null
+          poles_16m?: number | null
+          poles_9m?: number | null
+          telecom_poles?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_deliveries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_stock: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          delivered_10m_poles: number | null
+          delivered_11m_poles: number | null
+          delivered_12m_poles: number | null
+          delivered_14m_poles: number | null
+          delivered_16m_poles: number | null
+          delivered_9m_poles: number | null
+          delivered_telecom_poles: number | null
+          id: string
+          notes: string | null
+          treated_10m_poles: number | null
+          treated_11m_poles: number | null
+          treated_12m_poles: number | null
+          treated_14m_poles: number | null
+          treated_16m_poles: number | null
+          treated_9m_poles: number | null
+          treated_telecom_poles: number | null
+          untreated_10m_poles: number | null
+          untreated_11m_poles: number | null
+          untreated_12m_poles: number | null
+          untreated_14m_poles: number | null
+          untreated_16m_poles: number | null
+          untreated_9m_poles: number | null
+          untreated_telecom_poles: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          delivered_10m_poles?: number | null
+          delivered_11m_poles?: number | null
+          delivered_12m_poles?: number | null
+          delivered_14m_poles?: number | null
+          delivered_16m_poles?: number | null
+          delivered_9m_poles?: number | null
+          delivered_telecom_poles?: number | null
+          id?: string
+          notes?: string | null
+          treated_10m_poles?: number | null
+          treated_11m_poles?: number | null
+          treated_12m_poles?: number | null
+          treated_14m_poles?: number | null
+          treated_16m_poles?: number | null
+          treated_9m_poles?: number | null
+          treated_telecom_poles?: number | null
+          untreated_10m_poles?: number | null
+          untreated_11m_poles?: number | null
+          untreated_12m_poles?: number | null
+          untreated_14m_poles?: number | null
+          untreated_16m_poles?: number | null
+          untreated_9m_poles?: number | null
+          untreated_telecom_poles?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          delivered_10m_poles?: number | null
+          delivered_11m_poles?: number | null
+          delivered_12m_poles?: number | null
+          delivered_14m_poles?: number | null
+          delivered_16m_poles?: number | null
+          delivered_9m_poles?: number | null
+          delivered_telecom_poles?: number | null
+          id?: string
+          notes?: string | null
+          treated_10m_poles?: number | null
+          treated_11m_poles?: number | null
+          treated_12m_poles?: number | null
+          treated_14m_poles?: number | null
+          treated_16m_poles?: number | null
+          treated_9m_poles?: number | null
+          treated_telecom_poles?: number | null
+          untreated_10m_poles?: number | null
+          untreated_11m_poles?: number | null
+          untreated_12m_poles?: number | null
+          untreated_14m_poles?: number | null
+          untreated_16m_poles?: number | null
+          untreated_9m_poles?: number | null
+          untreated_telecom_poles?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_stock_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -640,6 +791,35 @@ export type Database = {
           account_name: string | null
           account_type: string | null
           balance: number | null
+        }
+        Relationships: []
+      }
+      client_stock_summary: {
+        Row: {
+          client_name: string | null
+          delivered_10m_poles: number | null
+          delivered_11m_poles: number | null
+          delivered_12m_poles: number | null
+          delivered_14m_poles: number | null
+          delivered_16m_poles: number | null
+          delivered_9m_poles: number | null
+          delivered_telecom_poles: number | null
+          id: string | null
+          treated_10m_poles: number | null
+          treated_11m_poles: number | null
+          treated_12m_poles: number | null
+          treated_14m_poles: number | null
+          treated_16m_poles: number | null
+          treated_9m_poles: number | null
+          treated_telecom_poles: number | null
+          untreated_10m_poles: number | null
+          untreated_11m_poles: number | null
+          untreated_12m_poles: number | null
+          untreated_14m_poles: number | null
+          untreated_16m_poles: number | null
+          untreated_9m_poles: number | null
+          untreated_telecom_poles: number | null
+          updated_at: string | null
         }
         Relationships: []
       }
