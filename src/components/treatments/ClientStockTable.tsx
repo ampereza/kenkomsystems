@@ -16,6 +16,7 @@ import {
   ArrowUpDown, 
   Edit, 
   Package, 
+  Search,
   Truck 
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +27,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface ClientStockTableProps {
   onEdit?: (clientId: string) => void;
@@ -39,6 +42,8 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
   const [sortBy, setSortBy] = useState<string>("client_name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filterPoleType, setFilterPoleType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
   const fetchClientStock = async () => {
     setLoading(true);
@@ -65,7 +70,11 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
 
   useEffect(() => {
     fetchClientStock();
-  }, []);
+  }, [refreshTrigger]);
+
+  const handleRefresh = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -76,19 +85,26 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
     }
   };
 
-  const sortedStock = [...clientStock].sort((a, b) => {
-    let valueA = a[sortBy];
-    let valueB = b[sortBy];
+  const sortedAndFilteredStock = [...clientStock]
+    // Apply search filter
+    .filter(stock => 
+      searchQuery === "" || 
+      stock.client_name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    // Apply sort
+    .sort((a, b) => {
+      let valueA = a[sortBy];
+      let valueB = b[sortBy];
 
-    if (typeof valueA === "string") {
-      valueA = valueA.toLowerCase();
-      valueB = valueB.toLowerCase();
-    }
+      if (typeof valueA === "string") {
+        valueA = valueA.toLowerCase();
+        valueB = valueB.toLowerCase();
+      }
 
-    if (valueA < valueB) return sortOrder === "asc" ? -1 : 1;
-    if (valueA > valueB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
+      if (valueA < valueB) return sortOrder === "asc" ? -1 : 1;
+      if (valueA > valueB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
 
   const getTotalByCategory = (stock: any, category: string) => {
     const categories = [
@@ -104,6 +120,13 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
     return categories.reduce((total, poleType) => {
       return total + (stock[`${category}_${poleType}`] || 0);
     }, 0);
+  };
+
+  const getFilteredValue = (stock: any, category: string) => {
+    if (filterPoleType === "all") {
+      return getTotalByCategory(stock, category);
+    }
+    return stock[`${category}_${filterPoleType}_poles`] || 0;
   };
 
   const formatNumber = (num?: number) => {
@@ -133,8 +156,20 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Client Stock</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Package className="h-5 w-5" /> Client Stock
+        </CardTitle>
         <div className="flex items-center space-x-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search clients..."
+              className="w-[200px] pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <Select value={filterPoleType} onValueChange={setFilterPoleType}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by pole type" />
@@ -150,6 +185,9 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
               <SelectItem value="16m">16m Poles</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            Refresh
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -173,34 +211,26 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedStock.length > 0 ? (
-                sortedStock.map((stock) => {
-                  // Filter logic for pole types
-                  if (
-                    filterPoleType !== "all" &&
-                    stock[`untreated_${filterPoleType}_poles`] === 0 &&
-                    stock[`treated_${filterPoleType}_poles`] === 0 &&
-                    stock[`delivered_${filterPoleType}_poles`] === 0
-                  ) {
+              {sortedAndFilteredStock.length > 0 ? (
+                sortedAndFilteredStock.map((stock) => {
+                  const untreatedTotal = getFilteredValue(stock, "untreated");
+                  const treatedTotal = getFilteredValue(stock, "treated");
+                  const deliveredTotal = getFilteredValue(stock, "delivered");
+                  
+                  // Skip rows with no stock if we're filtering
+                  if (filterPoleType !== "all" && untreatedTotal === 0 && treatedTotal === 0 && deliveredTotal === 0) {
                     return null;
                   }
-
-                  const untreatedTotal = filterPoleType === "all" 
-                    ? getTotalByCategory(stock, "untreated") 
-                    : stock[`untreated_${filterPoleType}_poles`] || 0;
-                    
-                  const treatedTotal = filterPoleType === "all" 
-                    ? getTotalByCategory(stock, "treated") 
-                    : stock[`treated_${filterPoleType}_poles`] || 0;
-                    
-                  const deliveredTotal = filterPoleType === "all" 
-                    ? getTotalByCategory(stock, "delivered") 
-                    : stock[`delivered_${filterPoleType}_poles`] || 0;
 
                   return (
                     <TableRow key={stock.id}>
                       <TableCell className="font-medium">
                         {stock.client_name}
+                        {filterPoleType !== "all" && (
+                          <Badge variant="outline" className="ml-2">
+                            {filterPoleType} poles
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         {formatNumber(untreatedTotal)}
@@ -241,7 +271,11 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-4">
-                    No client stock found. Add stock to clients to see it here.
+                    {searchQuery ? (
+                      <>No clients found matching "{searchQuery}". Try a different search.</>
+                    ) : (
+                      <>No client stock found. Add stock to clients to see it here.</>
+                    )}
                   </TableCell>
                 </TableRow>
               )}

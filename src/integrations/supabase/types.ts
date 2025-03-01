@@ -671,6 +671,7 @@ export type Database = {
           facing_poles: number | null
           high_voltage_poles: number | null
           id: string
+          is_client_owned: boolean | null
           kegs_added: number | null
           kegs_remaining: number | null
           notes: string | null
@@ -692,6 +693,7 @@ export type Database = {
           facing_poles?: number | null
           high_voltage_poles?: number | null
           id?: string
+          is_client_owned?: boolean | null
           kegs_added?: number | null
           kegs_remaining?: number | null
           notes?: string | null
@@ -713,6 +715,7 @@ export type Database = {
           facing_poles?: number | null
           high_voltage_poles?: number | null
           id?: string
+          is_client_owned?: boolean | null
           kegs_added?: number | null
           kegs_remaining?: number | null
           notes?: string | null
