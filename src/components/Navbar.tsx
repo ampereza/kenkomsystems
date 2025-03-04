@@ -11,7 +11,7 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 overflow-x-auto">
             <Link to="/" className="text-xl font-bold whitespace-nowrap">
-              Stock Management
+              KDL MANAGEMENT SYSTEM
             </Link>
             
             {/* Always show these main dashboard links on the index page */}
