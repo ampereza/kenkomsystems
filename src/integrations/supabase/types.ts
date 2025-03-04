@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      budget_categories: {
+        Row: {
+          budget: number
+          category: string
+          color: string
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number
+          category: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number
+          category?: string
+          color?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      budget_expenses: {
+        Row: {
+          amount: number
+          category_id: string
+          created_at: string | null
+          date: string | null
+          description: string | null
+          id: string
+        }
+        Insert: {
+          amount: number
+          category_id: string
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string
+          created_at?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "budget_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_deliveries: {
         Row: {
           client_id: string
@@ -220,6 +285,36 @@ export type Database = {
           id?: string
           name?: string
           position?: string
+        }
+        Relationships: []
+      }
+      financial_goals: {
+        Row: {
+          created_at: string | null
+          current_amount: number
+          deadline: string | null
+          id: string
+          name: string
+          target_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          name: string
+          target_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          name?: string
+          target_amount?: number
+          updated_at?: string | null
         }
         Relationships: []
       }
