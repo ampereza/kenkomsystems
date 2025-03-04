@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FinancialMetrics } from "@/components/reports/FinancialMetrics";
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
 import { CircleDollarSign, ArrowUpDown, Receipt, Building2, Users, FileText, Briefcase, FileBarChart, CreditCard } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
+import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Link } from "react-router-dom";
 
 export default function FinancialDashboard() {
@@ -37,7 +37,7 @@ export default function FinancialDashboard() {
 
   return (
     <>
-      <Navbar />
+      <FinancialNavbar />
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Financial Management Dashboard</h1>
 

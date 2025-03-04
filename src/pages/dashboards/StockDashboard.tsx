@@ -1,9 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StockMetricCard } from "@/components/stock/StockMetricCard";
 import { Package, Warehouse, AlertTriangle, Truck } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
+import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 export default function StockDashboard() {
   const { data: stockSummary } = useQuery({
@@ -21,7 +22,7 @@ export default function StockDashboard() {
 
   return (
     <>
-      <Navbar />
+      <StockNavbar />
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Stock Management Dashboard</h1>
 

@@ -20,15 +20,16 @@ import SupplierReport from "./pages/reports/SupplierReport";
 import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
 import Clients from "./pages/treatments/Clients";
-import TreatmentLog from "./pages/treatments/TreatmentLog";
+import TreatmentLogWrapper from "./pages/treatments/TreatmentLogWrapper";
 import ClientStock from "./pages/treatments/ClientStock";
 
 // Import Dashboards
 import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
 import StockDashboard from "./pages/dashboards/StockDashboard";
-import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
+import TreatmentDashboardWrapper from "./pages/dashboards/TreatmentDashboardWrapper";
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
 import MDDashboard from "./pages/dashboards/MDDashboard";
+import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +45,7 @@ const App = () => (
           {/* Dashboard Routes */}
           <Route path="/dashboards/financial" element={<FinancialDashboard />} />
           <Route path="/dashboards/stock" element={<StockDashboard />} />
-          <Route path="/dashboards/treatment" element={<TreatmentDashboard />} />
+          <Route path="/dashboards/treatment" element={<TreatmentDashboardWrapper />} />
           <Route path="/dashboards/general-manager" element={<GeneralManagerDashboard />} />
           <Route path="/dashboards/md" element={<MDDashboard />} />
           
@@ -71,7 +72,7 @@ const App = () => (
           <Route path="/treatments/clients" element={<Clients />} />
           <Route path="/treatments/stock" element={<ClientStock />} />
           <Route path="/treatment/operations" element={<TreatmentDashboard />} />
-          <Route path="/treatment/log" element={<TreatmentLog />} />
+          <Route path="/treatment/log" element={<TreatmentLogWrapper />} />
           
           <Route path="*" element={<NotFound />} />
         </Routes>
