@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 interface Supplier {
   id: string;
@@ -84,79 +84,82 @@ const ReceiveStock = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Receive Unsorted Stock</h1>
-        <p className="mt-2 text-muted-foreground">
-          Record newly received unsorted poles
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="max-w-md space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="quantity">
-            Quantity*
-          </label>
-          <Input
-            id="quantity"
-            type="number"
-            required
-            min="1"
-            value={formData.quantity}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Supplier</label>
-          <Select
-            value={formData.supplier_id}
-            onValueChange={(value) =>
-              setFormData({ ...formData, supplier_id: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select supplier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {suppliers.map((supplier) => (
-                  <SelectItem key={supplier.id} value={supplier.id}>
-                    {supplier.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-muted-foreground mt-1">
-            <Button
-              variant="link"
-              className="h-auto p-0"
-              onClick={() => navigate("/stock/suppliers")}
-            >
-              Manage suppliers
-            </Button>
+    <>
+      <StockNavbar />
+      <div className="container mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Receive Unsorted Stock</h1>
+          <p className="mt-2 text-muted-foreground">
+            Record newly received unsorted poles
           </p>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="notes">
-            Notes
-          </label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="max-w-md space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="quantity">
+              Quantity*
+            </label>
+            <Input
+              id="quantity"
+              type="number"
+              required
+              min="1"
+              value={formData.quantity}
+              onChange={(e) =>
+                setFormData({ ...formData, quantity: e.target.value })
+              }
+            />
+          </div>
 
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Receiving..." : "Receive Stock"}
-        </Button>
-      </form>
-    </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Supplier</label>
+            <Select
+              value={formData.supplier_id}
+              onValueChange={(value) =>
+                setFormData({ ...formData, supplier_id: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select supplier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-1">
+              <Button
+                variant="link"
+                className="h-auto p-0"
+                onClick={() => navigate("/stock/suppliers")}
+              >
+                Manage suppliers
+              </Button>
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="notes">
+              Notes
+            </label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Receiving..." : "Receive Stock"}
+          </Button>
+        </form>
+      </div>
+    </>
   );
 };
 

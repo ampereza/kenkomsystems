@@ -1,5 +1,5 @@
 
-import { Navbar } from "@/components/Navbar";
+import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +32,7 @@ export default function Employees() {
 
   return (
     <div>
-      <Navbar />
+      <FinancialNavbar />
       <main className="container py-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Employees</h1>

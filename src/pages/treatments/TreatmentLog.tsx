@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { Navbar } from "@/components/Navbar";
 import { TreatmentLogTable } from "@/components/treatments/TreatmentLogTable";
 import { TreatmentLogForm } from "@/components/treatments/TreatmentLogForm";
 import { TreatmentLogHeader } from "@/components/treatments/TreatmentLogHeader";
@@ -22,27 +21,24 @@ export default function TreatmentLog() {
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="container mx-auto py-6">
-        <TreatmentLogHeader 
-          onAddNewClick={handleAddNewClick}
-          showForm={showForm}
+    <div className="container mx-auto py-6">
+      <TreatmentLogHeader 
+        onAddNewClick={handleAddNewClick}
+        showForm={showForm}
+      />
+
+      {showForm && (
+        <TreatmentLogForm 
+          onSubmitSuccess={handleFormSuccess} 
+          onCancel={handleFormCancel}
         />
+      )}
 
-        {showForm && (
-          <TreatmentLogForm 
-            onSubmitSuccess={handleFormSuccess} 
-            onCancel={handleFormCancel}
-          />
-        )}
-
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <TreatmentLogTable />
-          </CardContent>
-        </Card>
-      </div>
-    </>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <TreatmentLogTable />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

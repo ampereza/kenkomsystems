@@ -10,6 +10,7 @@ import { FinancialTrends } from "@/components/reports/FinancialTrends";
 import { DetailedTransactions } from "@/components/reports/DetailedTransactions";
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
 import type { DetailedIncomeStatement } from "@/components/reports/income-statement/types";
+import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 
 export default function FinancialReport() {
   const [startDate, setStartDate] = React.useState(startOfMonth(new Date()));
@@ -105,37 +106,40 @@ export default function FinancialReport() {
   };
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Financial Report</h1>
-      
-      <DateRangeSelector
-        startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onRangeSelect={handleRangeSelect}
-      />
+    <>
+      <FinancialNavbar />
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">Financial Report</h1>
+        
+        <DateRangeSelector
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onRangeSelect={handleRangeSelect}
+        />
 
-      {isLoading ? (
-        <div className="text-center py-8">Loading financial data...</div>
-      ) : (
-        <div className="space-y-6">
-          <FinancialMetrics totals={totals} />
-          
-          <IncomeStatement />
-          
-          <FinancialStatements
-            balanceSheet={balanceSheet}
-            incomeStatement={incomeStatement}
-            onExportBalanceSheet={handleExportBalanceSheet}
-            onExportIncomeStatement={handleExportIncomeStatement}
-          />
-          
-          <FinancialTrends chartData={chartData} />
-          
-          <DetailedTransactions transactions={financialData} />
-        </div>
-      )}
-    </div>
+        {isLoading ? (
+          <div className="text-center py-8">Loading financial data...</div>
+        ) : (
+          <div className="space-y-6">
+            <FinancialMetrics totals={totals} />
+            
+            <IncomeStatement />
+            
+            <FinancialStatements
+              balanceSheet={balanceSheet}
+              incomeStatement={incomeStatement}
+              onExportBalanceSheet={handleExportBalanceSheet}
+              onExportIncomeStatement={handleExportIncomeStatement}
+            />
+            
+            <FinancialTrends chartData={chartData} />
+            
+            <DetailedTransactions transactions={financialData} />
+          </div>
+        )}
+      </div>
+    </>
   );
 }

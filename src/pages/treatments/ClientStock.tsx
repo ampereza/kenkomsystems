@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Navbar } from "@/components/Navbar";
+import { TreatmentNavbar } from "@/components/navigation/TreatmentNavbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClientStockForm } from "@/components/treatments/ClientStockForm";
@@ -28,7 +28,7 @@ export default function ClientStock() {
 
   return (
     <>
-      <Navbar />
+      <TreatmentNavbar />
       <div className="container mx-auto py-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Client Stock Management</h1>

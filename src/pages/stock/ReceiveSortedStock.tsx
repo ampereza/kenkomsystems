@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 interface FormData {
   sorted_stock_id: string;
@@ -73,7 +73,6 @@ const ReceiveSortedStock = () => {
         description: "Stock received successfully",
       });
 
-      // Reset form
       setFormData({
         sorted_stock_id: "",
         quantity: "",
@@ -91,71 +90,74 @@ const ReceiveSortedStock = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Receive Sorted Stock</h1>
-        <p className="mt-2 text-muted-foreground">
-          Record received sorted poles
-        </p>
+    <>
+      <StockNavbar />
+      <div className="container mx-auto p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Receive Sorted Stock</h1>
+          <p className="mt-2 text-muted-foreground">
+            Record received sorted poles
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="max-w-md space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Sorted Stock*</label>
+            <Select
+              value={formData.sorted_stock_id}
+              onValueChange={(value) =>
+                setFormData({ ...formData, sorted_stock_id: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select sorted stock" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {sortedStocks?.map((stock) => (
+                    <SelectItem key={stock.id} value={stock.id}>
+                      {stock.quantity} {stock.category} poles - {stock.size || "N/A"}{" "}
+                      ({new Date(stock.sorting_date).toLocaleDateString()})
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="quantity">
+              Quantity*
+            </label>
+            <Input
+              id="quantity"
+              type="number"
+              required
+              min="1"
+              value={formData.quantity}
+              onChange={(e) =>
+                setFormData({ ...formData, quantity: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="notes">
+              Notes
+            </label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Processing..." : "Receive Stock"}
+          </Button>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} className="max-w-md space-y-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Sorted Stock*</label>
-          <Select
-            value={formData.sorted_stock_id}
-            onValueChange={(value) =>
-              setFormData({ ...formData, sorted_stock_id: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select sorted stock" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {sortedStocks?.map((stock) => (
-                  <SelectItem key={stock.id} value={stock.id}>
-                    {stock.quantity} {stock.category} poles - {stock.size || "N/A"}{" "}
-                    ({new Date(stock.sorting_date).toLocaleDateString()})
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="quantity">
-            Quantity*
-          </label>
-          <Input
-            id="quantity"
-            type="number"
-            required
-            min="1"
-            value={formData.quantity}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: e.target.value })
-            }
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="notes">
-            Notes
-          </label>
-          <Textarea
-            id="notes"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          />
-        </div>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Processing..." : "Receive Stock"}
-        </Button>
-      </form>
-    </div>
+    </>
   );
 };
 

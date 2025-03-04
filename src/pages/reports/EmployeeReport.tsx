@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 
 export default function EmployeeReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
@@ -66,69 +66,72 @@ export default function EmployeeReport() {
   ) || 0;
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Employee Payments Report</h1>
-      
-      <DateRangeSelector
-        startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onRangeSelect={handleRangeSelect}
-      />
+    <>
+      <FinancialNavbar />
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">Employee Payments Report</h1>
+        
+        <DateRangeSelector
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onRangeSelect={handleRangeSelect}
+        />
 
-      {isLoading ? (
-        <div className="text-center py-8">Loading employee data...</div>
-      ) : (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Payments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${totalPayments.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
+        {isLoading ? (
+          <div className="text-center py-8">Loading employee data...</div>
+        ) : (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Total Payments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${totalPayments.toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Payment Date</TableHead>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Period</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employeePayments?.map((payment, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        {new Date(payment.payment_date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>{payment.employee_name}</TableCell>
-                      <TableCell>{payment.position}</TableCell>
-                      <TableCell>
-                        {new Date(payment.payment_period_start).toLocaleDateString()} - {new Date(payment.payment_period_end).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        ${Number(payment.amount).toFixed(2)}
-                      </TableCell>
+            <Card>
+              <CardHeader>
+                <CardTitle>Payment Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Payment Date</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead>Position</TableHead>
+                      <TableHead>Period</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {employeePayments?.map((payment, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          {new Date(payment.payment_date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{payment.employee_name}</TableCell>
+                        <TableCell>{payment.position}</TableCell>
+                        <TableCell>
+                          {new Date(payment.payment_period_start).toLocaleDateString()} - {new Date(payment.payment_period_end).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          ${Number(payment.amount).toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 export default function StockReport() {
   const [startDate, setStartDate] = useState(startOfMonth(new Date()));
@@ -81,79 +81,82 @@ export default function StockReport() {
   }, []);
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Stock Movement Report</h1>
-      
-      <DateRangeSelector
-        startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onRangeSelect={handleRangeSelect}
-      />
+    <>
+      <StockNavbar />
+      <div className="container mx-auto py-6">
+        <h1 className="text-3xl font-bold mb-6">Stock Movement Report</h1>
+        
+        <DateRangeSelector
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onRangeSelect={handleRangeSelect}
+        />
 
-      {isLoading ? (
-        <div className="text-center py-8">Loading stock data...</div>
-      ) : (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Stock Movement Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="fencing" fill="#8884d8" name="Fencing" />
-                    <Bar dataKey="telecom" fill="#82ca9d" name="Telecom" />
-                    <Bar dataKey="distribution" fill="#ffc658" name="Distribution" />
-                    <Bar dataKey="high_voltage" fill="#ff7300" name="High Voltage" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        {isLoading ? (
+          <div className="text-center py-8">Loading stock data...</div>
+        ) : (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Stock Movement Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="fencing" fill="#8884d8" name="Fencing" />
+                      <Bar dataKey="telecom" fill="#82ca9d" name="Telecom" />
+                      <Bar dataKey="distribution" fill="#ffc658" name="Distribution" />
+                      <Bar dataKey="high_voltage" fill="#ff7300" name="High Voltage" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Stock Movements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Size</TableHead>
-                    <TableHead>Quantity</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stockData?.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        {new Date(item.date).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {item.category.replace(/_/g, " ")}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {item.size}
-                      </TableCell>
-                      <TableCell>{item.total_quantity}</TableCell>
+            <Card>
+              <CardHeader>
+                <CardTitle>Detailed Stock Movements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead>Quantity</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
+                  </TableHeader>
+                  <TableBody>
+                    {stockData?.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          {new Date(item.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {item.category.replace(/_/g, " ")}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {item.size}
+                        </TableCell>
+                        <TableCell>{item.total_quantity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
