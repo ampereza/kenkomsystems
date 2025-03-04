@@ -1,112 +1,299 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { StockMetricCard } from "@/components/stock/StockMetricCard";
-import { QuickActions } from "@/components/stock/QuickActions";
 import { Navbar } from "@/components/Navbar";
-import { toast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DollarSign, Users, Package, TestTube2, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
-  const { data: unsortedStock } = useQuery({
-    queryKey: ["unsorted-stock"],
+  // Stock statistics
+  const { data: stockStats } = useQuery({
+    queryKey: ["stock-stats"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch unsorted stock
+      const { data: unsortedData, error: unsortedError } = await supabase
         .from("unsorted_stock")
         .select("quantity")
         .not("quantity", "eq", 0);
       
-      if (error) {
-        console.error("Error fetching unsorted stock:", error);
-        throw error;
+      if (unsortedError) {
+        console.error("Error fetching unsorted stock:", unsortedError);
+        throw unsortedError;
       }
-      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
-    },
-    meta: {
-      errorMessage: "Failed to fetch unsorted stock data"
-    }
-  });
-
-  const { data: sortedStock } = useQuery({
-    queryKey: ["sorted-stock"],
-    queryFn: async () => {
-      const { data, error } = await supabase
+      
+      // Fetch sorted stock
+      const { data: sortedData, error: sortedError } = await supabase
         .from("sorted_stock")
         .select("quantity")
         .not("quantity", "eq", 0)
         .neq("category", "rejected");
       
-      if (error) {
-        console.error("Error fetching sorted stock:", error);
-        throw error;
+      if (sortedError) {
+        console.error("Error fetching sorted stock:", sortedError);
+        throw sortedError;
       }
-      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
-    },
-    meta: {
-      errorMessage: "Failed to fetch sorted stock data"
-    }
-  });
-
-  const { data: rejects } = useQuery({
-    queryKey: ["rejects"],
-    queryFn: async () => {
-      const { data, error } = await supabase
+      
+      // Fetch rejected stock
+      const { data: rejectedData, error: rejectedError } = await supabase
         .from("sorted_stock")
         .select("quantity")
         .eq("category", "rejected")
         .not("quantity", "eq", 0);
       
-      if (error) {
-        console.error("Error fetching rejects:", error);
-        throw error;
+      if (rejectedError) {
+        console.error("Error fetching rejected stock:", rejectedError);
+        throw rejectedError;
       }
-      return data?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0;
+
+      return {
+        unsorted: unsortedData?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0,
+        sorted: sortedData?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0,
+        rejected: rejectedData?.reduce((acc, curr) => acc + (curr.quantity || 0), 0) || 0
+      };
     },
     meta: {
-      errorMessage: "Failed to fetch rejects data"
+      errorMessage: "Failed to fetch stock statistics"
     }
   });
 
-  const categories = [
-    {
-      title: "Unsorted Stock",
-      value: unsortedStock || 0,
-      change: { value: 0, type: "increase" as const },
+  // Financial statistics
+  const { data: financialStats } = useQuery({
+    queryKey: ["financial-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("type, amount")
+        .order("transaction_date", { ascending: false })
+        .limit(100);
+      
+      if (error) {
+        console.error("Error fetching financial stats:", error);
+        throw error;
+      }
+
+      const income = data
+        ?.filter(t => t.type === 'sale' || t.type === 'treatment_income')
+        .reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+      
+      const expenses = data
+        ?.filter(t => t.type === 'expense' || t.type === 'purchase' || t.type === 'salary')
+        .reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+
+      return {
+        income,
+        expenses,
+        net: income - expenses
+      };
     },
-    {
-      title: "Sorted Stock",
-      value: sortedStock || 0,
-      change: { value: 0, type: "increase" as const },
+    meta: {
+      errorMessage: "Failed to fetch financial statistics"
+    }
+  });
+
+  // Treatment statistics
+  const { data: treatmentStats } = useQuery({
+    queryKey: ["treatment-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("treatments")
+        .select("status, total_poles")
+        .order("treatment_date", { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching treatment stats:", error);
+        throw error;
+      }
+
+      const pending = data
+        ?.filter(t => t.status === 'pending')
+        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
+      
+      const inProgress = data
+        ?.filter(t => t.status === 'in_progress')
+        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
+      
+      const completed = data
+        ?.filter(t => t.status === 'completed')
+        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
+
+      return {
+        pending,
+        inProgress,
+        completed,
+        total: pending + inProgress + completed
+      };
     },
-    {
-      title: "Rejects",
-      value: rejects || 0,
-      change: { value: 0, type: "decrease" as const },
+    meta: {
+      errorMessage: "Failed to fetch treatment statistics"
+    }
+  });
+
+  // Client statistics
+  const { data: clientStats } = useQuery({
+    queryKey: ["client-stats"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("clients")
+        .select("*", { count: 'exact', head: true });
+      
+      if (error) {
+        console.error("Error fetching client stats:", error);
+        throw error;
+      }
+
+      return {
+        total: count || 0
+      };
     },
-  ];
+    meta: {
+      errorMessage: "Failed to fetch client statistics"
+    }
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex-1 container mx-auto p-6 animate-fade-in">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">Stock Overview</h1>
+          <h1 className="text-3xl font-bold">System Overview</h1>
           <p className="mt-2 text-muted-foreground">
-            Monitor and manage your pole inventory efficiently
+            Key performance indicators across all departments
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => (
-            <StockMetricCard
-              key={category.title}
-              title={category.title}
-              value={category.value}
-              change={category.change}
-            />
-          ))}
-        </div>
+        <div className="grid gap-6">
+          {/* Financial Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Financial Overview</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Income</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${financialStats?.income.toFixed(2) || '0.00'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Recent transactions</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Expenses</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${financialStats?.expenses.toFixed(2) || '0.00'}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Recent transactions</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Net Income</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${financialStats?.net.toFixed(2) || '0.00'}</div>
+                  <div className={cn(
+                    "flex items-center text-xs mt-1",
+                    (financialStats?.net || 0) >= 0 ? "text-green-500" : "text-red-500"
+                  )}>
+                    {(financialStats?.net || 0) >= 0 ? (
+                      <ArrowUpIcon className="h-3 w-3 mr-1" />
+                    ) : (
+                      <ArrowDownIcon className="h-3 w-3 mr-1" />
+                    )}
+                    Recent performance
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
-        <QuickActions />
+          {/* Stock Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Stock Management</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Unsorted Stock</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stockStats?.unsorted || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Poles awaiting sorting</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Sorted Stock</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stockStats?.sorted || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Poles ready for treatment</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Rejected Poles</CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stockStats?.rejected || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Poles marked as rejected</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Treatment Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Treatment Operations</h2>
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Treatments</CardTitle>
+                  <TestTube2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{treatmentStats?.total || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Poles in treatment system</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                  <TestTube2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{treatmentStats?.pending || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Awaiting treatment</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+                  <TestTube2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{treatmentStats?.inProgress || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Currently being treated</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{clientStats?.total || 0}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Registered clients</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
