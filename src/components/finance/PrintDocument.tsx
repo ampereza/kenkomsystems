@@ -65,9 +65,10 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
   const printRef = useRef<HTMLDivElement>(null);
   
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
     documentTitle: `${documentType}-${(document as any).id}`,
     onAfterPrint: () => setOpen(false),
+    // The content function is required by react-to-print
+    content: () => printRef.current,
   });
 
   const formatDate = (dateString: string) => {
@@ -98,7 +99,10 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
         </DialogHeader>
         
         <div className="p-4">
-          <Button onClick={handlePrint} className="mb-4">
+          <Button 
+            onClick={() => handlePrint()} 
+            className="mb-4"
+          >
             <Printer className="h-4 w-4 mr-2" /> Print Document
           </Button>
           
