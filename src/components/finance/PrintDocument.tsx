@@ -64,11 +64,12 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
   const [open, setOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   
+  // Fix the useReactToPrint hook implementation
   const handlePrint = useReactToPrint({
     documentTitle: `${documentType}-${(document as any).id}`,
     onAfterPrint: () => setOpen(false),
-    // The content function is required by react-to-print
-    content: () => printRef.current,
+    // In react-to-print v3+, the property is named 'contentRef' not 'content'
+    contentRef: printRef,
   });
 
   const formatDate = (dateString: string) => {
