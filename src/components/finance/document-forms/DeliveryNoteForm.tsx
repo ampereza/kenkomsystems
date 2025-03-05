@@ -6,6 +6,7 @@ import { DateField } from "../form-fields/DateField";
 import { NumberField } from "../form-fields/NumberField";
 import { TextareaField } from "../form-fields/TextareaField";
 import { SelectClientField } from "../form-fields/SelectClientField";
+import { supabase } from "@/integrations/supabase/client";
 
 export const deliveryNoteSchema = z.object({
   note_number: z.string().min(1, { message: "Note number is required" }),
