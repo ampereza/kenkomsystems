@@ -11,6 +11,7 @@ interface DeliveryNote {
   note_number: string;
   date: string;
   client_name: string;
+  client_id?: string;
   batch_number?: string;
   vehicle_number?: string;
   transporter?: string;
@@ -25,6 +26,7 @@ interface PaymentVoucher {
   voucher_number: string;
   date: string;
   paid_to: string;
+  supplier_id?: string;
   total_amount: number;
   amount_in_words?: string;
   payment_approved_by?: string;
@@ -36,6 +38,7 @@ interface ExpenseAuthorization {
   authorization_number: string;
   date: string;
   received_from?: string;
+  supplier_id?: string;
   sum_of_shillings: number;
   being_payment_of?: string;
   cash_cheque_no?: string;
@@ -47,6 +50,7 @@ interface Receipt {
   receipt_number: string;
   date: string;
   received_from?: string;
+  client_id?: string;
   amount: number;
   payment_method?: string;
   for_payment?: string;
@@ -187,11 +191,11 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
                   <div>
                     <p><strong>Voucher #:</strong> {(document as PaymentVoucher).voucher_number}</p>
                     <p><strong>Date:</strong> {formatDate((document as PaymentVoucher).date)}</p>
+                    <p><strong>Supplier:</strong> {(document as PaymentVoucher).paid_to}</p>
                   </div>
                 </div>
                 
                 <div className="border-t border-b py-4">
-                  <p><strong>Paid To:</strong> {(document as PaymentVoucher).paid_to}</p>
                   <p className="mt-4"><strong>Amount:</strong> {formatCurrency((document as PaymentVoucher).total_amount)}</p>
                   {(document as PaymentVoucher).amount_in_words && (
                     <p className="mt-2"><strong>Amount in Words:</strong> {(document as PaymentVoucher).amount_in_words}</p>
@@ -226,13 +230,13 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
                   <div>
                     <p><strong>Authorization #:</strong> {(document as ExpenseAuthorization).authorization_number}</p>
                     <p><strong>Date:</strong> {formatDate((document as ExpenseAuthorization).date)}</p>
+                    {(document as ExpenseAuthorization).received_from && (
+                      <p><strong>Supplier:</strong> {(document as ExpenseAuthorization).received_from}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="border-t border-b py-4">
-                  {(document as ExpenseAuthorization).received_from && (
-                    <p><strong>Received From:</strong> {(document as ExpenseAuthorization).received_from}</p>
-                  )}
                   <p className="mt-4"><strong>Sum of Shillings:</strong> {formatCurrency((document as ExpenseAuthorization).sum_of_shillings)}</p>
                   {(document as ExpenseAuthorization).being_payment_of && (
                     <p className="mt-2"><strong>Being Payment Of:</strong> {(document as ExpenseAuthorization).being_payment_of}</p>
@@ -264,13 +268,13 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
                   <div>
                     <p><strong>Receipt #:</strong> {(document as Receipt).receipt_number}</p>
                     <p><strong>Date:</strong> {formatDate((document as Receipt).date)}</p>
+                    {(document as Receipt).received_from && (
+                      <p><strong>Client:</strong> {(document as Receipt).received_from}</p>
+                    )}
                   </div>
                 </div>
                 
                 <div className="border-t border-b py-4">
-                  {(document as Receipt).received_from && (
-                    <p><strong>Received From:</strong> {(document as Receipt).received_from}</p>
-                  )}
                   <p className="mt-4"><strong>Amount:</strong> {formatCurrency((document as Receipt).amount)}</p>
                   {(document as Receipt).payment_method && (
                     <p className="mt-2"><strong>Payment Method:</strong> {(document as Receipt).payment_method}</p>
@@ -293,3 +297,4 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
     </Dialog>
   );
 }
+

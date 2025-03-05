@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +24,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 // Form schemas for different document types
@@ -31,6 +38,7 @@ const deliveryNoteSchema = z.object({
   note_number: z.string().min(1, { message: "Note number is required" }),
   date: z.date(),
   client_name: z.string().min(1, { message: "Client name is required" }),
+  client_id: z.string().optional(),
   batch_number: z.string().optional(),
   vehicle_number: z.string().optional(),
   transporter: z.string().optional(),
@@ -43,6 +51,7 @@ const paymentVoucherSchema = z.object({
   voucher_number: z.string().min(1, { message: "Voucher number is required" }),
   date: z.date(),
   paid_to: z.string().min(1, { message: "Paid to is required" }),
+  supplier_id: z.string().optional(),
   amount_in_words: z.string().optional(),
   payment_approved_by: z.string().optional(),
   received_by: z.string().optional(),
@@ -53,6 +62,7 @@ const expenseAuthSchema = z.object({
   authorization_number: z.string().min(1, { message: "Authorization number is required" }),
   date: z.date(),
   received_from: z.string().optional(),
+  supplier_id: z.string().optional(),
   being_payment_of: z.string().optional(),
   cash_cheque_no: z.string().optional(),
   sum_of_shillings: z.coerce.number().min(0),
@@ -62,6 +72,7 @@ const receiptSchema = z.object({
   receipt_number: z.string().min(1, { message: "Receipt number is required" }),
   date: z.date(),
   received_from: z.string().optional(),
+  client_id: z.string().optional(),
   payment_method: z.string().optional(),
   for_payment: z.string().optional(),
   amount: z.coerce.number().min(0),
@@ -74,9 +85,21 @@ interface DocumentFormProps {
   onSuccess: () => void;
 }
 
+interface Client {
+  id: string;
+  name: string;
+}
+
+interface Supplier {
+  id: string;
+  name: string;
+}
+
 export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   // Use the correct schema based on document type
   let schema;
@@ -111,6 +134,67 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       date: new Date(),
     },
   });
+
+  // Fetch clients and suppliers
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch clients if needed for current document type
+      if (documentType === "delivery-notes" || documentType === "receipts") {
+        const { data: clientsData, error: clientsError } = await supabase
+          .from("clients")
+          .select("id, name")
+          .order("name");
+        
+        if (!clientsError && clientsData) {
+          setClients(clientsData);
+        }
+      }
+      
+      // Fetch suppliers if needed for current document type
+      if (documentType === "payment-vouchers" || documentType === "expense-authorizations") {
+        const { data: suppliersData, error: suppliersError } = await supabase
+          .from("suppliers")
+          .select("id, name")
+          .order("name");
+        
+        if (!suppliersError && suppliersData) {
+          setSuppliers(suppliersData);
+        }
+      }
+    };
+    
+    fetchData();
+  }, [documentType]);
+
+  // Handle client selection
+  const handleClientChange = (clientId: string) => {
+    const selectedClient = clients.find(client => client.id === clientId);
+    
+    if (selectedClient) {
+      if (documentType === "delivery-notes") {
+        form.setValue("client_name", selectedClient.name);
+        form.setValue("client_id", selectedClient.id);
+      } else if (documentType === "receipts") {
+        form.setValue("received_from", selectedClient.name);
+        form.setValue("client_id", selectedClient.id);
+      }
+    }
+  };
+
+  // Handle supplier selection
+  const handleSupplierChange = (supplierId: string) => {
+    const selectedSupplier = suppliers.find(supplier => supplier.id === supplierId);
+    
+    if (selectedSupplier) {
+      if (documentType === "payment-vouchers") {
+        form.setValue("paid_to", selectedSupplier.name);
+        form.setValue("supplier_id", selectedSupplier.id);
+      } else if (documentType === "expense-authorizations") {
+        form.setValue("received_from", selectedSupplier.name);
+        form.setValue("supplier_id", selectedSupplier.id);
+      }
+    }
+  };
 
   // Handle form submission
   const onSubmit = async (data: z.infer<typeof schema>) => {
@@ -201,6 +285,26 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
                   </FormItem>
                 )}
               />
+              
+              <FormItem>
+                <FormLabel>Select Client*</FormLabel>
+                <Select 
+                  onValueChange={handleClientChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
               
               <FormField
                 control={form.control}
@@ -349,6 +453,26 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
                 )}
               />
               
+              <FormItem>
+                <FormLabel>Select Supplier/Contractor*</FormLabel>
+                <Select 
+                  onValueChange={handleSupplierChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a supplier" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {suppliers.map(supplier => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+              
               <FormField
                 control={form.control}
                 name="paid_to"
@@ -483,6 +607,26 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
                 )}
               />
               
+              <FormItem>
+                <FormLabel>Select Supplier/Contractor</FormLabel>
+                <Select 
+                  onValueChange={handleSupplierChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a supplier" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {suppliers.map(supplier => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+              
               <FormField
                 control={form.control}
                 name="received_from"
@@ -602,6 +746,26 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
                   </FormItem>
                 )}
               />
+              
+              <FormItem>
+                <FormLabel>Select Client</FormLabel>
+                <Select 
+                  onValueChange={handleClientChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a client" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
               
               <FormField
                 control={form.control}
