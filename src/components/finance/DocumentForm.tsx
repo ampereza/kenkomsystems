@@ -1,82 +1,18 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Printer } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
-// Form schemas for different document types
-const deliveryNoteSchema = z.object({
-  note_number: z.string().min(1, { message: "Note number is required" }),
-  date: z.date(),
-  client_name: z.string().min(1, { message: "Client name is required" }),
-  client_id: z.string().optional(),
-  batch_number: z.string().optional(),
-  vehicle_number: z.string().optional(),
-  transporter: z.string().optional(),
-  loaded_by: z.string().optional(),
-  notes: z.string().optional(),
-  total_quantity: z.coerce.number().min(0),
-});
-
-const paymentVoucherSchema = z.object({
-  voucher_number: z.string().min(1, { message: "Voucher number is required" }),
-  date: z.date(),
-  paid_to: z.string().min(1, { message: "Paid to is required" }),
-  supplier_id: z.string().optional(),
-  amount_in_words: z.string().optional(),
-  payment_approved_by: z.string().optional(),
-  received_by: z.string().optional(),
-  total_amount: z.coerce.number().min(0),
-});
-
-const expenseAuthSchema = z.object({
-  authorization_number: z.string().min(1, { message: "Authorization number is required" }),
-  date: z.date(),
-  received_from: z.string().optional(),
-  supplier_id: z.string().optional(),
-  being_payment_of: z.string().optional(),
-  cash_cheque_no: z.string().optional(),
-  sum_of_shillings: z.coerce.number().min(0),
-});
-
-const receiptSchema = z.object({
-  receipt_number: z.string().min(1, { message: "Receipt number is required" }),
-  date: z.date(),
-  received_from: z.string().optional(),
-  client_id: z.string().optional(),
-  payment_method: z.string().optional(),
-  for_payment: z.string().optional(),
-  amount: z.coerce.number().min(0),
-});
+// Import document form components and schemas
+import { DeliveryNoteForm, deliveryNoteSchema, DeliveryNoteFormValues } from "./document-forms/DeliveryNoteForm";
+import { PaymentVoucherForm, paymentVoucherSchema, PaymentVoucherFormValues } from "./document-forms/PaymentVoucherForm";
+import { ExpenseAuthorizationForm, expenseAuthSchema, ExpenseAuthFormValues } from "./document-forms/ExpenseAuthorizationForm";
+import { ReceiptForm, receiptSchema, ReceiptFormValues } from "./document-forms/ReceiptForm";
 
 type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
 
@@ -85,21 +21,9 @@ interface DocumentFormProps {
   onSuccess: () => void;
 }
 
-interface Client {
-  id: string;
-  name: string;
-}
-
-interface Supplier {
-  id: string;
-  name: string;
-}
-
 export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 
   // Use the correct schema based on document type
   let schema;
@@ -128,76 +52,15 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   }
 
   // Create the form with the appropriate schema
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useForm<any>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date(),
     },
   });
 
-  // Fetch clients and suppliers
-  useEffect(() => {
-    const fetchData = async () => {
-      // Fetch clients if needed for current document type
-      if (documentType === "delivery-notes" || documentType === "receipts") {
-        const { data: clientsData, error: clientsError } = await supabase
-          .from("clients")
-          .select("id, name")
-          .order("name");
-        
-        if (!clientsError && clientsData) {
-          setClients(clientsData);
-        }
-      }
-      
-      // Fetch suppliers if needed for current document type
-      if (documentType === "payment-vouchers" || documentType === "expense-authorizations") {
-        const { data: suppliersData, error: suppliersError } = await supabase
-          .from("suppliers")
-          .select("id, name")
-          .order("name");
-        
-        if (!suppliersError && suppliersData) {
-          setSuppliers(suppliersData);
-        }
-      }
-    };
-    
-    fetchData();
-  }, [documentType]);
-
-  // Handle client selection
-  const handleClientChange = (clientId: string) => {
-    const selectedClient = clients.find(client => client.id === clientId);
-    
-    if (selectedClient) {
-      if (documentType === "delivery-notes") {
-        form.setValue("client_name", selectedClient.name);
-        form.setValue("client_id", selectedClient.id);
-      } else if (documentType === "receipts") {
-        form.setValue("received_from", selectedClient.name);
-        form.setValue("client_id", selectedClient.id);
-      }
-    }
-  };
-
-  // Handle supplier selection
-  const handleSupplierChange = (supplierId: string) => {
-    const selectedSupplier = suppliers.find(supplier => supplier.id === supplierId);
-    
-    if (selectedSupplier) {
-      if (documentType === "payment-vouchers") {
-        form.setValue("paid_to", selectedSupplier.name);
-        form.setValue("supplier_id", selectedSupplier.id);
-      } else if (documentType === "expense-authorizations") {
-        form.setValue("received_from", selectedSupplier.name);
-        form.setValue("supplier_id", selectedSupplier.id);
-      }
-    }
-  };
-
   // Handle form submission
-  const onSubmit = async (data: z.infer<typeof schema>) => {
+  const onSubmit = async (data: any) => {
     if (!tableName) return;
     
     setIsSubmitting(true);
@@ -212,7 +75,9 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
         description: "Document created successfully",
       });
       
-      form.reset();
+      form.reset({
+        date: new Date(),
+      });
       onSuccess();
     } catch (error) {
       console.error("Error creating document:", error);
@@ -226,631 +91,35 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
     }
   };
 
+  // Render the appropriate form based on document type
+  const renderForm = () => {
+    switch (documentType) {
+      case "delivery-notes":
+        return <DeliveryNoteForm form={form as any} />;
+      case "payment-vouchers":
+        return <PaymentVoucherForm form={form as any} />;
+      case "expense-authorizations":
+        return <ExpenseAuthorizationForm form={form as any} />;
+      case "receipts":
+        return <ReceiptForm form={form as any} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Form fields for Delivery Notes */}
-          {documentType === "delivery-notes" && (
-            <>
-              <FormField
-                control={form.control}
-                name="note_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Note Number*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter note number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date*</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormItem>
-                <FormLabel>Select Client*</FormLabel>
-                <Select 
-                  onValueChange={handleClientChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a client" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {clients.map(client => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              
-              <FormField
-                control={form.control}
-                name="client_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Client Name*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter client name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="batch_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Batch Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter batch number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="vehicle_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Vehicle Number</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter vehicle number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="transporter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Transporter</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter transporter name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="loaded_by"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Loaded By</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter loader name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="total_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Quantity*</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        {...field} 
-                        placeholder="Enter total quantity" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
-          )}
-
-          {/* Form fields for Payment Vouchers */}
-          {documentType === "payment-vouchers" && (
-            <>
-              <FormField
-                control={form.control}
-                name="voucher_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Voucher Number*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter voucher number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date*</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormItem>
-                <FormLabel>Select Supplier/Contractor*</FormLabel>
-                <Select 
-                  onValueChange={handleSupplierChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a supplier" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {suppliers.map(supplier => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              
-              <FormField
-                control={form.control}
-                name="paid_to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Paid To*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter recipient name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="total_amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount*</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        step="0.01" 
-                        {...field} 
-                        placeholder="Enter amount" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="amount_in_words"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount in Words</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter amount in words" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="payment_approved_by"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Approved By</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter approver name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="received_by"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Received By</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter receiver name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
-          )}
-
-          {/* Form fields for Expense Authorizations */}
-          {documentType === "expense-authorizations" && (
-            <>
-              <FormField
-                control={form.control}
-                name="authorization_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Authorization Number*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter authorization number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date*</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormItem>
-                <FormLabel>Select Supplier/Contractor</FormLabel>
-                <Select 
-                  onValueChange={handleSupplierChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a supplier" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {suppliers.map(supplier => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              
-              <FormField
-                control={form.control}
-                name="received_from"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Received From</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter source name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="sum_of_shillings"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount*</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        step="0.01" 
-                        {...field} 
-                        placeholder="Enter amount" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="being_payment_of"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Being Payment Of</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter payment description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="cash_cheque_no"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cash/Cheque No.</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter cash or cheque number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
-          )}
-
-          {/* Form fields for Receipts */}
-          {documentType === "receipts" && (
-            <>
-              <FormField
-                control={form.control}
-                name="receipt_number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Receipt Number*</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter receipt number" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date*</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormItem>
-                <FormLabel>Select Client</FormLabel>
-                <Select 
-                  onValueChange={handleClientChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a client" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {clients.map(client => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              
-              <FormField
-                control={form.control}
-                name="received_from"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Received From</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter source name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount*</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        step="0.01" 
-                        {...field} 
-                        placeholder="Enter amount" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="payment_method"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Payment Method</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter payment method" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="for_payment"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>For Payment</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter payment description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </>
-          )}
-        </div>
-
-        {/* Common Notes field for all document types */}
-        {documentType === "delivery-notes" && (
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea {...field} placeholder="Enter additional notes" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        {renderForm()}
 
         <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => form.reset({
+              date: new Date(),
+            })}
+          >
             Reset
           </Button>
           <Button type="submit" disabled={isSubmitting}>
