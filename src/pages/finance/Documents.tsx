@@ -1,13 +1,16 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
-import { useState } from "react";
+import { Eye, Plus, Printer } from "lucide-react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { format } from "date-fns";
+import { DocumentForm } from "@/components/finance/DocumentForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PrintDocument } from "@/components/finance/PrintDocument";
 
 // Types for our documents
 type DeliveryNote = {
@@ -44,9 +47,12 @@ type Receipt = {
 
 export default function Documents() {
   const [activeTab, setActiveTab] = useState("delivery-notes");
+  const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   // Fetch delivery notes
-  const { data: deliveryNotes, isLoading: isLoadingDeliveryNotes } = useQuery({
+  const { data: deliveryNotes, isLoading: isLoadingDeliveryNotes, refetch: refetchDeliveryNotes } = useQuery({
     queryKey: ["delivery-notes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -61,7 +67,7 @@ export default function Documents() {
   });
 
   // Fetch payment vouchers
-  const { data: paymentVouchers, isLoading: isLoadingPaymentVouchers } = useQuery({
+  const { data: paymentVouchers, isLoading: isLoadingPaymentVouchers, refetch: refetchPaymentVouchers } = useQuery({
     queryKey: ["payment-vouchers"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -76,7 +82,7 @@ export default function Documents() {
   });
 
   // Fetch expense authorizations
-  const { data: expenseAuths, isLoading: isLoadingExpenseAuths } = useQuery({
+  const { data: expenseAuths, isLoading: isLoadingExpenseAuths, refetch: refetchExpenseAuths } = useQuery({
     queryKey: ["expense-authorizations"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -91,7 +97,7 @@ export default function Documents() {
   });
 
   // Fetch receipts
-  const { data: receipts, isLoading: isLoadingReceipts } = useQuery({
+  const { data: receipts, isLoading: isLoadingReceipts, refetch: refetchReceipts } = useQuery({
     queryKey: ["receipts"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -105,11 +111,53 @@ export default function Documents() {
     enabled: activeTab === "receipts",
   });
 
+  const handleDocumentAdded = () => {
+    setIsAddDialogOpen(false);
+    // Refetch data based on active tab
+    switch (activeTab) {
+      case "delivery-notes":
+        refetchDeliveryNotes();
+        break;
+      case "payment-vouchers":
+        refetchPaymentVouchers();
+        break;
+      case "expense-authorizations":
+        refetchExpenseAuths();
+        break;
+      case "receipts":
+        refetchReceipts();
+        break;
+    }
+  };
+
+  const handleView = (document: any) => {
+    setSelectedDocument(document);
+    setIsViewDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <FinancialNavbar />
       <div className="container mx-auto py-8 px-4">
-        <h1 className="text-2xl font-bold mb-6">Financial Documents</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Financial Documents</h1>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" /> Add Document
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Add New {activeTab.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</DialogTitle>
+              </DialogHeader>
+              <DocumentForm 
+                documentType={activeTab as "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts"} 
+                onSuccess={handleDocumentAdded} 
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-4">
@@ -136,7 +184,7 @@ export default function Documents() {
                         <th className="border px-4 py-2 text-left">Date</th>
                         <th className="border px-4 py-2 text-left">Client</th>
                         <th className="border px-4 py-2 text-left">Quantity</th>
-                        <th className="border px-4 py-2 text-left">Action</th>
+                        <th className="border px-4 py-2 text-left">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -155,10 +203,11 @@ export default function Documents() {
                             </td>
                             <td className="border px-4 py-2">{note.client_name}</td>
                             <td className="border px-4 py-2">{note.total_quantity}</td>
-                            <td className="border px-4 py-2">
-                              <Button variant="outline" size="sm">
+                            <td className="border px-4 py-2 space-x-2">
+                              <Button variant="outline" size="sm" onClick={() => handleView(note)}>
                                 <Eye className="h-4 w-4 mr-1" /> View
                               </Button>
+                              <PrintDocument documentType="delivery-notes" document={note} />
                             </td>
                           </tr>
                         ))
@@ -193,7 +242,7 @@ export default function Documents() {
                         <th className="border px-4 py-2 text-left">Date</th>
                         <th className="border px-4 py-2 text-left">Paid To</th>
                         <th className="border px-4 py-2 text-left">Amount</th>
-                        <th className="border px-4 py-2 text-left">Action</th>
+                        <th className="border px-4 py-2 text-left">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -217,10 +266,11 @@ export default function Documents() {
                                 currency: "KES",
                               }).format(voucher.total_amount)}
                             </td>
-                            <td className="border px-4 py-2">
-                              <Button variant="outline" size="sm">
+                            <td className="border px-4 py-2 space-x-2">
+                              <Button variant="outline" size="sm" onClick={() => handleView(voucher)}>
                                 <Eye className="h-4 w-4 mr-1" /> View
                               </Button>
+                              <PrintDocument documentType="payment-vouchers" document={voucher} />
                             </td>
                           </tr>
                         ))
@@ -255,7 +305,7 @@ export default function Documents() {
                         <th className="border px-4 py-2 text-left">Date</th>
                         <th className="border px-4 py-2 text-left">Received From</th>
                         <th className="border px-4 py-2 text-left">Amount</th>
-                        <th className="border px-4 py-2 text-left">Action</th>
+                        <th className="border px-4 py-2 text-left">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -279,10 +329,11 @@ export default function Documents() {
                                 currency: "KES",
                               }).format(auth.sum_of_shillings)}
                             </td>
-                            <td className="border px-4 py-2">
-                              <Button variant="outline" size="sm">
+                            <td className="border px-4 py-2 space-x-2">
+                              <Button variant="outline" size="sm" onClick={() => handleView(auth)}>
                                 <Eye className="h-4 w-4 mr-1" /> View
                               </Button>
+                              <PrintDocument documentType="expense-authorizations" document={auth} />
                             </td>
                           </tr>
                         ))
@@ -317,7 +368,7 @@ export default function Documents() {
                         <th className="border px-4 py-2 text-left">Date</th>
                         <th className="border px-4 py-2 text-left">Received From</th>
                         <th className="border px-4 py-2 text-left">Amount</th>
-                        <th className="border px-4 py-2 text-left">Action</th>
+                        <th className="border px-4 py-2 text-left">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -341,10 +392,11 @@ export default function Documents() {
                                 currency: "KES",
                               }).format(receipt.amount)}
                             </td>
-                            <td className="border px-4 py-2">
-                              <Button variant="outline" size="sm">
+                            <td className="border px-4 py-2 space-x-2">
+                              <Button variant="outline" size="sm" onClick={() => handleView(receipt)}>
                                 <Eye className="h-4 w-4 mr-1" /> View
                               </Button>
+                              <PrintDocument documentType="receipts" document={receipt} />
                             </td>
                           </tr>
                         ))
@@ -362,6 +414,63 @@ export default function Documents() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* View Document Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>View Document</DialogTitle>
+            </DialogHeader>
+            
+            {selectedDocument && (
+              <div className="p-4">
+                <PrintDocument 
+                  documentType={activeTab as "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts"} 
+                  document={selectedDocument} 
+                />
+                
+                <div className="mt-4 p-6 border rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Document Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(selectedDocument).map(([key, value]) => {
+                      if (key === "id" || key === "created_at") return null;
+                      
+                      let displayValue = value as string | number;
+                      
+                      // Format dates
+                      if (key === "date" && typeof value === "string") {
+                        try {
+                          displayValue = format(new Date(value), "PPP");
+                        } catch (e) {
+                          displayValue = value;
+                        }
+                      }
+                      
+                      // Format currency amounts
+                      if ((key === "amount" || key === "total_amount" || key === "sum_of_shillings") && typeof value === "number") {
+                        displayValue = new Intl.NumberFormat("en-KE", {
+                          style: "currency",
+                          currency: "KES",
+                        }).format(value as number);
+                      }
+                      
+                      const displayKey = key
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
+                      
+                      return (
+                        <div key={key} className="mb-2">
+                          <p className="font-medium text-gray-700">{displayKey}:</p>
+                          <p>{displayValue?.toString() || "-"}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
