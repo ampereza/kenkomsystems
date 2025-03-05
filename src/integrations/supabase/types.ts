@@ -258,6 +258,98 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_note_items: {
+        Row: {
+          created_at: string
+          delivery_note_id: string
+          description: string | null
+          id: string
+          item_number: string | null
+          quantity: number
+          remarks: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivery_note_id: string
+          description?: string | null
+          id?: string
+          item_number?: string | null
+          quantity?: number
+          remarks?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivery_note_id?: string
+          description?: string | null
+          id?: string
+          item_number?: string | null
+          quantity?: number
+          remarks?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_note_items_delivery_note_id_fkey"
+            columns: ["delivery_note_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_notes: {
+        Row: {
+          batch_number: string | null
+          client_name: string | null
+          created_at: string
+          date: string
+          driver_sign: boolean | null
+          id: string
+          loaded_at: string | null
+          loaded_by: string | null
+          note_number: string
+          notes: string | null
+          received_at: string | null
+          received_by: string | null
+          total_quantity: number
+          transporter: string | null
+          vehicle_number: string | null
+        }
+        Insert: {
+          batch_number?: string | null
+          client_name?: string | null
+          created_at?: string
+          date?: string
+          driver_sign?: boolean | null
+          id?: string
+          loaded_at?: string | null
+          loaded_by?: string | null
+          note_number: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          total_quantity?: number
+          transporter?: string | null
+          vehicle_number?: string | null
+        }
+        Update: {
+          batch_number?: string | null
+          client_name?: string | null
+          created_at?: string
+          date?: string
+          driver_sign?: boolean | null
+          id?: string
+          loaded_at?: string | null
+          loaded_by?: string | null
+          note_number?: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          total_quantity?: number
+          transporter?: string | null
+          vehicle_number?: string | null
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           contact_number: string | null
@@ -285,6 +377,45 @@ export type Database = {
           id?: string
           name?: string
           position?: string
+        }
+        Relationships: []
+      }
+      expense_authorizations: {
+        Row: {
+          authorization_number: string
+          balance: number | null
+          being_payment_of: string | null
+          cash_cheque_no: string | null
+          created_at: string
+          date: string
+          id: string
+          received_from: string | null
+          signature: string | null
+          sum_of_shillings: number
+        }
+        Insert: {
+          authorization_number: string
+          balance?: number | null
+          being_payment_of?: string | null
+          cash_cheque_no?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          received_from?: string | null
+          signature?: string | null
+          sum_of_shillings?: number
+        }
+        Update: {
+          authorization_number?: string
+          balance?: number | null
+          being_payment_of?: string | null
+          cash_cheque_no?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          received_from?: string | null
+          signature?: string | null
+          sum_of_shillings?: number
         }
         Relationships: []
       }
@@ -414,6 +545,74 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_voucher_items: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          particulars: string
+          payment_voucher_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          particulars: string
+          payment_voucher_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          particulars?: string
+          payment_voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_voucher_items_payment_voucher_id_fkey"
+            columns: ["payment_voucher_id"]
+            isOneToOne: false
+            referencedRelation: "payment_vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_vouchers: {
+        Row: {
+          amount_in_words: string | null
+          created_at: string
+          date: string
+          id: string
+          paid_to: string
+          payment_approved_by: string | null
+          received_by: string | null
+          total_amount: number
+          voucher_number: string
+        }
+        Insert: {
+          amount_in_words?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          paid_to: string
+          payment_approved_by?: string | null
+          received_by?: string | null
+          total_amount?: number
+          voucher_number: string
+        }
+        Update: {
+          amount_in_words?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          paid_to?: string
+          payment_approved_by?: string | null
+          received_by?: string | null
+          total_amount?: number
+          voucher_number?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -435,6 +634,42 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
+      receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          for_payment: string | null
+          id: string
+          payment_method: string | null
+          receipt_number: string
+          received_from: string | null
+          signature: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          date?: string
+          for_payment?: string | null
+          id?: string
+          payment_method?: string | null
+          receipt_number: string
+          received_from?: string | null
+          signature?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          for_payment?: string | null
+          id?: string
+          payment_method?: string | null
+          receipt_number?: string
+          received_from?: string | null
+          signature?: string | null
         }
         Relationships: []
       }

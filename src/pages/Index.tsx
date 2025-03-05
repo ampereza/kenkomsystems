@@ -1,10 +1,10 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Users, Package, TestTube2, ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DocumentsOverview } from "@/components/dashboard/DocumentsOverview";
 
 const Index = () => {
   // Stock statistics
@@ -209,6 +209,9 @@ const Index = () => {
               </Card>
             </div>
           </div>
+
+          {/* Documents Overview Section */}
+          <DocumentsOverview />
 
           {/* Stock Section */}
           <div>
