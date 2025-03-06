@@ -1,13 +1,24 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TreatmentFormValues } from "../types";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const { profile } = useAuth();
+  
+  // Check if the user has permission to create treatment logs
+  useEffect(() => {
+    if (profile) {
+      const allowedRoles = ['managing_director', 'general_manager', 'production_manager'];
+      setHasPermission(allowedRoles.includes(profile.role));
+    }
+  }, [profile]);
   
   const form = useForm<TreatmentFormValues>({
     defaultValues: {
@@ -63,6 +74,12 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
   });
 
   const onSubmit = async (values: TreatmentFormValues) => {
+    // First check if user has permission
+    if (hasPermission === false) {
+      toast.error("You don't have permission to create treatment logs. Required roles: Managing Director, General Manager, or Production Manager.");
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       console.log("Starting treatment log submission process");
@@ -171,10 +188,17 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
 
       if (error) {
         console.error("Error details:", error);
-        toast.error(`Failed to create treatment log: ${error.message}`);
+        
         if (error.code === "42501") {
-          toast.error("Permission denied. You may not have the right access level.");
-        } else if (error.details) {
+          toast.error("Permission denied. You don't have the required role to create treatment logs.");
+          // Redirect to unauthorized page
+          window.location.href = "/unauthorized";
+          setIsSubmitting(false);
+          return;
+        }
+        
+        toast.error(`Failed to create treatment log: ${error.message}`);
+        if (error.details) {
           toast.error(`Details: ${error.details}`);
         }
         setIsSubmitting(false);
@@ -200,6 +224,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     clients,
     sortedStock,
     cylinders,
-    isClientOwnedPoles
+    isClientOwnedPoles,
+    hasPermission
   };
 };
