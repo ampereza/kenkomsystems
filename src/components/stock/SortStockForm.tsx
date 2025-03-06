@@ -111,6 +111,7 @@ export const SortStockForm = ({ unsortedStocks, onSuccess }: SortStockFormProps)
         category: formData.category,
         quantity: parseInt(formData.quantity),
         notes: formData.notes || null,
+        sorting_date: new Date().toISOString(), // Add sorting_date explicitly for the trigger
       };
 
       // Add additional fields for non-rejected categories
@@ -124,12 +125,11 @@ export const SortStockForm = ({ unsortedStocks, onSuccess }: SortStockFormProps)
             diameter_mm: formData.category !== "fencing" && formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
           };
 
-      // Insert into sorted_stock table
+      // Insert into sorted_stock table - the database trigger "track_rejected_poles" will handle
+      // the insertion into rejected_poles_with_suppliers automatically
       const { error: insertError } = await supabase.from("sorted_stock").insert(insertData);
+      
       if (insertError) throw insertError;
-
-      // For rejected poles, we let the database trigger handle the insertion into rejected_poles_with_suppliers
-      // The trigger "track_rejected_poles" is already set up to handle this
 
       toast({
         title: "Success",
@@ -314,3 +314,4 @@ export const SortStockForm = ({ unsortedStocks, onSuccess }: SortStockFormProps)
     </form>
   );
 };
+
