@@ -48,7 +48,6 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         console.error("Error fetching cylinders:", error);
         throw error;
       }
-      console.log("Fetched cylinders:", data);
       return data;
     },
   });
@@ -95,8 +94,6 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           return;
         }
       }
-      
-      console.log("Submitting treatment data:", values);
       
       // Convert cylinder number to integer for lookup
       const cylinderNumberInt = parseInt(values.cylinderNumber, 10);
@@ -161,8 +158,6 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         }
         treatmentData.quantity = 0;
       }
-
-      console.log("Sending treatment data to API:", treatmentData);
       
       const { data, error } = await supabase
         .from("treatments")
