@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { UnsortedStock } from "@/components/stock/SortStockForm";
+import type { UnsortedStock } from "@/components/stock/types";
 
 export const useFetchUnsortedStock = () => {
   const { toast } = useToast();
