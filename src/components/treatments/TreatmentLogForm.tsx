@@ -138,11 +138,19 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       
       console.log("Submitting treatment data:", values);
       
-      // Find the cylinder_id by cylinder_number
+      // Find the cylinder_id by cylinder_number - convert the string to a number for comparison
+      const cylinderNumberInt = parseInt(values.cylinderNumber, 10);
+      
+      if (isNaN(cylinderNumberInt)) {
+        toast.error("Please enter a valid cylinder number");
+        setIsSubmitting(false);
+        return;
+      }
+      
       const { data: cylinderData, error: cylinderError } = await supabase
         .from("treatment_cylinders")
         .select("id")
-        .eq("cylinder_number", values.cylinderNumber)
+        .eq("cylinder_number", cylinderNumberInt)
         .single();
       
       if (cylinderError) {
