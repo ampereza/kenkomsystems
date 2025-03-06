@@ -7,7 +7,7 @@ import { Package, Warehouse, AlertTriangle, Truck } from "lucide-react";
 import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 export default function StockDashboard() {
-  const { data: stockSummary } = useQuery({
+  const { data: stockSummary, isLoading } = useQuery({
     queryKey: ["stock-summary"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -17,6 +17,20 @@ export default function StockDashboard() {
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: stockCounts } = useQuery({
+    queryKey: ["stock-counts"],
+    queryFn: async () => {
+      // Here we would normally fetch the actual counts from the database
+      // This is a placeholder for demonstration purposes
+      return {
+        totalStock: "-",
+        inTreatment: "-",
+        rejected: "-",
+        pendingDelivery: "-"
+      };
     },
   });
 
@@ -33,7 +47,7 @@ export default function StockDashboard() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-2xl font-bold">{stockCounts?.totalStock || "-"}</div>
             </CardContent>
           </Card>
 
@@ -43,7 +57,7 @@ export default function StockDashboard() {
               <Warehouse className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">45</div>
+              <div className="text-2xl font-bold">{stockCounts?.inTreatment || "-"}</div>
             </CardContent>
           </Card>
 
@@ -53,7 +67,7 @@ export default function StockDashboard() {
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{stockCounts?.rejected || "-"}</div>
             </CardContent>
           </Card>
 
@@ -63,7 +77,7 @@ export default function StockDashboard() {
               <Truck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">89</div>
+              <div className="text-2xl font-bold">{stockCounts?.pendingDelivery || "-"}</div>
             </CardContent>
           </Card>
         </div>
