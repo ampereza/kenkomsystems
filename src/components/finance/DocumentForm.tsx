@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -100,7 +101,7 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
         const { error: transactionError } = await supabase
           .from("transactions")
           .insert({
-            type: "expense",
+            type: "expense",  // Explicitly set type to expense
             amount: paymentVoucher.total_amount,
             transaction_date: paymentVoucher.date,
             supplier_id: paymentVoucher.supplier_id,

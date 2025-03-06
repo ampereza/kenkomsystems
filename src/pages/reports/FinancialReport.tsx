@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,7 @@ export default function FinancialReport() {
   const { data: financialData, isLoading } = useQuery({
     queryKey: ["financial-summary", startDate, endDate],
     queryFn: async () => {
+      // Include payment vouchers explicitly in the query
       const { data, error } = await supabase
         .from("financial_summary")
         .select("*")
@@ -49,7 +51,49 @@ export default function FinancialReport() {
         .order("date");
 
       if (error) throw error;
-      return data;
+      
+      // Also fetch payment vouchers in the date range
+      const { data: paymentVouchers, error: voucherError } = await supabase
+        .from("payment_vouchers")
+        .select("date, total_amount")
+        .gte("date", startDate.toISOString().split('T')[0])
+        .lte("date", endDate.toISOString().split('T')[0])
+        .order("date");
+      
+      if (voucherError) {
+        console.error("Error fetching payment vouchers:", voucherError);
+      }
+      
+      // Combine the financial data with payment vouchers
+      const combinedData = [...(data || [])];
+      
+      if (paymentVouchers) {
+        // Group payment vouchers by date
+        const vouchersByDate = paymentVouchers.reduce((acc, voucher) => {
+          const dateStr = voucher.date.toString();
+          if (!acc[dateStr]) {
+            acc[dateStr] = {
+              count: 0,
+              total: 0
+            };
+          }
+          acc[dateStr].count += 1;
+          acc[dateStr].total += Number(voucher.total_amount);
+          return acc;
+        }, {} as Record<string, { count: number, total: number }>);
+        
+        // Add grouped vouchers to the combined data
+        Object.entries(vouchersByDate).forEach(([date, { count, total }]) => {
+          combinedData.push({
+            date: new Date(date).toISOString(),
+            type: "expense",
+            transaction_count: count,
+            total_amount: total
+          });
+        });
+      }
+      
+      return combinedData;
     },
   });
 

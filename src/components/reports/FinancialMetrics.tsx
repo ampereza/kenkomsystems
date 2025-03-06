@@ -10,6 +10,10 @@ interface FinancialMetricsProps {
 }
 
 export function FinancialMetrics({ totals }: FinancialMetricsProps) {
+  const income = totals?.income || 0;
+  const expenses = totals?.expenses || 0;
+  const netIncome = income - expenses;
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Card>
@@ -18,7 +22,7 @@ export function FinancialMetrics({ totals }: FinancialMetricsProps) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totals?.income.toFixed(2)}</div>
+          <div className="text-2xl font-bold">${income.toFixed(2)}</div>
         </CardContent>
       </Card>
       <Card>
@@ -27,7 +31,7 @@ export function FinancialMetrics({ totals }: FinancialMetricsProps) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${totals?.expenses.toFixed(2)}</div>
+          <div className="text-2xl font-bold">${expenses.toFixed(2)}</div>
         </CardContent>
       </Card>
       <Card>
@@ -36,8 +40,8 @@ export function FinancialMetrics({ totals }: FinancialMetricsProps) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            ${(totals ? totals.income - totals.expenses : 0).toFixed(2)}
+          <div className={`text-2xl font-bold ${netIncome < 0 ? 'text-red-500' : ''}`}>
+            ${netIncome.toFixed(2)}
           </div>
         </CardContent>
       </Card>
