@@ -1,0 +1,26 @@
+
+-- This is a guide for setting up a custom RPC function in Supabase
+-- You'll need to run this SQL in the Supabase SQL Editor
+
+-- Create a function to get financial summary for a specific date and type
+CREATE OR REPLACE FUNCTION get_financial_summary_for_date(summary_date date, summary_type text)
+RETURNS TABLE (
+  date date,
+  type text,
+  transaction_count bigint,
+  total_amount numeric
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    summary_date::date as date,
+    summary_type as type,
+    COUNT(t.id)::bigint as transaction_count,
+    SUM(t.amount) as total_amount
+  FROM transactions t
+  WHERE 
+    DATE(t.transaction_date) = summary_date AND 
+    t.type::text = summary_type
+  GROUP BY date, type;
+END;
+$$ LANGUAGE plpgsql;
