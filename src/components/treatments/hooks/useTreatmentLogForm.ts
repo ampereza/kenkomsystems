@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -177,6 +176,71 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         }
         setIsSubmitting(false);
         return;
+      }
+      
+      // Check if we need to manually update client stock for client-owned poles
+      // Note: For non-client-owned poles, the database trigger will handle the update
+      if (values.isClientOwnedPoles) {
+        try {
+          console.log("Updating client stock for client-owned poles");
+          
+          // First check if the client already has a stock record
+          const { data: existingStock, error: stockCheckError } = await supabase
+            .from("client_stock")
+            .select("id")
+            .eq("client_id", values.clientId)
+            .maybeSingle();
+            
+          if (stockCheckError) {
+            console.error("Error checking client stock:", stockCheckError);
+            toast.error("Treatment log saved, but failed to update client stock properly.");
+          }
+          
+          // If client doesn't have a stock record yet, create one
+          if (!existingStock) {
+            const { error: createStockError } = await supabase
+              .from("client_stock")
+              .insert({
+                client_id: values.clientId,
+                treated_telecom_poles: values.telecomPoles || 0,
+                treated_9m_poles: 0,
+                treated_10m_poles: 0,
+                treated_11m_poles: 0,
+                treated_12m_poles: 0,
+                treated_14m_poles: 0,
+                treated_16m_poles: 0
+              });
+              
+            if (createStockError) {
+              console.error("Error creating client stock:", createStockError);
+              toast.error("Treatment log saved, but failed to create client stock record.");
+            }
+          } 
+          // If client does have a stock record, update it
+          else {
+            // For client-owned poles, update treated pole quantities
+            // This is more direct than relying on the database trigger
+            const { error: updateStockError } = await supabase
+              .from("client_stock")
+              .update({
+                treated_telecom_poles: supabase.rpc('increment', { 
+                  row_id: existingStock.id,
+                  column_name: 'treated_telecom_poles',
+                  increment_amount: values.telecomPoles || 0
+                }),
+                // Other pole types would be updated similarly if needed
+              })
+              .eq("client_id", values.clientId);
+              
+            if (updateStockError) {
+              console.error("Error updating client stock:", updateStockError);
+              toast.error("Treatment log saved, but failed to update client stock quantities.");
+            }
+          }
+        } catch (stockUpdateError) {
+          console.error("Error in client stock update process:", stockUpdateError);
+          toast.error("Treatment log saved, but stock update process encountered an error.");
+        }
       }
       
       console.log("Treatment created successfully:", data);
