@@ -80,8 +80,7 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       const { data: documentData, error } = await supabase
         .from(tableName)
         .insert([formattedData])
-        .select()
-        .single();
+        .select();
       
       if (error) {
         console.error("Supabase error:", error);
@@ -89,16 +88,18 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       }
       
       // If this is a payment voucher, create a corresponding transaction record
-      if (tableName === "payment_vouchers" && documentData) {
+      if (tableName === "payment_vouchers" && documentData && documentData.length > 0) {
+        const paymentVoucher = documentData[0];
+        
         const { error: transactionError } = await supabase
           .from("transactions")
           .insert({
             type: "expense",
-            amount: documentData.total_amount,
-            transaction_date: documentData.date,
-            supplier_id: documentData.supplier_id,
-            description: `Payment to ${documentData.paid_to} (Voucher #${documentData.voucher_number})`,
-            reference_number: documentData.voucher_number
+            amount: paymentVoucher.total_amount,
+            transaction_date: paymentVoucher.date,
+            supplier_id: paymentVoucher.supplier_id,
+            description: `Payment to ${paymentVoucher.paid_to} (Voucher #${paymentVoucher.voucher_number})`,
+            reference_number: paymentVoucher.voucher_number
           });
         
         if (transactionError) {
