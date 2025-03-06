@@ -44,7 +44,11 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     queryKey: ["treatment_cylinders"],
     queryFn: async () => {
       const { data, error } = await supabase.from("treatment_cylinders").select("*");
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching cylinders:", error);
+        throw error;
+      }
+      console.log("Fetched cylinders:", data);
       return data;
     },
   });
