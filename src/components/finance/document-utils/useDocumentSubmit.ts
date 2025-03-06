@@ -23,11 +23,25 @@ export function useDocumentSubmit(documentType: DocumentType, onSuccess: () => v
       
       console.log("Submitting document to table:", tableName, "with data:", formattedData);
       
-      // Create the document
-      const { data: documentData, error } = await supabase
-        .from(tableName)
-        .insert([formattedData])
-        .select();
+      // Create the document - use type assertion to handle the dynamic table name
+      let documentData;
+      let error;
+      
+      if (tableName === "payment_vouchers") {
+        const result = await supabase
+          .from("payment_vouchers")
+          .insert([formattedData])
+          .select();
+        documentData = result.data;
+        error = result.error;
+      } else if (tableName === "receipts") {
+        const result = await supabase
+          .from("receipts")
+          .insert([formattedData])
+          .select();
+        documentData = result.data;
+        error = result.error;
+      }
       
       if (error) {
         console.error("Supabase error:", error);
