@@ -7,8 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Truck } from "lucide-react";
+import { Loader2, Truck, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 interface ClientDeliveryFormProps {
   onSuccess?: () => void;
@@ -242,26 +245,34 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
     }
   };
 
+  const getSelectedClientName = () => {
+    if (!selectedClient || clientsLoading) return "Loading...";
+    const client = clients.find(c => c.id === selectedClient);
+    return client ? client.name : "Select a client";
+  };
+
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Truck className="h-5 w-5" /> Record Client Delivery
+    <Card className="mb-6 shadow-sm border-slate-200">
+      <CardHeader className="bg-slate-50 border-b border-slate-100 rounded-t-lg">
+        <CardTitle className="flex items-center gap-2 text-slate-800">
+          <Truck className="h-5 w-5 text-slate-600" /> Record Client Delivery
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-4">
-            <label htmlFor="client" className="block text-sm font-medium mb-1">
-              Client *
+            <label htmlFor="client" className="block text-sm font-medium text-slate-700 mb-1">
+              Client {!clientId && <span className="text-rose-500">*</span>}
             </label>
             <Select value={selectedClient} onValueChange={handleClientChange} disabled={!!clientId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={clientsLoading ? "Loading clients..." : "Select a client"} />
+              <SelectTrigger className="w-full bg-white border-slate-200 focus:ring-slate-200 cursor-pointer">
+                <SelectValue placeholder={clientsLoading ? "Loading clients..." : "Select a client"}>
+                  {getSelectedClientName()}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
+                  <SelectItem key={client.id} value={client.id} className="cursor-pointer">
                     {client.name}
                   </SelectItem>
                 ))}
@@ -270,158 +281,163 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
           </div>
 
           {isLoadingStock ? (
-            <div className="py-4 text-center">
-              <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-              <p className="mt-2 text-sm text-muted-foreground">Loading client stock...</p>
+            <div className="py-8 text-center bg-slate-50 rounded-md border border-slate-100">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto text-slate-500" />
+              <p className="mt-2 text-sm text-slate-600">Loading client stock...</p>
             </div>
           ) : (
             <>
               {clientStock ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="col-span-full">
-                      <h3 className="font-medium mb-2">Poles to Deliver</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Enter the quantity of treated poles to be delivered
-                      </p>
-                    </div>
+                <div className="space-y-6 animate-fade-in">
+                  {/* Pole selection section */}
+                  <div className="bg-slate-50 p-4 rounded-md border border-slate-100">
+                    <h3 className="font-medium text-slate-800 mb-2 flex items-center">
+                      <ClipboardCheck className="h-4 w-4 mr-2 text-slate-600" />
+                      Poles to Deliver
+                    </h3>
+                    <p className="text-sm text-slate-600 mb-4">
+                      Enter the quantity of treated poles to be delivered
+                    </p>
                     
-                    <div>
-                      <label htmlFor="telecom_poles" className="block text-sm font-medium mb-1">
-                        Telecom Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_telecom_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="telecom_poles"
-                        name="telecom_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_telecom_poles || 0}
-                        value={formData.telecom_poles}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="9m_poles" className="block text-sm font-medium mb-1">
-                        9m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_9m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="9m_poles"
-                        name="9m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_9m_poles || 0}
-                        value={formData["9m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="10m_poles" className="block text-sm font-medium mb-1">
-                        10m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_10m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="10m_poles"
-                        name="10m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_10m_poles || 0}
-                        value={formData["10m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="11m_poles" className="block text-sm font-medium mb-1">
-                        11m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_11m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="11m_poles"
-                        name="11m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_11m_poles || 0}
-                        value={formData["11m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="12m_poles" className="block text-sm font-medium mb-1">
-                        12m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_12m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="12m_poles"
-                        name="12m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_12m_poles || 0}
-                        value={formData["12m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="14m_poles" className="block text-sm font-medium mb-1">
-                        14m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_14m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="14m_poles"
-                        name="14m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_14m_poles || 0}
-                        value={formData["14m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="16m_poles" className="block text-sm font-medium mb-1">
-                        16m Poles
-                        <span className="text-xs text-muted-foreground ml-2">
-                          (Available: {clientStock.treated_16m_poles || 0})
-                        </span>
-                      </label>
-                      <Input
-                        id="16m_poles"
-                        name="16m_poles"
-                        type="number"
-                        min="0"
-                        max={clientStock.treated_16m_poles || 0}
-                        value={formData["16m_poles"]}
-                        onChange={handleInputChange}
-                        className="cursor-text"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="telecom_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          Telecom Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_telecom_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="telecom_poles"
+                          name="telecom_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_telecom_poles || 0}
+                          value={formData.telecom_poles}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="9m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          9m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_9m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="9m_poles"
+                          name="9m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_9m_poles || 0}
+                          value={formData["9m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="10m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          10m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_10m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="10m_poles"
+                          name="10m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_10m_poles || 0}
+                          value={formData["10m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="11m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          11m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_11m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="11m_poles"
+                          name="11m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_11m_poles || 0}
+                          value={formData["11m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="12m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          12m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_12m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="12m_poles"
+                          name="12m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_12m_poles || 0}
+                          value={formData["12m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="14m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          14m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_14m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="14m_poles"
+                          name="14m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_14m_poles || 0}
+                          value={formData["14m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded shadow-sm border border-slate-100">
+                        <label htmlFor="16m_poles" className="block text-sm font-medium mb-1 text-slate-700">
+                          16m Poles
+                          <Badge variant="outline" className="ml-2 font-normal">
+                            Available: {clientStock.treated_16m_poles || 0}
+                          </Badge>
+                        </label>
+                        <Input
+                          id="16m_poles"
+                          name="16m_poles"
+                          type="number"
+                          min="0"
+                          max={clientStock.treated_16m_poles || 0}
+                          value={formData["16m_poles"]}
+                          onChange={handleInputChange}
+                          className="cursor-text border-slate-200 focus:border-slate-300"
+                        />
+                      </div>
                     </div>
                   </div>
                   
-                  <div>
-                    <label htmlFor="reference" className="block text-sm font-medium mb-1">
+                  {/* Reference section */}
+                  <div className="bg-white p-4 rounded-md border border-slate-200">
+                    <label htmlFor="reference" className="block text-sm font-medium mb-2 text-slate-700">
                       Reference Number (Optional)
                     </label>
                     <Input
@@ -430,12 +446,13 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                       value={formData.reference}
                       onChange={handleInputChange}
                       placeholder="Enter delivery reference number"
-                      className="cursor-text"
+                      className="cursor-text border-slate-200 focus:border-slate-300"
                     />
                   </div>
                   
-                  <div>
-                    <label htmlFor="notes" className="block text-sm font-medium mb-1">
+                  {/* Notes section */}
+                  <div className="bg-white p-4 rounded-md border border-slate-200">
+                    <label htmlFor="notes" className="block text-sm font-medium mb-2 text-slate-700">
                       Notes (Optional)
                     </label>
                     <Textarea
@@ -443,30 +460,33 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                       name="notes"
                       value={formData.notes}
                       onChange={handleInputChange}
-                      placeholder="Enter any additional notes"
+                      placeholder="Enter any additional notes about this delivery"
                       rows={3}
-                      className="cursor-text"
+                      className="cursor-text border-slate-200 focus:border-slate-300 resize-none"
                     />
                   </div>
                 </div>
               ) : (
                 selectedClient && (
-                  <div className="py-4 text-center">
-                    <p className="text-muted-foreground">No stock found for this client.</p>
-                    <p className="text-sm mt-2">
-                      Please add stock for this client before recording deliveries.
-                    </p>
-                  </div>
+                  <Alert className="bg-amber-50 text-amber-800 border-amber-200">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-800">
+                      No stock found for this client. Please add stock for this client before recording deliveries.
+                    </AlertDescription>
+                  </Alert>
                 )
               )}
             </>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4 border-t border-slate-100">
             <Button 
               type="submit" 
-              disabled={isLoading || isLoadingStock || !selectedClient || !clientStock} 
-              className="cursor-pointer"
+              disabled={isLoading || isLoadingStock || !selectedClient || !clientStock}
+              className={cn(
+                "min-w-[160px] cursor-pointer",
+                isLoading ? "bg-slate-700" : "bg-slate-800 hover:bg-slate-700"
+              )}
             >
               {isLoading ? (
                 <>
@@ -474,7 +494,10 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                   Recording Delivery...
                 </>
               ) : (
-                "Record Delivery"
+                <>
+                  <Truck className="mr-2 h-4 w-4" />
+                  Record Delivery
+                </>
               )}
             </Button>
           </div>
