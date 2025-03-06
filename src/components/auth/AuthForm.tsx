@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -12,6 +13,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
@@ -30,6 +33,7 @@ export function AuthForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [usePassword, setUsePassword] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,48 +47,35 @@ export function AuthForm() {
 
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
+    setLoginError(null);
     
     try {
-      // Determine authentication method
-      if (values.usePassword && values.password) {
-        // Sign in with password
-        const { error } = await supabase.auth.signInWithPassword({
+      let authResponse;
+      
+      // If in development mode and not using password, use magic link or a known development password
+      if (!values.usePassword) {
+        console.log('Attempting passwordless login in development mode');
+        
+        // For development - in a real app, you would use magic links or OTP
+        authResponse = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: 'development_password', // This should be a pre-configured password in development environment
+        });
+      } else if (values.usePassword && values.password) {
+        // Regular password login
+        authResponse = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
-
-        if (error) {
-          throw error;
-        }
       } else {
-        // Sign in without password (for development only)
-        // This would typically require a more secure approach in production
-        const { error } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: 'development_password', // This is a placeholder; in a real app, you would use proper passwordless auth
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        // In a real implementation, you might want to use magic link or passwordless auth:
-        // const { error } = await supabase.auth.signInWithOtp({
-        //   email: values.email,
-        // });
+        throw new Error('Password is required for login');
       }
 
-      // After successful authentication, update the user's role if needed
-      // Note: This would require appropriate RLS policies to be in place
-      // const { error: updateError } = await supabase
-      //   .from('profiles')
-      //   .update({ role: values.role })
-      //   .eq('email', values.email);
-      
-      // if (updateError) {
-      //   console.error('Failed to update role:', updateError);
-      // }
+      if (authResponse.error) {
+        throw authResponse.error;
+      }
 
+      // After successful login, show a success toast
       toast({
         title: "Success",
         description: "You've been logged in successfully.",
@@ -92,6 +83,13 @@ export function AuthForm() {
       
       navigate('/');
     } catch (error) {
+      console.error('Login error:', error);
+      setLoginError(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to log in. Please check your credentials."
+      );
+      
       toast({
         variant: "destructive",
         title: "Login Failed",
@@ -116,6 +114,16 @@ export function AuthForm() {
       </CardHeader>
       
       <CardContent className="pt-4">
+        {loginError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Login Error</AlertTitle>
+            <AlertDescription>
+              {loginError}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -155,6 +163,9 @@ export function AuthForm() {
                       <SelectItem value="accountant">Accountant</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    This determines what parts of the system you can access
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
