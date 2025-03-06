@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -89,9 +88,7 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       
       // If this is a payment voucher, create a corresponding transaction record
       if (tableName === "payment_vouchers" && documentData && documentData.length > 0) {
-        // First cast to unknown, then to the specific type to avoid TypeScript errors
-        const paymentVoucherData = documentData[0] as unknown;
-        const paymentVoucher = paymentVoucherData as {
+        const paymentVoucher = documentData[0] as unknown as {
           id: string;
           total_amount: number;
           date: string;
@@ -113,7 +110,6 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
         
         if (transactionError) {
           console.error("Error creating transaction:", transactionError);
-          // Continue even if transaction creation fails, to avoid blocking document creation
         }
       }
       
