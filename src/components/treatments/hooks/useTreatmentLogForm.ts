@@ -39,6 +39,16 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     },
   });
 
+  // Fetch cylinders for dropdown
+  const { data: cylinders } = useQuery({
+    queryKey: ["treatment_cylinders"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("treatment_cylinders").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   // Fetch sorted stock for dropdown
   const { data: sortedStock } = useQuery({
     queryKey: ["sorted_stock"],
@@ -84,7 +94,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
       
       console.log("Submitting treatment data:", values);
       
-      // Convert cylinder number to integer
+      // Convert cylinder number to integer for lookup
       const cylinderNumberInt = parseInt(values.cylinderNumber, 10);
       
       if (isNaN(cylinderNumberInt)) {
@@ -93,10 +103,21 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         return;
       }
       
+      // Find the cylinder id that corresponds to the cylinder number
+      const matchingCylinder = cylinders?.find(
+        (cyl) => cyl.cylinder_number === cylinderNumberInt
+      );
+      
+      if (!matchingCylinder) {
+        toast.error(`Cylinder #${cylinderNumberInt} not found in the system`);
+        setIsSubmitting(false);
+        return;
+      }
+      
       // Prepare the treatment data object with the correct field names for the database
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
-        cylinder_number: cylinderNumberInt,
+        cylinder_id: matchingCylinder.id, // Use cylinder_id instead of cylinder_number
         client_id: values.clientId,
         water_added_liters: values.waterAddedLiters,
         kegs_added: values.kegsAdded,
@@ -169,6 +190,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     onSubmit,
     clients,
     sortedStock,
+    cylinders,
     isClientOwnedPoles
   };
 };
