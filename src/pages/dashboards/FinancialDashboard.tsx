@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FinancialMetrics } from "@/components/reports/FinancialMetrics";
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
+import { DocumentsOverview } from "@/components/dashboard/DocumentsOverview";
 import { CircleDollarSign, ArrowUpDown, Receipt, Building2, Users, FileText, Briefcase, FileBarChart, CreditCard } from "lucide-react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Link } from "react-router-dom";
@@ -128,6 +129,11 @@ export default function FinancialDashboard() {
               <div className="text-2xl font-bold">23</div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Documents Overview Section */}
+        <div className="mb-6">
+          <DocumentsOverview />
         </div>
 
         {/* Quick Links Section */}
