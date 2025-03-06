@@ -93,7 +93,8 @@ const SortStock = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (!formData.category || (!formData.size && formData.category !== "rejected") || !formData.quantity) {
+    // Basic validation - check required fields
+    if (!formData.category || !formData.quantity || !formData.unsorted_stock_id) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -103,21 +104,63 @@ const SortStock = () => {
       return;
     }
 
+    // Special validation for non-rejected categories
+    if (formData.category !== "rejected") {
+      if (!formData.size) {
+        toast({
+          title: "Error",
+          description: "Please select a size",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
-      const insertData = {
+      // Prepare data for insert based on category
+      const baseData = {
         unsorted_stock_id: formData.unsorted_stock_id,
         category: formData.category,
-        size: formData.category === "rejected" ? null : formData.size,
-        length_value: formData.category === "rejected" ? null : (formData.length_value ? parseFloat(formData.length_value) : null),
-        length_unit: formData.category === "rejected" ? null : formData.length_unit,
-        diameter_mm: formData.category === "rejected" ? null : (formData.diameter_mm ? parseInt(formData.diameter_mm) : null),
         quantity: parseInt(formData.quantity),
         notes: formData.notes || null,
       };
 
-      const { error } = await supabase.from("sorted_stock").insert(insertData);
+      // Add additional fields for non-rejected categories
+      const insertData = formData.category === "rejected" 
+        ? baseData 
+        : {
+            ...baseData,
+            size: formData.size,
+            length_value: formData.length_value ? parseFloat(formData.length_value) : null,
+            length_unit: formData.length_unit,
+            diameter_mm: formData.category !== "fencing" && formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
+          };
 
-      if (error) throw error;
+      // Insert into sorted_stock table
+      const { error: insertError } = await supabase.from("sorted_stock").insert(insertData);
+      if (insertError) throw insertError;
+
+      // If the category is rejected, also insert into rejected_poles_with_suppliers
+      if (formData.category === "rejected") {
+        // Get the supplier_id from the unsorted stock
+        const { data: unsortedStockData, error: unsortedError } = await supabase
+          .from("unsorted_stock")
+          .select("supplier_id")
+          .eq("id", formData.unsorted_stock_id)
+          .single();
+        
+        if (unsortedError) throw unsortedError;
+        
+        // Insert into rejected_poles_with_suppliers
+        const { error: rejectedError } = await supabase.from("rejected_poles_with_suppliers").insert({
+          supplier_id: unsortedStockData.supplier_id,
+          quantity: parseInt(formData.quantity),
+          notes: formData.notes || null,
+        });
+        
+        if (rejectedError) throw rejectedError;
+      }
 
       toast({
         title: "Success",
@@ -139,9 +182,10 @@ const SortStock = () => {
       // Refresh unsorted stock list
       fetchUnsortedStock();
     } catch (error) {
+      console.error("Error sorting stock:", error);
       toast({
         title: "Error",
-        description: "Failed to sort stock",
+        description: "Failed to sort stock: " + (error as Error).message,
         variant: "destructive",
       });
     } finally {
