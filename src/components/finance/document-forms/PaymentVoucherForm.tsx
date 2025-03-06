@@ -28,15 +28,19 @@ export function PaymentVoucherForm({ form }: PaymentVoucherFormProps) {
   const handleSupplierChange = (supplierId: string) => {
     // Find the supplier and set the form values
     const fetchSupplier = async () => {
-      const { data, error } = await supabase
-        .from("suppliers")
-        .select("name")
-        .eq("id", supplierId)
-        .single();
-      
-      if (!error && data) {
-        form.setValue("paid_to", data.name);
-        form.setValue("supplier_id", supplierId);
+      try {
+        const { data, error } = await supabase
+          .from("suppliers")
+          .select("name")
+          .eq("id", supplierId)
+          .single();
+        
+        if (!error && data) {
+          form.setValue("paid_to", data.name);
+          form.setValue("supplier_id", supplierId);
+        }
+      } catch (error) {
+        console.error("Error fetching supplier:", error);
       }
     };
     

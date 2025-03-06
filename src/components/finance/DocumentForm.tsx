@@ -66,9 +66,22 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from(tableName).insert([data]);
+      // Format data for specific document types
+      let formattedData = { ...data };
       
-      if (error) throw error;
+      // Make sure date is properly formatted for the database
+      if (formattedData.date instanceof Date) {
+        formattedData.date = formattedData.date.toISOString();
+      }
+      
+      console.log("Submitting document to table:", tableName, "with data:", formattedData);
+      
+      const { error } = await supabase.from(tableName).insert([formattedData]);
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       toast({
         title: "Success",
@@ -84,7 +97,7 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create document. Please try again.",
+        description: `Failed to create document: ${(error as any)?.message || 'Unknown error'}`,
       });
     } finally {
       setIsSubmitting(false);

@@ -12,6 +12,10 @@ type PaymentVoucher = {
   date: string;
   paid_to: string;
   total_amount: number;
+  amount_in_words?: string;
+  payment_approved_by?: string;
+  received_by?: string;
+  created_at?: string;
 };
 
 interface PaymentVouchersTableProps {
@@ -27,7 +31,10 @@ export function PaymentVouchersTable({ onViewDocument }: PaymentVouchersTablePro
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching payment vouchers:", error);
+        throw error;
+      }
       return data as PaymentVoucher[];
     },
   });
@@ -65,7 +72,7 @@ export function PaymentVouchersTable({ onViewDocument }: PaymentVouchersTablePro
                     currency: "KES",
                   }).format(voucher.total_amount)}
                 </td>
-                <td className="border px-4 py-2 space-x-2">
+                <td className="border px-4 py-2 flex space-x-2">
                   <Button variant="outline" size="sm" onClick={() => onViewDocument(voucher)}>
                     <Eye className="h-4 w-4 mr-1" /> View
                   </Button>
