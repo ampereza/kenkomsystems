@@ -19,7 +19,7 @@ import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }).default('md@kenkomdistributorsltd.com'),
-  password: z.string().optional(),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }).optional(),
   role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant'], {
     required_error: 'Please select a role',
   }),
@@ -69,18 +69,42 @@ export function AuthForm() {
     setLoginError(null);
     
     try {
-      let authResponse;
+      console.log('Attempting to sign in with:', values.email, 'using password:', values.usePassword);
       
-      // For demonstration purposes only - using a simplified login approach
-      authResponse = await supabase.auth.signInWithPassword({
+      // First, let's try to create the user if it doesn't exist (for demo purposes)
+      // This would normally be a separate signup flow
+      try {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.usePassword ? (values.password || 'Password123') : 'Password123',
+          options: {
+            data: {
+              role: values.role,
+            },
+          },
+        });
+        
+        if (signUpError && signUpError.message !== 'User already registered') {
+          console.log('Sign up attempt:', signUpError);
+        }
+      } catch (signUpErr) {
+        console.log('Error during sign up attempt:', signUpErr);
+        // Continue with login even if signup fails - user might already exist
+      }
+      
+      // Now try to log in
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: values.email,
-        password: values.usePassword && values.password ? values.password : 'Password123',
+        password: values.usePassword ? (values.password || 'Password123') : 'Password123',
       });
 
-      if (authResponse.error) {
-        throw authResponse.error;
+      if (authError) {
+        console.error('Login error details:', authError);
+        throw authError;
       }
 
+      console.log('Login successful:', authData);
+      
       // After successful login, show a success toast
       toast({
         title: "Success",
