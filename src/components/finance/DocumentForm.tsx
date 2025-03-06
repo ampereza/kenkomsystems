@@ -89,8 +89,9 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       
       // If this is a payment voucher, create a corresponding transaction record
       if (tableName === "payment_vouchers" && documentData && documentData.length > 0) {
-        // Use type assertion to tell TypeScript this is a payment voucher
-        const paymentVoucher = documentData[0] as {
+        // First cast to unknown, then to the specific type to avoid TypeScript errors
+        const paymentVoucherData = documentData[0] as unknown;
+        const paymentVoucher = paymentVoucherData as {
           id: string;
           total_amount: number;
           date: string;
