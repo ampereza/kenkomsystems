@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,7 +67,7 @@ export default function GeneralLedger() {
         Date: new Date(entry.entry_date).toLocaleDateString(),
         Reference: entry.reference_number,
         Description: entry.description,
-        Account: line.ledger_accounts.account_name,
+        Account: line.ledger_accounts?.account_name || "Unknown Account",
         Debit: line.debit_amount || "",
         Credit: line.credit_amount || "",
       }))
@@ -145,7 +146,7 @@ export default function GeneralLedger() {
                           {lineIndex === 0 ? entry.description : ""}
                         </TableCell>
                         <TableCell className="pl-8">
-                          {line.ledger_accounts.account_name}
+                          {line.ledger_accounts?.account_name || "Unknown Account"}
                         </TableCell>
                         <TableCell className="text-right">
                           {line.debit_amount ? `$${Number(line.debit_amount).toFixed(2)}` : ""}
