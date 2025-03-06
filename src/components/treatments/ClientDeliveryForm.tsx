@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useClients } from "@/hooks/useClients";
 
 interface ClientDeliveryFormProps {
   onSuccess?: () => void;
@@ -17,7 +18,7 @@ interface ClientDeliveryFormProps {
 export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [clients, setClients] = useState<any[]>([]);
+  const { clients, isLoading: clientsLoading } = useClients();
   const [selectedClient, setSelectedClient] = useState<string | undefined>(clientId);
   const [formData, setFormData] = useState({
     telecom_poles: "0",
@@ -32,26 +33,11 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
   });
 
   useEffect(() => {
-    const fetchClients = async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("id, name")
-        .order("name");
-
-      if (error) {
-        toast({
-          title: "Error fetching clients",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setClients(data || []);
-    };
-
-    fetchClients();
-  }, [toast]);
+    // Update selected client when clientId prop changes
+    if (clientId) {
+      setSelectedClient(clientId);
+    }
+  }, [clientId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -214,7 +200,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
             </label>
             <Select value={selectedClient} onValueChange={handleClientChange} disabled={!!clientId}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a client" />
+                <SelectValue placeholder={clientsLoading ? "Loading clients..." : "Select a client"} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((client) => (
