@@ -133,6 +133,52 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
         if (transactionError) {
           console.error("Error creating transaction:", transactionError);
         }
+        
+        // Also update the financial_summary table for immediate dashboard figures update
+        // First check if there's already an entry for this date and type
+        const receiptDate = new Date(receipt.date);
+        const dateStr = receiptDate.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+        
+        const { data: existingSummary, error: summaryError } = await supabase
+          .from("financial_summary")
+          .select("*")
+          .eq("date", dateStr)
+          .eq("type", "sale")
+          .single();
+        
+        if (summaryError && summaryError.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+          console.error("Error checking financial summary:", summaryError);
+        }
+        
+        if (existingSummary) {
+          // Update existing summary
+          const { error: updateError } = await supabase
+            .from("financial_summary")
+            .update({
+              transaction_count: existingSummary.transaction_count + 1,
+              total_amount: Number(existingSummary.total_amount) + Number(receipt.amount)
+            })
+            .eq("date", dateStr)
+            .eq("type", "sale");
+          
+          if (updateError) {
+            console.error("Error updating financial summary:", updateError);
+          }
+        } else {
+          // Create new summary entry
+          const { error: insertError } = await supabase
+            .from("financial_summary")
+            .insert({
+              date: dateStr,
+              type: "sale",
+              transaction_count: 1,
+              total_amount: receipt.amount
+            });
+          
+          if (insertError) {
+            console.error("Error creating financial summary:", insertError);
+          }
+        }
       }
       
       toast({
