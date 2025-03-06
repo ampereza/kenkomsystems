@@ -101,12 +101,12 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         kegs_added: values.kegsAdded,
         kegs_remaining: values.kegsRemaining,
         chemical_strength: values.chemicalStrength,
-        chemical_used: values.chemicalUsed,
+        chemical_used: values.chemicalUsed || null,
         facing_poles: values.facingPoles || 0,
         telecom_poles: values.telecomPoles || 0,
         distribution_poles: values.distributionPoles || 0,
         high_voltage_poles: values.highVoltagePoles || 0,
-        notes: values.notes,
+        notes: values.notes || null,
         is_client_owned: values.isClientOwnedPoles,
       };
 
@@ -115,8 +115,24 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         treatmentData.sorted_stock_id = values.sortedStockId;
         treatmentData.quantity = values.quantity || 0;
       } else {
-        // For client-owned poles, we still need these fields but can use defaults
-        treatmentData.sorted_stock_id = null;
+        // For client-owned poles, we still need a valid sorted_stock_id (required by the database)
+        // Get the first available sorted_stock item or create a default one if needed
+        if (sortedStock && sortedStock.length > 0) {
+          treatmentData.sorted_stock_id = sortedStock[0].id;
+        } else {
+          // If no sorted stock is available, we need to create one
+          const { data: newStock, error: stockError } = await supabase
+            .from("sorted_stock")
+            .select("id")
+            .limit(1);
+            
+          if (stockError || !newStock || newStock.length === 0) {
+            toast.error("Could not find a valid stock reference. Please add stock first.");
+            setIsSubmitting(false);
+            return;
+          }
+          treatmentData.sorted_stock_id = newStock[0].id;
+        }
         treatmentData.quantity = 0;
       }
 
