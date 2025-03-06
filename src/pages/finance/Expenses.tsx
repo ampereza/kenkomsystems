@@ -12,22 +12,51 @@ export default function Expenses() {
   const { data: expenses, isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch regular expenses from transactions table
+      const { data: transactionExpenses, error: transactionError } = await supabase
         .from("transactions")
         .select("*")
         .eq("type", "expense")
         .order("transaction_date", { ascending: false });
 
-      if (error) {
+      if (transactionError) {
         toast({
           variant: "destructive",
           title: "Error fetching expenses",
-          description: error.message,
+          description: transactionError.message,
         });
-        throw error;
+        throw transactionError;
       }
 
-      return data;
+      // Then fetch payment vouchers and format them as expenses
+      const { data: paymentVouchers, error: voucherError } = await supabase
+        .from("payment_vouchers")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (voucherError) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching payment vouchers",
+          description: voucherError.message,
+        });
+        throw voucherError;
+      }
+
+      // Convert payment vouchers to the same format as transactions
+      const voucherExpenses = paymentVouchers.map(voucher => ({
+        id: voucher.id,
+        type: "expense",
+        amount: voucher.total_amount,
+        transaction_date: voucher.date,
+        reference_number: voucher.voucher_number,
+        description: `Payment to ${voucher.paid_to}`,
+        supplier_id: voucher.supplier_id,
+        notes: voucher.amount_in_words
+      }));
+
+      // Combine both types of expenses
+      return [...transactionExpenses, ...voucherExpenses];
     },
   });
 
@@ -61,7 +90,7 @@ export default function Expenses() {
                 {expenses.map((expense) => (
                   <tr key={expense.id} className="border-t">
                     <td className="p-4">
-                      {new Date(expense.transaction_date!).toLocaleDateString()}
+                      {new Date(expense.transaction_date).toLocaleDateString()}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-1">

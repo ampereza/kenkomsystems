@@ -40,7 +40,7 @@ export function FinancialMetrics({ totals }: FinancialMetricsProps) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${netIncome < 0 ? 'text-red-500' : ''}`}>
+          <div className={`text-2xl font-bold ${netIncome < 0 ? 'text-red-500' : 'text-green-500'}`}>
             ${netIncome.toFixed(2)}
           </div>
         </CardContent>
