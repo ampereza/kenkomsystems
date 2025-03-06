@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
@@ -62,6 +63,7 @@ const Index = () => {
     queryKey: ["financial-stats"],
     queryFn: async () => {
       // Get regular transactions
+      console.log("Fetching financial stats...");
       const { data, error } = await supabase
         .from("transactions")
         .select("type, amount")
@@ -72,6 +74,8 @@ const Index = () => {
         console.error("Error fetching financial stats:", error);
         throw error;
       }
+
+      console.log("Transactions:", data);
 
       // Also fetch payment vouchers to include as expenses
       const { data: paymentVouchers, error: voucherError } = await supabase
@@ -84,6 +88,8 @@ const Index = () => {
         console.error("Error fetching payment vouchers:", voucherError);
         throw voucherError;
       }
+      
+      console.log("Payment vouchers:", paymentVouchers);
       
       const income = data
         ?.filter(t => t.type === 'sale' || t.type === 'treatment_income')
@@ -100,6 +106,11 @@ const Index = () => {
       
       // Calculate total expenses
       const expenses = transactionExpenses + voucherExpenses;
+
+      console.log("Income:", income);
+      console.log("Transaction expenses:", transactionExpenses);
+      console.log("Voucher expenses:", voucherExpenses);
+      console.log("Total expenses:", expenses);
 
       return {
         income,
