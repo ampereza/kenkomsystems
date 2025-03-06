@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,26 +140,8 @@ const SortStock = () => {
       const { error: insertError } = await supabase.from("sorted_stock").insert(insertData);
       if (insertError) throw insertError;
 
-      // If the category is rejected, also insert into rejected_poles_with_suppliers
-      if (formData.category === "rejected") {
-        // Get the supplier_id from the unsorted stock
-        const { data: unsortedStockData, error: unsortedError } = await supabase
-          .from("unsorted_stock")
-          .select("supplier_id")
-          .eq("id", formData.unsorted_stock_id)
-          .single();
-        
-        if (unsortedError) throw unsortedError;
-        
-        // Insert into rejected_poles_with_suppliers
-        const { error: rejectedError } = await supabase.from("rejected_poles_with_suppliers").insert({
-          supplier_id: unsortedStockData.supplier_id,
-          quantity: parseInt(formData.quantity),
-          notes: formData.notes || null,
-        });
-        
-        if (rejectedError) throw rejectedError;
-      }
+      // For rejected poles, we let the database trigger handle the insertion into rejected_poles_with_suppliers
+      // The trigger "track_rejected_poles" is already set up to handle this
 
       toast({
         title: "Success",
