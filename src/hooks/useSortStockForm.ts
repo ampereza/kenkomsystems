@@ -51,13 +51,41 @@ export function useSortStockForm(onSuccess: () => void) {
     }
 
     try {
+      // Get supplier_id for rejected poles
+      let supplier_id = null;
+      if (formData.category === "rejected") {
+        const { data: unsortedData, error: unsortedError } = await supabase
+          .from("unsorted_stock")
+          .select("supplier_id")
+          .eq("id", formData.unsorted_stock_id)
+          .single();
+        
+        if (unsortedError) {
+          throw new Error(`Failed to get supplier: ${unsortedError.message}`);
+        }
+        
+        supplier_id = unsortedData.supplier_id;
+        
+        // Check if supplier_id exists
+        if (!supplier_id) {
+          toast({
+            title: "Error",
+            description: "The selected unsorted stock doesn't have a supplier. Please select another stock or add a supplier.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Prepare data for insert based on category
+      const sorting_date = new Date().toISOString();
       const baseData = {
         unsorted_stock_id: formData.unsorted_stock_id,
         category: formData.category,
         quantity: parseInt(formData.quantity),
         notes: formData.notes || null,
-        sorting_date: new Date().toISOString(), // Add sorting_date explicitly for the trigger
+        sorting_date: sorting_date, // Add sorting_date explicitly for the trigger
       };
 
       // Add additional fields for non-rejected categories
@@ -76,6 +104,22 @@ export function useSortStockForm(onSuccess: () => void) {
       const { error: insertError } = await supabase.from("sorted_stock").insert(insertData);
       
       if (insertError) throw insertError;
+
+      // For rejected poles, we need to directly insert into rejected_poles_with_suppliers
+      // as a fallback in case the trigger fails
+      if (formData.category === "rejected" && supplier_id) {
+        const { error: rejectedError } = await supabase.from("rejected_poles_with_suppliers").insert({
+          supplier_id: supplier_id,
+          quantity: parseInt(formData.quantity),
+          sorting_date: sorting_date,
+          notes: formData.notes || null
+        });
+        
+        if (rejectedError) {
+          console.warn("Fallback insertion to rejected_poles_with_suppliers failed:", rejectedError);
+          // We don't throw here as the main insert succeeded and the trigger might have worked
+        }
+      }
 
       toast({
         title: "Success",
