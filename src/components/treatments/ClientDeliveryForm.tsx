@@ -15,12 +15,25 @@ interface ClientDeliveryFormProps {
   clientId?: string;
 }
 
+// Define a type for the form data
+interface FormData {
+  telecom_poles: string;
+  "9m_poles": string;
+  "10m_poles": string;
+  "11m_poles": string;
+  "12m_poles": string;
+  "14m_poles": string;
+  "16m_poles": string;
+  notes: string;
+  reference: string;
+}
+
 export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { clients, isLoading: clientsLoading } = useClients();
   const [selectedClient, setSelectedClient] = useState<string | undefined>(clientId);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     telecom_poles: "0",
     "9m_poles": "0",
     "10m_poles": "0",
@@ -31,7 +44,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
     notes: "",
     reference: "",
   });
-  const [clientStock, setClientStock] = useState<any>(null);
+  const [clientStock, setClientStock] = useState<Record<string, any> | null>(null);
   const [isLoadingStock, setIsLoadingStock] = useState(false);
 
   useEffect(() => {
@@ -140,7 +153,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
     setIsLoading(true);
 
     // Convert string values to integers
-    const processedData = Object.entries(formData).reduce(
+    const processedData: Record<string, any> = Object.entries(formData).reduce(
       (acc, [key, value]) => ({
         ...acc,
         [key]: key === "notes" || key === "reference" ? value : (parseInt(value) || 0),
@@ -161,7 +174,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
       }
 
       // Prepare update data - move poles from treated to delivered
-      const updateData: any = {};
+      const updateData: Record<string, any> = {};
       
       Object.entries(processedData)
         .filter(([key]) => key !== "notes" && key !== "reference")
@@ -288,6 +301,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_telecom_poles || 0}
                         value={formData.telecom_poles}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -306,6 +320,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_9m_poles || 0}
                         value={formData["9m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -324,6 +339,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_10m_poles || 0}
                         value={formData["10m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -342,6 +358,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_11m_poles || 0}
                         value={formData["11m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -360,6 +377,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_12m_poles || 0}
                         value={formData["12m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -378,6 +396,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_14m_poles || 0}
                         value={formData["14m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                     
@@ -396,6 +415,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                         max={clientStock.treated_16m_poles || 0}
                         value={formData["16m_poles"]}
                         onChange={handleInputChange}
+                        className="cursor-text"
                       />
                     </div>
                   </div>
@@ -410,6 +430,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                       value={formData.reference}
                       onChange={handleInputChange}
                       placeholder="Enter delivery reference number"
+                      className="cursor-text"
                     />
                   </div>
                   
@@ -424,6 +445,7 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
                       onChange={handleInputChange}
                       placeholder="Enter any additional notes"
                       rows={3}
+                      className="cursor-text"
                     />
                   </div>
                 </div>
