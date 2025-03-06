@@ -40,6 +40,7 @@ export function AuthForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isCreatingTestAccount, setIsCreatingTestAccount] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -60,9 +61,13 @@ export function AuthForm() {
     }
   };
 
-  // Try to create a demo user for testing
+  // Create a demo user for testing
   const createDemoUser = async (email: string, password: string, role: UserRole) => {
+    setIsCreatingTestAccount(true);
     try {
+      // Log the attempt
+      console.log('Creating test account with:', { email, role });
+      
       const { data: signupData, error: signupError } = await supabase.auth.signUp({
         email,
         password,
@@ -75,11 +80,16 @@ export function AuthForm() {
       });
 
       if (signupError) {
-        console.log('Could not create demo user:', signupError);
+        console.error('Could not create test account:', signupError);
+        toast({
+          variant: "destructive",
+          title: "Test Account Creation Failed",
+          description: signupError.message,
+        });
         return false;
       }
 
-      console.log('Created demo user:', signupData);
+      console.log('Created test account:', signupData);
       
       // Try to immediately sign in with the created account
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -89,17 +99,36 @@ export function AuthForm() {
 
       if (authError) {
         console.error('Could not sign in with new account:', authError);
+        toast({
+          variant: "destructive",
+          title: "Test Account Login Failed",
+          description: authError.message,
+        });
         return false;
       }
 
       console.log('Successfully signed in with new account:', authData);
+      toast({
+        title: "Success",
+        description: "Test account created and logged in successfully.",
+      });
+      
+      navigate('/');
       return true;
     } catch (error) {
-      console.error('Error creating demo user:', error);
+      console.error('Error creating test account:', error);
+      toast({
+        variant: "destructive",
+        title: "Test Account Creation Failed",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      });
       return false;
+    } finally {
+      setIsCreatingTestAccount(false);
     }
   };
 
+  // Handle form submission
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     setLoginError(null);
@@ -122,12 +151,7 @@ export function AuthForm() {
           const created = await createDemoUser(values.email, values.password, values.role);
           
           if (created) {
-            toast({
-              title: "Success",
-              description: "Demo user created and logged in successfully.",
-            });
-            
-            navigate('/');
+            // Already navigated in createDemoUser
             return;
           } else {
             setLoginError('Unable to login or create a test account. Please contact your administrator.');
@@ -175,6 +199,12 @@ export function AuthForm() {
       setIsLoading(false);
     }
   }
+
+  // Handle explicit test account creation
+  const handleCreateTestAccount = () => {
+    const values = form.getValues();
+    createDemoUser(values.email, values.password, values.role);
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -285,9 +315,21 @@ export function AuthForm() {
               )}
             />
             
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button type="submit" className="w-full" disabled={isLoading || isCreatingTestAccount}>
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleCreateTestAccount}
+                disabled={isLoading || isCreatingTestAccount}
+              >
+                {isCreatingTestAccount ? "Creating Test Account..." : "Create Test Account"}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
