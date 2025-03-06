@@ -26,8 +26,6 @@ interface CylinderNumberFieldProps {
 }
 
 export const CylinderNumberField = ({ control, cylinders }: CylinderNumberFieldProps) => {
-  console.log("Cylinders in component:", cylinders);
-  
   return (
     <FormField
       control={control}
@@ -46,8 +44,11 @@ export const CylinderNumberField = ({ control, cylinders }: CylinderNumberFieldP
               <SelectContent>
                 {cylinders && cylinders.length > 0 ? (
                   cylinders.map((cylinder) => (
-                    <SelectItem key={cylinder.id} value={cylinder.cylinder_number.toString()}>
-                      Cylinder #{cylinder.cylinder_number}
+                    <SelectItem 
+                      key={cylinder.id} 
+                      value={cylinder.cylinder_number.toString()}
+                    >
+                      Cylinder #{cylinder.cylinder_number} ({cylinder.capacity_liters}L)
                     </SelectItem>
                   ))
                 ) : (
