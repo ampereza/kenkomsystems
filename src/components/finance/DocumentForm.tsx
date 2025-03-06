@@ -76,11 +76,35 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       
       console.log("Submitting document to table:", tableName, "with data:", formattedData);
       
-      const { error } = await supabase.from(tableName).insert([formattedData]);
+      // Create the document
+      const { data: documentData, error } = await supabase
+        .from(tableName)
+        .insert([formattedData])
+        .select()
+        .single();
       
       if (error) {
         console.error("Supabase error:", error);
         throw error;
+      }
+      
+      // If this is a payment voucher, create a corresponding transaction record
+      if (tableName === "payment_vouchers" && documentData) {
+        const { error: transactionError } = await supabase
+          .from("transactions")
+          .insert({
+            type: "expense",
+            amount: documentData.total_amount,
+            transaction_date: documentData.date,
+            supplier_id: documentData.supplier_id,
+            description: `Payment to ${documentData.paid_to} (Voucher #${documentData.voucher_number})`,
+            reference_number: documentData.voucher_number
+          });
+        
+        if (transactionError) {
+          console.error("Error creating transaction:", transactionError);
+          // Continue even if transaction creation fails, to avoid blocking document creation
+        }
       }
       
       toast({

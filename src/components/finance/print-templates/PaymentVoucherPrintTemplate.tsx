@@ -21,13 +21,14 @@ export function PaymentVoucherPrintTemplate({ document }: PaymentVoucherPrintTem
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-xl font-bold uppercase">Payment Voucher</h2>
+        <p className="text-sm text-gray-500">Expense Document</p>
       </div>
       
       <div className="flex justify-between">
         <div>
           <p><strong>Voucher #:</strong> {document.voucher_number}</p>
           <p><strong>Date:</strong> {formatDate(document.date)}</p>
-          <p><strong>Supplier:</strong> {document.paid_to}</p>
+          <p><strong>Supplier/Paid To:</strong> {document.paid_to}</p>
         </div>
       </div>
       
