@@ -59,11 +59,11 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       kegsAdded: 0,
       kegsRemaining: 0,
       chemicalStrength: 6.0,
-      facingPoles: 0,
-      telecomPoles: 0,
-      distributionPoles: 0,
-      highVoltagePoles: 0,
-      quantity: 0,
+      facingPoles: '',
+      telecomPoles: '',
+      distributionPoles: '',
+      highVoltagePoles: '',
+      quantity: '',
       isClientOwnedPoles: false,
     },
   });
@@ -335,7 +335,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Facing Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -349,7 +349,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Telecom Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -363,7 +363,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Distribution Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -377,7 +377,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>High Voltage Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -422,7 +422,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                     <FormItem>
                       <FormLabel>Quantity to Use</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                        <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -134,6 +135,7 @@ const ReceiveSortedStock = () => {
               type="number"
               required
               min="1"
+              placeholder="Enter quantity"
               value={formData.quantity}
               onChange={(e) =>
                 setFormData({ ...formData, quantity: e.target.value })
