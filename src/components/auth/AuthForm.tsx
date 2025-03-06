@@ -18,7 +18,7 @@ import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  password: z.string().min(1, { message: 'Password is required' }),
   role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant'], {
     required_error: 'Please select a role',
   }),
@@ -60,6 +60,46 @@ export function AuthForm() {
     }
   };
 
+  // Try to create a demo user for testing
+  const createDemoUser = async (email: string, password: string, role: UserRole) => {
+    try {
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role,
+            full_name: role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+          }
+        }
+      });
+
+      if (signupError) {
+        console.log('Could not create demo user:', signupError);
+        return false;
+      }
+
+      console.log('Created demo user:', signupData);
+      
+      // Try to immediately sign in with the created account
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        console.error('Could not sign in with new account:', authError);
+        return false;
+      }
+
+      console.log('Successfully signed in with new account:', authData);
+      return true;
+    } catch (error) {
+      console.error('Error creating demo user:', error);
+      return false;
+    }
+  };
+
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     setLoginError(null);
@@ -76,18 +116,30 @@ export function AuthForm() {
       if (authError) {
         console.error('Login error details:', authError);
         
-        // Provide more specific error message
+        // If the credentials are invalid, try to create a demo user for testing
         if (authError.message.includes('Invalid login credentials')) {
-          setLoginError('Invalid email or password. Please verify your credentials and try again.');
+          console.log('Attempting to create demo user...');
+          const created = await createDemoUser(values.email, values.password, values.role);
+          
+          if (created) {
+            toast({
+              title: "Success",
+              description: "Demo user created and logged in successfully.",
+            });
+            
+            navigate('/');
+            return;
+          } else {
+            setLoginError('Unable to login or create a test account. Please contact your administrator.');
+          }
         } else {
           setLoginError(authError.message);
         }
         
-        // Display toast with error message
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: 'Invalid email or password. Please verify your credentials and try again.',
+          description: 'Unable to log in with these credentials. Please verify your information.',
         });
         
         setIsLoading(false);
@@ -226,7 +278,7 @@ export function AuthForm() {
                     <Input placeholder="Enter your password" type="password" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Default password for demo accounts is: Password123
+                    Default password is: Password123
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
