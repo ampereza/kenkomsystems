@@ -11,6 +11,7 @@ type PaymentVoucher = {
   voucher_number: string;
   date: string;
   paid_to: string;
+  supplier_id?: string;
   total_amount: number;
   amount_in_words?: string;
   payment_approved_by?: string;

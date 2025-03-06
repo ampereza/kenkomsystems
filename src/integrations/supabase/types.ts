@@ -521,6 +521,7 @@ export type Database = {
           paid_to: string
           payment_approved_by: string | null
           received_by: string | null
+          supplier_id: string | null
           total_amount: number
           voucher_number: string
         }
@@ -532,6 +533,7 @@ export type Database = {
           paid_to: string
           payment_approved_by?: string | null
           received_by?: string | null
+          supplier_id?: string | null
           total_amount?: number
           voucher_number: string
         }
@@ -543,10 +545,19 @@ export type Database = {
           paid_to?: string
           payment_approved_by?: string | null
           received_by?: string | null
+          supplier_id?: string | null
           total_amount?: number
           voucher_number?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payment_vouchers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
