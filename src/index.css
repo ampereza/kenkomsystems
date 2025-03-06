@@ -33,7 +33,7 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 }
 
@@ -41,8 +41,34 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
   body {
     @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+  
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
   }
 }
 
@@ -60,6 +86,15 @@
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 .stock-card {
@@ -88,4 +123,46 @@
 
 .stat-change.negative {
   @apply text-red-600;
+}
+
+/* Card hover effects */
+.hover-card {
+  @apply transition-all duration-200 hover:shadow-md hover:-translate-y-1;
+}
+
+/* Button and interactive elements */
+.interactive-element {
+  @apply transition-opacity hover:opacity-90 active:opacity-80;
+}
+
+/* Table styling improvements */
+.table-row-hover {
+  @apply hover:bg-muted/50 transition-colors;
+}
+
+/* Data visualization colors */
+.data-green {
+  @apply text-emerald-600;
+}
+
+.data-red {
+  @apply text-red-600;
+}
+
+.data-amber {
+  @apply text-amber-600;
+}
+
+.data-blue {
+  @apply text-blue-600;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+  @apply border rounded-lg p-5 bg-card shadow-sm hover:shadow-md transition-all;
+}
+
+/* Form group spacing */
+.form-group {
+  @apply space-y-2 mb-4;
 }
