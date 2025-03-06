@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -101,6 +102,37 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
     try {
       setIsSubmitting(true);
       
+      // Check if required values are provided
+      if (!values.cylinderId) {
+        toast.error("Please select a cylinder");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!values.clientId) {
+        toast.error("Please select a client");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // For client-owned poles, we don't need a valid sorted_stock_id
+      // For non-client-owned poles, we need both sorted_stock_id and quantity
+      if (!values.isClientOwnedPoles) {
+        if (!values.sortedStockId) {
+          toast.error("Please select a stock category");
+          setIsSubmitting(false);
+          return;
+        }
+        
+        if (values.quantity === null || values.quantity <= 0) {
+          toast.error("Please enter a valid quantity");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      console.log("Submitting treatment data:", values);
+      
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
         cylinder_id: values.cylinderId,
@@ -124,14 +156,23 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
         treatmentData.quantity = values.quantity || 0;
       } else {
         // For client-owned poles, we still need these fields but can use defaults
-        treatmentData.sorted_stock_id = '00000000-0000-0000-0000-000000000000'; // Using a placeholder UUID
+        treatmentData.sorted_stock_id = null; // Let the database use the default UUID if needed
         treatmentData.quantity = 0;
       }
 
-      const { error } = await supabase.from("treatments").insert(treatmentData);
-
-      if (error) throw error;
+      console.log("Sending treatment data to API:", treatmentData);
       
+      const { data, error } = await supabase
+        .from("treatments")
+        .insert(treatmentData)
+        .select();
+
+      if (error) {
+        console.error("Error details:", error);
+        throw error;
+      }
+      
+      console.log("Treatment created successfully:", data);
       toast.success("Treatment log entry created successfully");
       form.reset();
       onSubmitSuccess();
