@@ -5,6 +5,7 @@ export function FinancialNavbar() {
   const navItems = [
     { href: "/dashboards/financial", label: "Dashboard" },
     { href: "/finance/transactions", label: "Transactions" },
+    { href: "/finance/receipts", label: "Receipts" },
     { href: "/finance/expenses", label: "Expenses" },
     { href: "/finance/employees", label: "Employees" },
     { href: "/finance/payment-vouchers", label: "Payment Vouchers" },
