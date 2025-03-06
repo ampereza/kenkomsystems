@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -134,35 +133,12 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
           console.error("Error creating transaction:", transactionError);
         }
         
-        // Also update the financial_summary for immediate dashboard figures update
-        // Since financial_summary is a view, we'll add a new transaction instead
-        // with the same date to ensure the view gets updated correctly
-        const receiptDate = new Date(receipt.date);
-        const dateStr = receiptDate.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+        // Instead of trying to update financial_summary view directly,
+        // just log that we're relying on the view to update from the transaction
+        console.log("Receipt transaction created - financial summary view will update automatically");
         
-        try {
-          // First check if there's already a summary for this date
-          const { data: summaryData, error: summaryError } = await supabase
-            .rpc('get_financial_summary_for_date', { 
-              summary_date: dateStr,
-              summary_type: 'sale'
-            });
-          
-          if (!summaryError && summaryData) {
-            console.log("Found existing summary data:", summaryData);
-          }
-        } catch (rpcError) {
-          // If the RPC doesn't exist, we'll just log an error but continue
-          console.error("Error checking financial summary (RPC might not exist):", rpcError);
-        }
-        
-        // Instead of trying to update the view directly, create a transaction
-        // that will be reflected in the view
-        console.log(`Creating transaction to update financial summary for date ${dateStr}`);
-        
-        // No additional transaction is needed since we already created one above
-        // This will automatically be reflected in the financial_summary view
-        // The view is updated based on existing transactions data
+        // We don't need to make the RPC call here since the view will update
+        // automatically from the transaction we just created
       }
       
       toast({
