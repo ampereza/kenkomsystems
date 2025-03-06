@@ -59,10 +59,7 @@ export const SortStockFormFields = ({
             setFormData({
               ...formData,
               category: value,
-              length_unit: value === "rejected" ? null : getLengthUnit(value),
-              size: value === "rejected" ? null : formData.size,
-              length_value: value === "rejected" ? "" : formData.length_value,
-              diameter_mm: value === "rejected" ? "" : formData.diameter_mm,
+              length_unit: getLengthUnit(value),
             })
           }
         >
@@ -81,66 +78,62 @@ export const SortStockFormFields = ({
         </Select>
       </div>
 
-      {formData.category !== "rejected" && (
-        <>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Size*</label>
-            <Select
-              value={formData.size || ""}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, size: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select size" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {SIZES.map((size) => (
-                    <SelectItem key={size.value} value={size.value}>
-                      {size.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Size*</label>
+        <Select
+          value={formData.size || ""}
+          onValueChange={(value: any) =>
+            setFormData({ ...formData, size: value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select size" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {SIZES.map((size) => (
+                <SelectItem key={size.value} value={size.value}>
+                  {size.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="length">
-              Length* ({formData.length_unit})
-            </label>
-            <Input
-              id="length"
-              type="number"
-              step="0.01"
-              required
-              value={formData.length_value}
-              onChange={(e) =>
-                setFormData({ ...formData, length_value: e.target.value })
-              }
-            />
-          </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="length">
+          Length* ({formData.length_unit})
+        </label>
+        <Input
+          id="length"
+          type="number"
+          step="0.01"
+          required
+          value={formData.length_value}
+          onChange={(e) =>
+            setFormData({ ...formData, length_value: e.target.value })
+          }
+        />
+      </div>
 
-          {formData.category !== "fencing" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="diameter">
-                Diameter (mm)*
-              </label>
-              <Input
-                id="diameter"
-                type="number"
-                required
-                min="150"
-                max="240"
-                value={formData.diameter_mm}
-                onChange={(e) =>
-                  setFormData({ ...formData, diameter_mm: e.target.value })
-                }
-              />
-            </div>
-          )}
-        </>
+      {formData.category !== "fencing" && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="diameter">
+            Diameter (mm)*
+          </label>
+          <Input
+            id="diameter"
+            type="number"
+            required
+            min="150"
+            max="240"
+            value={formData.diameter_mm}
+            onChange={(e) =>
+              setFormData({ ...formData, diameter_mm: e.target.value })
+            }
+          />
+        </div>
       )}
 
       <div className="space-y-2">

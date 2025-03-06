@@ -8,7 +8,6 @@ export function StockNavbar() {
     { href: "/stock/sort", label: "Sort Stock" },
     { href: "/stock/receive-sorted", label: "Receive Sorted" },
     { href: "/stock/suppliers", label: "Suppliers" },
-    { href: "/stock/rejected-poles", label: "Rejected Poles" },
     { href: "/reports/stock", label: "Stock Report" },
     { href: "/reports/suppliers", label: "Supplier Report" },
   ];

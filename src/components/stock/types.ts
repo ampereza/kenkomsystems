@@ -1,5 +1,5 @@
 
-export type PoleCategory = "fencing" | "telecom" | "distribution" | "high_voltage" | "rejected";
+export type PoleCategory = "fencing" | "telecom" | "distribution" | "high_voltage";
 export type PoleSize = "small" | "medium" | "stout";
 export type LengthUnit = "ft" | "m";
 
@@ -29,7 +29,6 @@ export const CATEGORIES: { value: PoleCategory; label: string }[] = [
   { value: "telecom", label: "Telecom Poles" },
   { value: "distribution", label: "Distribution Poles" },
   { value: "high_voltage", label: "High Voltage Poles" },
-  { value: "rejected", label: "Rejected Poles" },
 ];
 
 export const SIZES: { value: PoleSize; label: string }[] = [

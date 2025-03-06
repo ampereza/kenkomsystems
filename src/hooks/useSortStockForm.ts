@@ -27,7 +27,7 @@ export function useSortStockForm(onSuccess: () => void) {
     setIsSubmitting(true);
 
     // Basic validation - check required fields
-    if (!formData.category || !formData.quantity || !formData.unsorted_stock_id) {
+    if (!formData.category || !formData.quantity || !formData.unsorted_stock_id || !formData.size) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -37,89 +37,25 @@ export function useSortStockForm(onSuccess: () => void) {
       return;
     }
 
-    // Special validation for non-rejected categories
-    if (formData.category !== "rejected") {
-      if (!formData.size) {
-        toast({
-          title: "Error",
-          description: "Please select a size",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
     try {
-      // Get supplier_id for rejected poles
-      let supplier_id = null;
-      if (formData.category === "rejected") {
-        const { data: unsortedData, error: unsortedError } = await supabase
-          .from("unsorted_stock")
-          .select("supplier_id")
-          .eq("id", formData.unsorted_stock_id)
-          .single();
-        
-        if (unsortedError) {
-          throw new Error(`Failed to get supplier: ${unsortedError.message}`);
-        }
-        
-        supplier_id = unsortedData.supplier_id;
-        
-        // Check if supplier_id exists
-        if (!supplier_id) {
-          toast({
-            title: "Error",
-            description: "The selected unsorted stock doesn't have a supplier. Please select another stock or add a supplier.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      // Prepare data for insert based on category
+      // Prepare data for insert
       const sorting_date = new Date().toISOString();
-      const baseData = {
+      const insertData = {
         unsorted_stock_id: formData.unsorted_stock_id,
         category: formData.category,
+        size: formData.size,
         quantity: parseInt(formData.quantity),
+        length_value: formData.length_value ? parseFloat(formData.length_value) : null,
+        length_unit: formData.length_unit,
+        diameter_mm: formData.category !== "fencing" && formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
         notes: formData.notes || null,
-        sorting_date: sorting_date, // Add sorting_date explicitly for the trigger
+        sorting_date: sorting_date,
       };
 
-      // Add additional fields for non-rejected categories
-      const insertData = formData.category === "rejected" 
-        ? baseData 
-        : {
-            ...baseData,
-            size: formData.size,
-            length_value: formData.length_value ? parseFloat(formData.length_value) : null,
-            length_unit: formData.length_unit,
-            diameter_mm: formData.category !== "fencing" && formData.diameter_mm ? parseInt(formData.diameter_mm) : null,
-          };
-
-      // Insert into sorted_stock table - the database trigger "track_rejected_poles" will handle
-      // the insertion into rejected_poles_with_suppliers automatically
+      // Insert into sorted_stock table
       const { error: insertError } = await supabase.from("sorted_stock").insert(insertData);
       
       if (insertError) throw insertError;
-
-      // For rejected poles, we need to directly insert into rejected_poles_with_suppliers
-      // as a fallback in case the trigger fails
-      if (formData.category === "rejected" && supplier_id) {
-        const { error: rejectedError } = await supabase.from("rejected_poles_with_suppliers").insert({
-          supplier_id: supplier_id,
-          quantity: parseInt(formData.quantity),
-          sorting_date: sorting_date,
-          notes: formData.notes || null
-        });
-        
-        if (rejectedError) {
-          console.warn("Fallback insertion to rejected_poles_with_suppliers failed:", rejectedError);
-          // We don't throw here as the main insert succeeded and the trigger might have worked
-        }
-      }
 
       toast({
         title: "Success",

@@ -646,47 +646,6 @@ export type Database = {
           },
         ]
       }
-      rejected_poles_with_suppliers: {
-        Row: {
-          collected_date: string | null
-          created_at: string | null
-          delivery_note_number: string | null
-          id: string
-          notes: string | null
-          quantity: number
-          sorting_date: string | null
-          supplier_id: string
-        }
-        Insert: {
-          collected_date?: string | null
-          created_at?: string | null
-          delivery_note_number?: string | null
-          id?: string
-          notes?: string | null
-          quantity: number
-          sorting_date?: string | null
-          supplier_id: string
-        }
-        Update: {
-          collected_date?: string | null
-          created_at?: string | null
-          delivery_note_number?: string | null
-          id?: string
-          notes?: string | null
-          quantity?: number
-          sorting_date?: string | null
-          supplier_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rejected_poles_with_suppliers_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       salary_payments: {
         Row: {
           amount: number
@@ -1166,15 +1125,6 @@ export type Database = {
         Row: {
           account_type: string | null
           total_amount: number | null
-        }
-        Relationships: []
-      }
-      rejected_poles_summary: {
-        Row: {
-          date: string | null
-          pending_collections: number | null
-          supplier_name: string | null
-          total_quantity: number | null
         }
         Relationships: []
       }
