@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }).default('kenkomdistributorsltd@gmail.com'),
+  email: z.string().email({ message: 'Please enter a valid email address' }).default('md@kenkomdistributorsltd.com'),
   password: z.string().optional(),
   role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant'], {
     required_error: 'Please select a role',
@@ -27,6 +27,15 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+// Define default user accounts
+const defaultAccounts = [
+  { email: 'md@kenkomdistributorsltd.com', role: 'managing_director' as UserRole, title: 'Managing Director' },
+  { email: 'gm@kenkomdistributorsltd.com', role: 'general_manager' as UserRole, title: 'General Manager' },
+  { email: 'pm@kenkomdistributorsltd.com', role: 'production_manager' as UserRole, title: 'Production Manager' },
+  { email: 'sm@kenkomdistributorsltd.com', role: 'stock_manager' as UserRole, title: 'Stock Manager' },
+  { email: 'accountant@kenkomdistributorsltd.com', role: 'accountant' as UserRole, title: 'Accountant' },
+];
 
 export function AuthForm() {
   const { toast } = useToast();
@@ -38,12 +47,22 @@ export function AuthForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: 'kenkomdistributorsltd@gmail.com',
-      password: '',
-      role: 'stock_manager',
+      email: 'md@kenkomdistributorsltd.com',
+      password: 'Password123',
+      role: 'managing_director',
       usePassword: true,
     },
   });
+
+  // Handle selecting a predefined account
+  const handleAccountSelect = (email: string) => {
+    const account = defaultAccounts.find(acc => acc.email === email);
+    if (account) {
+      form.setValue('email', account.email);
+      form.setValue('role', account.role);
+      form.setValue('password', 'Password123');
+    }
+  };
 
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
@@ -59,7 +78,7 @@ export function AuthForm() {
         // For development - in a real app, you would use magic links or OTP
         authResponse = await supabase.auth.signInWithPassword({
           email: values.email,
-          password: 'development_password', // This should be a pre-configured password in development environment
+          password: 'Password123', // Use the default password
         });
       } else if (values.usePassword && values.password) {
         // Regular password login
@@ -132,8 +151,28 @@ export function AuthForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleAccountSelect(value);
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an account" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {defaultAccounts.map((account) => (
+                        <SelectItem key={account.email} value={account.email}>
+                          {account.title} ({account.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormControl>
-                    <Input placeholder="kenkomdistributorsltd@gmail.com" type="email" {...field} />
+                    <Input className="mt-2" placeholder="Or enter email manually" type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,8 +242,11 @@ export function AuthForm() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="******" type="password" {...field} />
+                      <Input placeholder="Password123" type="password" {...field} />
                     </FormControl>
+                    <FormDescription>
+                      Default password for all accounts is: Password123
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
