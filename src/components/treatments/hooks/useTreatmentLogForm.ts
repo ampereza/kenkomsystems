@@ -116,7 +116,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         treatmentData.quantity = values.quantity || 0;
       } else {
         // For client-owned poles, we still need these fields but can use defaults
-        treatmentData.sorted_stock_id = null; // Let the database use the default UUID if needed
+        treatmentData.sorted_stock_id = null;
         treatmentData.quantity = 0;
       }
 
