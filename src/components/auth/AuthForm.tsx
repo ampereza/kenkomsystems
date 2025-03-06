@@ -71,24 +71,11 @@ export function AuthForm() {
     try {
       let authResponse;
       
-      // If in development mode and not using password, use magic link or a known development password
-      if (!values.usePassword) {
-        console.log('Attempting passwordless login in development mode');
-        
-        // For development - in a real app, you would use magic links or OTP
-        authResponse = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: 'Password123', // Use the default password
-        });
-      } else if (values.usePassword && values.password) {
-        // Regular password login
-        authResponse = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-      } else {
-        throw new Error('Password is required for login');
-      }
+      // For demonstration purposes only - using a simplified login approach
+      authResponse = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.usePassword && values.password ? values.password : 'Password123',
+      });
 
       if (authResponse.error) {
         throw authResponse.error;
@@ -218,7 +205,7 @@ export function AuthForm() {
                   <div className="space-y-0.5">
                     <FormLabel>Use Password</FormLabel>
                     <FormDescription>
-                      {usePassword ? "Sign in with a password" : "Sign in without a password"}
+                      {usePassword ? "Sign in with a password" : "Sign in without a password (uses default)"}
                     </FormDescription>
                   </div>
                   <FormControl>
