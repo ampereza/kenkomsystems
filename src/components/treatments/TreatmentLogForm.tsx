@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -51,7 +50,7 @@ type TreatmentLogFormProps = {
 
 export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const form = useForm<TreatmentFormValues>({
     defaultValues: {
       treatmentDate: new Date().toISOString().split('T')[0],
@@ -79,11 +78,15 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
   });
 
   // Fetch treatment cylinders for dropdown
-  const { data: cylinders } = useQuery({
+  const { data: cylinders, isLoading: isLoadingCylinders } = useQuery({
     queryKey: ["treatment_cylinders"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("treatment_cylinders").select("*");
+      const { data, error } = await supabase
+        .from("treatment_cylinders")
+        .select("*")
+        .order('cylinder_number');
       if (error) throw error;
+      console.log("Fetched cylinders:", data);
       return data;
     },
   });
@@ -219,6 +222,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isLoadingCylinders}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -227,7 +231,10 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                       </FormControl>
                       <SelectContent>
                         {cylinders?.map((cylinder) => (
-                          <SelectItem key={cylinder.id} value={cylinder.id}>
+                          <SelectItem 
+                            key={cylinder.id} 
+                            value={cylinder.id}
+                          >
                             Cylinder #{cylinder.cylinder_number} ({cylinder.capacity_liters}L)
                           </SelectItem>
                         ))}
