@@ -89,7 +89,15 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       
       // If this is a payment voucher, create a corresponding transaction record
       if (tableName === "payment_vouchers" && documentData && documentData.length > 0) {
-        const paymentVoucher = documentData[0];
+        // Use type assertion to tell TypeScript this is a payment voucher
+        const paymentVoucher = documentData[0] as {
+          id: string;
+          total_amount: number;
+          date: string;
+          supplier_id?: string;
+          paid_to: string;
+          voucher_number: string;
+        };
         
         const { error: transactionError } = await supabase
           .from("transactions")
