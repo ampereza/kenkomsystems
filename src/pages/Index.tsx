@@ -61,6 +61,7 @@ const Index = () => {
   const { data: financialStats } = useQuery({
     queryKey: ["financial-stats"],
     queryFn: async () => {
+      // Get regular transactions
       const { data, error } = await supabase
         .from("transactions")
         .select("type, amount")
@@ -72,13 +73,33 @@ const Index = () => {
         throw error;
       }
 
+      // Also fetch payment vouchers to include as expenses
+      const { data: paymentVouchers, error: voucherError } = await supabase
+        .from("payment_vouchers")
+        .select("total_amount")
+        .order("date", { ascending: false })
+        .limit(100);
+      
+      if (voucherError) {
+        console.error("Error fetching payment vouchers:", voucherError);
+        throw voucherError;
+      }
+      
       const income = data
         ?.filter(t => t.type === 'sale' || t.type === 'treatment_income')
         .reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
       
-      const expenses = data
+      // Sum up regular expenses
+      const transactionExpenses = data
         ?.filter(t => t.type === 'expense' || t.type === 'purchase' || t.type === 'salary')
         .reduce((acc, curr) => acc + Number(curr.amount), 0) || 0;
+      
+      // Add payment voucher amounts to expenses
+      const voucherExpenses = paymentVouchers
+        ?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
+      
+      // Calculate total expenses
+      const expenses = transactionExpenses + voucherExpenses;
 
       return {
         income,
