@@ -9,12 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
 // Import document form components and schemas
-import { DeliveryNoteForm, deliveryNoteSchema, DeliveryNoteFormValues } from "./document-forms/DeliveryNoteForm";
 import { PaymentVoucherForm, paymentVoucherSchema, PaymentVoucherFormValues } from "./document-forms/PaymentVoucherForm";
-import { ExpenseAuthorizationForm, expenseAuthSchema, ExpenseAuthFormValues } from "./document-forms/ExpenseAuthorizationForm";
 import { ReceiptForm, receiptSchema, ReceiptFormValues } from "./document-forms/ReceiptForm";
 
-type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
+type DocumentType = "payment-vouchers" | "receipts";
 
 interface DocumentFormProps {
   documentType: DocumentType;
@@ -30,17 +28,9 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   let tableName;
   
   switch (documentType) {
-    case "delivery-notes":
-      schema = deliveryNoteSchema;
-      tableName = "delivery_notes";
-      break;
     case "payment-vouchers":
       schema = paymentVoucherSchema;
       tableName = "payment_vouchers";
-      break;
-    case "expense-authorizations":
-      schema = expenseAuthSchema;
-      tableName = "expense_authorizations";
       break;
     case "receipts":
       schema = receiptSchema;
@@ -72,6 +62,11 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       // Make sure date is properly formatted for the database
       if (formattedData.date instanceof Date) {
         formattedData.date = formattedData.date.toISOString();
+      }
+      
+      // Remove client_id from receipt data as it's not in the database schema
+      if (tableName === "receipts" && formattedData.client_id) {
+        delete formattedData.client_id;
       }
       
       console.log("Submitting document to table:", tableName, "with data:", formattedData);
@@ -138,12 +133,8 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   // Render the appropriate form based on document type
   const renderForm = () => {
     switch (documentType) {
-      case "delivery-notes":
-        return <DeliveryNoteForm form={form as any} />;
       case "payment-vouchers":
         return <PaymentVoucherForm form={form as any} />;
-      case "expense-authorizations":
-        return <ExpenseAuthorizationForm form={form as any} />;
       case "receipts":
         return <ReceiptForm form={form as any} />;
       default:

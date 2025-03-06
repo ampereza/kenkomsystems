@@ -11,7 +11,6 @@ export const receiptSchema = z.object({
   receipt_number: z.string().min(1, { message: "Receipt number is required" }),
   date: z.date(),
   received_from: z.string().optional(),
-  client_id: z.string().optional(),
   payment_method: z.string().optional(),
   for_payment: z.string().optional(),
   amount: z.coerce.number().min(0),
@@ -35,7 +34,6 @@ export function ReceiptForm({ form }: ReceiptFormProps) {
       
       if (!error && data) {
         form.setValue("received_from", data.name);
-        form.setValue("client_id", clientId);
       }
     };
     
