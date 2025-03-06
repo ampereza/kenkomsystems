@@ -61,73 +61,6 @@ export function AuthForm() {
     }
   };
 
-  // Create a demo user for testing
-  const createDemoUser = async (email: string, password: string, role: UserRole) => {
-    setIsCreatingTestAccount(true);
-    try {
-      // Log the attempt
-      console.log('Creating test account with:', { email, role });
-      
-      const { data: signupData, error: signupError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role,
-            full_name: role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-          }
-        }
-      });
-
-      if (signupError) {
-        console.error('Could not create test account:', signupError);
-        toast({
-          variant: "destructive",
-          title: "Test Account Creation Failed",
-          description: signupError.message,
-        });
-        return false;
-      }
-
-      console.log('Created test account:', signupData);
-      
-      // Try to immediately sign in with the created account
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        console.error('Could not sign in with new account:', authError);
-        toast({
-          variant: "destructive",
-          title: "Test Account Login Failed",
-          description: authError.message,
-        });
-        return false;
-      }
-
-      console.log('Successfully signed in with new account:', authData);
-      toast({
-        title: "Success",
-        description: "Test account created and logged in successfully.",
-      });
-      
-      navigate('/');
-      return true;
-    } catch (error) {
-      console.error('Error creating test account:', error);
-      toast({
-        variant: "destructive",
-        title: "Test Account Creation Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-      });
-      return false;
-    } finally {
-      setIsCreatingTestAccount(false);
-    }
-  };
-
   // Handle form submission
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
@@ -136,7 +69,7 @@ export function AuthForm() {
     try {
       console.log('Attempting to log in with:', values.email);
       
-      // First try to sign in with existing credentials
+      // Try to sign in with existing credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
@@ -148,10 +81,10 @@ export function AuthForm() {
         // If the credentials are invalid, try to create a demo user for testing
         if (authError.message.includes('Invalid login credentials')) {
           console.log('Attempting to create demo user...');
-          const created = await createDemoUser(values.email, values.password, values.role);
+          const created = await handleCreateTestAccount();
           
           if (created) {
-            // Already navigated in createDemoUser
+            // Already navigated in handleCreateTestAccount
             return;
           } else {
             setLoginError('Unable to login or create a test account. Please contact your administrator.');
@@ -201,9 +134,138 @@ export function AuthForm() {
   }
 
   // Handle explicit test account creation
-  const handleCreateTestAccount = () => {
+  const handleCreateTestAccount = async () => {
     const values = form.getValues();
-    createDemoUser(values.email, values.password, values.role);
+    setIsCreatingTestAccount(true);
+    setLoginError(null);
+    
+    try {
+      // Log the attempt
+      console.log('Creating test account with:', { email: values.email, role: values.role });
+      
+      // First check if user already exists
+      const { data: existingUser, error: existingUserError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+      
+      // If user exists and login is successful, just use that
+      if (existingUser?.user) {
+        console.log('User already exists, logged in successfully');
+        toast({
+          title: "Success",
+          description: "Logged in with existing account successfully.",
+        });
+        navigate('/');
+        return true;
+      }
+      
+      // User doesn't exist or wrong password, try to create new account
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            role: values.role,
+            full_name: values.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+          }
+        }
+      });
+
+      if (signupError) {
+        console.error('Could not create test account:', signupError);
+        
+        // If error is about duplicate user, try to sign in directly
+        if (signupError.message.includes('duplicate key value') || 
+            signupError.message.includes('Database error saving new user')) {
+          
+          toast({
+            variant: "info",
+            title: "Account Already Exists",
+            description: "Attempting to sign in with the provided credentials.",
+          });
+          
+          // Try once more with the password
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+          });
+          
+          if (authError) {
+            console.error('Could not sign in with existing account:', authError);
+            setLoginError('This email already exists but the password is incorrect.');
+            toast({
+              variant: "destructive",
+              title: "Login Failed",
+              description: "This email is already registered but the password is incorrect.",
+            });
+            return false;
+          }
+          
+          console.log('Successfully signed in with existing account');
+          toast({
+            title: "Success",
+            description: "Signed in with existing account successfully.",
+          });
+          
+          navigate('/');
+          return true;
+        }
+        
+        setLoginError(signupError.message);
+        toast({
+          variant: "destructive",
+          title: "Test Account Creation Failed",
+          description: signupError.message,
+        });
+        return false;
+      }
+
+      console.log('Created test account:', signupData);
+      
+      // Try to immediately sign in with the created account
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (authError) {
+        console.error('Could not sign in with new account:', authError);
+        setLoginError(authError.message);
+        toast({
+          variant: "destructive",
+          title: "Test Account Login Failed",
+          description: authError.message,
+        });
+        return false;
+      }
+
+      console.log('Successfully signed in with new account:', authData);
+      toast({
+        title: "Success",
+        description: "Test account created and logged in successfully.",
+      });
+      
+      navigate('/');
+      return true;
+    } catch (error) {
+      console.error('Error creating test account:', error);
+      
+      let errorMessage = "An unknown error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setLoginError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Test Account Creation Failed",
+        description: errorMessage,
+      });
+      return false;
+    } finally {
+      setIsCreatingTestAccount(false);
+    }
   };
 
   return (
