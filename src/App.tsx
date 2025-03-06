@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +17,6 @@ import ReceiveStock from "./pages/stock/ReceiveStock";
 import SortStock from "./pages/stock/SortStock";
 import Suppliers from "./pages/stock/Suppliers";
 import ReceiveSortedStock from "./pages/stock/ReceiveSortedStock";
-import RejectedPoles from "./pages/stock/RejectedPoles";
 
 // Finance Routes
 import Transactions from "./pages/finance/Transactions";
@@ -72,7 +72,6 @@ const App = () => (
             <Route path="/stock/sort" element={<SortStock />} />
             <Route path="/stock/suppliers" element={<Suppliers />} />
             <Route path="/stock/receive-sorted" element={<ReceiveSortedStock />} />
-            <Route path="/stock/rejected-poles" element={<RejectedPoles />} />
             
             {/* Finance Routes */}
             <Route path="/finance/transactions" element={<Transactions />} />
