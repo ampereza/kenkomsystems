@@ -34,13 +34,13 @@ export type TreatmentFormValues = {
   kegsRemaining: number;
   chemicalStrength: number;
   chemicalUsed: string;
-  facingPoles: number;
-  telecomPoles: number;
-  distributionPoles: number;
-  highVoltagePoles: number;
+  facingPoles: number | null;
+  telecomPoles: number | null;
+  distributionPoles: number | null;
+  highVoltagePoles: number | null;
   notes: string;
   sortedStockId: string;
-  quantity: number;
+  quantity: number | null;
   isClientOwnedPoles: boolean;
 };
 
@@ -59,11 +59,11 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       kegsAdded: 0,
       kegsRemaining: 0,
       chemicalStrength: 6.0,
-      facingPoles: '',
-      telecomPoles: '',
-      distributionPoles: '',
-      highVoltagePoles: '',
-      quantity: '',
+      facingPoles: null,
+      telecomPoles: null,
+      distributionPoles: null,
+      highVoltagePoles: null,
+      quantity: null,
       isClientOwnedPoles: false,
     },
   });
@@ -102,10 +102,10 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
     try {
       setIsSubmitting(true);
       const totalPoles = 
-        Number(values.facingPoles) + 
-        Number(values.telecomPoles) + 
-        Number(values.distributionPoles) + 
-        Number(values.highVoltagePoles);
+        (values.facingPoles || 0) + 
+        (values.telecomPoles || 0) + 
+        (values.distributionPoles || 0) + 
+        (values.highVoltagePoles || 0);
 
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
@@ -116,10 +116,10 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
         kegs_remaining: values.kegsRemaining,
         chemical_strength: values.chemicalStrength,
         chemical_used: values.chemicalUsed,
-        facing_poles: values.facingPoles,
-        telecom_poles: values.telecomPoles,
-        distribution_poles: values.distributionPoles,
-        high_voltage_poles: values.highVoltagePoles,
+        facing_poles: values.facingPoles || 0,
+        telecom_poles: values.telecomPoles || 0,
+        distribution_poles: values.distributionPoles || 0,
+        high_voltage_poles: values.highVoltagePoles || 0,
         total_poles: totalPoles,
         notes: values.notes,
         is_client_owned: values.isClientOwnedPoles,
@@ -128,7 +128,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       // Only include sorted_stock_id and quantity if these are NOT client-owned poles
       if (!values.isClientOwnedPoles) {
         treatmentData.sorted_stock_id = values.sortedStockId;
-        treatmentData.quantity = values.quantity;
+        treatmentData.quantity = values.quantity || 0;
       } else {
         // For client-owned poles, we still need these fields but can use defaults
         treatmentData.sorted_stock_id = '00000000-0000-0000-0000-000000000000'; // Using a placeholder UUID
@@ -320,7 +320,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                 <FormItem>
                   <FormLabel>Chemical Used</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Enter chemical name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -335,7 +335,12 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Facing Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                      <Input 
+                        type="number" 
+                        placeholder="Enter quantity" 
+                        value={field.value === null ? '' : field.value} 
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -349,7 +354,12 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Telecom Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                      <Input 
+                        type="number" 
+                        placeholder="Enter quantity" 
+                        value={field.value === null ? '' : field.value} 
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -363,7 +373,12 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>Distribution Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                      <Input 
+                        type="number" 
+                        placeholder="Enter quantity" 
+                        value={field.value === null ? '' : field.value} 
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -377,7 +392,12 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                   <FormItem>
                     <FormLabel>High Voltage Poles</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                      <Input 
+                        type="number" 
+                        placeholder="Enter quantity" 
+                        value={field.value === null ? '' : field.value} 
+                        onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -422,7 +442,12 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                     <FormItem>
                       <FormLabel>Quantity to Use</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : Number(e.target.value))} />
+                        <Input 
+                          type="number" 
+                          placeholder="Enter quantity" 
+                          value={field.value === null ? '' : field.value} 
+                          onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -438,7 +463,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea rows={3} {...field} />
+                    <Textarea rows={3} {...field} placeholder="Add notes (optional)" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
