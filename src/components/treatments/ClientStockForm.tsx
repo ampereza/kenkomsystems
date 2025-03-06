@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
+import { useClients } from "@/hooks/useClients";
 
 interface ClientStockFormProps {
   onSuccess?: () => void;
@@ -16,7 +17,7 @@ interface ClientStockFormProps {
 export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [clients, setClients] = useState<any[]>([]);
+  const { clients, isLoading: clientsLoading } = useClients();
   const [selectedClient, setSelectedClient] = useState<string | undefined>(clientId);
   const [formData, setFormData] = useState({
     untreated_telecom_poles: "0",
@@ -37,26 +38,53 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
   });
 
   useEffect(() => {
-    const fetchClients = async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("id, name")
-        .order("name");
+    // Update selected client when clientId prop changes
+    if (clientId) {
+      setSelectedClient(clientId);
+      fetchExistingStock(clientId);
+    }
+  }, [clientId]);
 
-      if (error) {
-        toast({
-          title: "Error fetching clients",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
+  const fetchExistingStock = async (clientId: string) => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("client_stock")
+        .select("*")
+        .eq("client_id", clientId)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        throw error;
       }
 
-      setClients(data || []);
-    };
-
-    fetchClients();
-  }, [toast]);
+      if (data) {
+        // Format the data for the form
+        const formattedData = Object.entries(data).reduce(
+          (acc, [key, value]) => ({
+            ...acc,
+            [key]: key !== "id" && key !== "client_id" ? 
+              value !== null ? value.toString() : "0" : 
+              value
+          }),
+          {}
+        );
+        
+        setFormData((prev) => ({
+          ...prev,
+          ...formattedData
+        }));
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error fetching client stock",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,6 +96,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
 
   const handleClientChange = (value: string) => {
     setSelectedClient(value);
+    fetchExistingStock(value);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -148,7 +177,9 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Update Client Stock</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Package className="h-5 w-5" /> Update Client Stock
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -156,13 +187,17 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
             <label htmlFor="client" className="block text-sm font-medium mb-1">
               Client *
             </label>
-            <Select value={selectedClient} onValueChange={handleClientChange} disabled={!!clientId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a client" />
+            <Select 
+              value={selectedClient} 
+              onValueChange={handleClientChange} 
+              disabled={!!clientId || isLoading}
+            >
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue placeholder={clientsLoading ? "Loading clients..." : "Select a client"} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>
+                  <SelectItem key={client.id} value={client.id} className="cursor-pointer">
                     {client.name}
                   </SelectItem>
                 ))}
@@ -186,6 +221,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_telecom_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -200,6 +236,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_9m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -214,6 +251,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_10m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -228,6 +266,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_11m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -242,6 +281,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_12m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -256,6 +296,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_14m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -270,6 +311,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.untreated_16m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -288,6 +330,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_telecom_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -302,6 +345,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_9m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -316,6 +360,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_10m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -330,6 +375,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_11m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -344,6 +390,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_12m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -358,6 +405,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_14m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
             
@@ -372,12 +420,17 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
                 min="0"
                 value={formData.treated_16m_poles}
                 onChange={handleInputChange}
+                className="cursor-text"
               />
             </div>
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="cursor-pointer"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

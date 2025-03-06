@@ -17,7 +17,8 @@ import {
   Edit, 
   Package, 
   Search,
-  Truck 
+  Truck,
+  RefreshCw 
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
@@ -29,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ClientStockTableProps {
   onEdit?: (clientId: string) => void;
@@ -185,8 +187,13 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
               <SelectItem value="16m">16m Poles</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            Refresh
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            className="cursor-pointer"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" /> Refresh
           </Button>
         </div>
       </CardHeader>
@@ -244,24 +251,42 @@ export function ClientStockTable({ onEdit, onAddDelivery }: ClientStockTableProp
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
                           {onEdit && (
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => onEdit(stock.id)}
-                              title="Edit Stock"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => onEdit(stock.id)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Edit Stock
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                           {onAddDelivery && (
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => onAddDelivery(stock.id)}
-                              title="Record Delivery"
-                            >
-                              <Truck className="h-4 w-4" />
-                            </Button>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => onAddDelivery(stock.id)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Truck className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Record Delivery
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                         </div>
                       </TableCell>

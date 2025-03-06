@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Truck } from "lucide-react";
 import { useClients } from "@/hooks/useClients";
 
 interface ClientDeliveryFormProps {
@@ -22,22 +22,57 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
   const [selectedClient, setSelectedClient] = useState<string | undefined>(clientId);
   const [formData, setFormData] = useState({
     telecom_poles: "0",
-    poles_9m: "0",
-    poles_10m: "0",
-    poles_11m: "0",
-    poles_12m: "0",
-    poles_14m: "0",
-    poles_16m: "0",
-    delivery_note_number: "",
+    "9m_poles": "0",
+    "10m_poles": "0",
+    "11m_poles": "0",
+    "12m_poles": "0",
+    "14m_poles": "0",
+    "16m_poles": "0",
     notes: "",
+    reference: "",
   });
+  const [clientStock, setClientStock] = useState<any>(null);
+  const [isLoadingStock, setIsLoadingStock] = useState(false);
 
   useEffect(() => {
     // Update selected client when clientId prop changes
     if (clientId) {
       setSelectedClient(clientId);
+      fetchClientStock(clientId);
     }
   }, [clientId]);
+
+  useEffect(() => {
+    if (selectedClient) {
+      fetchClientStock(selectedClient);
+    }
+  }, [selectedClient]);
+
+  const fetchClientStock = async (clientId: string) => {
+    setIsLoadingStock(true);
+    try {
+      const { data, error } = await supabase
+        .from("client_stock")
+        .select("*")
+        .eq("client_id", clientId)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        throw error;
+      }
+
+      setClientStock(data || null);
+    } catch (error: any) {
+      console.error("Error fetching client stock:", error);
+      toast({
+        title: "Error fetching client stock",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingStock(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,6 +86,28 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
     setSelectedClient(value);
   };
 
+  const hasAnyPoles = () => {
+    return Object.entries(formData)
+      .filter(([key]) => key !== "notes" && key !== "reference")
+      .some(([_, value]) => parseInt(value) > 0);
+  };
+
+  const validateStock = () => {
+    if (!clientStock) return false;
+    
+    // Check if client has enough treated poles
+    const hasSufficientStock = Object.entries(formData)
+      .filter(([key]) => key !== "notes" && key !== "reference")
+      .every(([key, value]) => {
+        const stockKey = `treated_${key}`;
+        const requestedQuantity = parseInt(value) || 0;
+        const availableQuantity = clientStock[stockKey] || 0;
+        return requestedQuantity <= availableQuantity;
+      });
+      
+    return hasSufficientStock;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedClient) {
@@ -62,15 +119,19 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
       return;
     }
 
-    // Check if at least one pole is being delivered
-    const hasPoles = Object.entries(formData)
-      .filter(([key]) => key.includes("poles"))
-      .some(([_, value]) => parseInt(value, 10) > 0);
-
-    if (!hasPoles) {
+    if (!hasAnyPoles()) {
       toast({
         title: "No poles selected",
-        description: "Please specify at least one pole for delivery",
+        description: "Please enter at least one pole quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!validateStock()) {
+      toast({
+        title: "Insufficient stock",
+        description: "Client doesn't have enough treated poles in stock",
         variant: "destructive",
       });
       return;
@@ -78,99 +139,80 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
 
     setIsLoading(true);
 
-    // Convert string values to integers for pole quantities
-    const processedData = {
-      client_id: selectedClient,
-      telecom_poles: parseInt(formData.telecom_poles, 10) || 0,
-      poles_9m: parseInt(formData.poles_9m, 10) || 0,
-      poles_10m: parseInt(formData.poles_10m, 10) || 0,
-      poles_11m: parseInt(formData.poles_11m, 10) || 0,
-      poles_12m: parseInt(formData.poles_12m, 10) || 0,
-      poles_14m: parseInt(formData.poles_14m, 10) || 0,
-      poles_16m: parseInt(formData.poles_16m, 10) || 0,
-      delivery_note_number: formData.delivery_note_number,
-      notes: formData.notes,
-    };
+    // Convert string values to integers
+    const processedData = Object.entries(formData).reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]: key === "notes" || key === "reference" ? value : (parseInt(value) || 0),
+      }),
+      {}
+    );
 
     try {
-      // Check if the client has enough treated stock
-      const { data: clientStock, error: stockError } = await supabase
-        .from("client_stock")
-        .select("*")
-        .eq("client_id", selectedClient)
-        .single();
-
-      if (stockError) {
-        if (stockError.code === "PGRST116") {
-          // No stock record found
-          toast({
-            title: "No stock record",
-            description: "This client doesn't have a stock record. Please add stock first.",
-            variant: "destructive",
-          });
-          return;
-        }
-        throw stockError;
-      }
-
-      // Check if client has enough treated stock for each pole type
-      const insufficientStock = [];
-      if (processedData.telecom_poles > clientStock.treated_telecom_poles) {
-        insufficientStock.push("Telecom poles");
-      }
-      if (processedData.poles_9m > clientStock.treated_9m_poles) {
-        insufficientStock.push("9m poles");
-      }
-      if (processedData.poles_10m > clientStock.treated_10m_poles) {
-        insufficientStock.push("10m poles");
-      }
-      if (processedData.poles_11m > clientStock.treated_11m_poles) {
-        insufficientStock.push("11m poles");
-      }
-      if (processedData.poles_12m > clientStock.treated_12m_poles) {
-        insufficientStock.push("12m poles");
-      }
-      if (processedData.poles_14m > clientStock.treated_14m_poles) {
-        insufficientStock.push("14m poles");
-      }
-      if (processedData.poles_16m > clientStock.treated_16m_poles) {
-        insufficientStock.push("16m poles");
-      }
-
-      if (insufficientStock.length > 0) {
+      // Check if client stock exists
+      if (!clientStock) {
         toast({
-          title: "Insufficient treated stock",
-          description: `Client does not have enough: ${insufficientStock.join(", ")}`,
+          title: "No stock found",
+          description: "This client doesn't have any stock to deliver",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
-      // Insert delivery record
-      const { error: insertError } = await supabase
-        .from("client_deliveries")
-        .insert(processedData);
+      // Prepare update data - move poles from treated to delivered
+      const updateData: any = {};
+      
+      Object.entries(processedData)
+        .filter(([key]) => key !== "notes" && key !== "reference")
+        .forEach(([key, value]) => {
+          const numValue = typeof value === 'string' ? parseInt(value) || 0 : value;
+          if (numValue > 0) {
+            const treatedKey = `treated_${key}`;
+            const deliveredKey = `delivered_${key}`;
+            
+            // Decrease treated poles
+            updateData[treatedKey] = Math.max(0, (clientStock[treatedKey] || 0) - numValue);
+            
+            // Increase delivered poles
+            updateData[deliveredKey] = (clientStock[deliveredKey] || 0) + numValue;
+          }
+        });
 
-      if (insertError) {
-        throw insertError;
+      // Update client stock
+      const { error: updateError } = await supabase
+        .from("client_stock")
+        .update(updateData)
+        .eq("id", clientStock.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // Create delivery record
+      const { error: deliveryError } = await supabase
+        .from("client_deliveries")
+        .insert({
+          client_id: selectedClient,
+          delivery_date: new Date().toISOString(),
+          telecom_poles: processedData.telecom_poles || 0,
+          "9m_poles": processedData["9m_poles"] || 0,
+          "10m_poles": processedData["10m_poles"] || 0,
+          "11m_poles": processedData["11m_poles"] || 0,
+          "12m_poles": processedData["12m_poles"] || 0,
+          "14m_poles": processedData["14m_poles"] || 0,
+          "16m_poles": processedData["16m_poles"] || 0,
+          notes: processedData.notes || null,
+          reference: processedData.reference || null
+        });
+
+      if (deliveryError) {
+        throw deliveryError;
       }
 
       toast({
         title: "Delivery recorded successfully",
         description: "The client delivery has been recorded",
-      });
-
-      // Reset form
-      setFormData({
-        telecom_poles: "0",
-        poles_9m: "0",
-        poles_10m: "0",
-        poles_11m: "0",
-        poles_12m: "0",
-        poles_14m: "0",
-        poles_16m: "0",
-        delivery_note_number: "",
-        notes: "",
       });
 
       if (onSuccess) {
@@ -190,7 +232,9 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>Record Client Delivery</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Truck className="h-5 w-5" /> Record Client Delivery
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -212,143 +256,200 @@ export function ClientDeliveryForm({ onSuccess, clientId }: ClientDeliveryFormPr
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="col-span-full">
-              <h3 className="font-medium mb-2">Delivery Quantities</h3>
+          {isLoadingStock ? (
+            <div className="py-4 text-center">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+              <p className="mt-2 text-sm text-muted-foreground">Loading client stock...</p>
             </div>
-            
-            <div>
-              <label htmlFor="telecom_poles" className="block text-sm font-medium mb-1">
-                Telecom Poles
-              </label>
-              <Input
-                id="telecom_poles"
-                name="telecom_poles"
-                type="number"
-                min="0"
-                value={formData.telecom_poles}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_9m" className="block text-sm font-medium mb-1">
-                9m Poles
-              </label>
-              <Input
-                id="poles_9m"
-                name="poles_9m"
-                type="number"
-                min="0"
-                value={formData.poles_9m}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_10m" className="block text-sm font-medium mb-1">
-                10m Poles
-              </label>
-              <Input
-                id="poles_10m"
-                name="poles_10m"
-                type="number"
-                min="0"
-                value={formData.poles_10m}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_11m" className="block text-sm font-medium mb-1">
-                11m Poles
-              </label>
-              <Input
-                id="poles_11m"
-                name="poles_11m"
-                type="number"
-                min="0"
-                value={formData.poles_11m}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_12m" className="block text-sm font-medium mb-1">
-                12m Poles
-              </label>
-              <Input
-                id="poles_12m"
-                name="poles_12m"
-                type="number"
-                min="0"
-                value={formData.poles_12m}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_14m" className="block text-sm font-medium mb-1">
-                14m Poles
-              </label>
-              <Input
-                id="poles_14m"
-                name="poles_14m"
-                type="number"
-                min="0"
-                value={formData.poles_14m}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="poles_16m" className="block text-sm font-medium mb-1">
-                16m Poles
-              </label>
-              <Input
-                id="poles_16m"
-                name="poles_16m"
-                type="number"
-                min="0"
-                value={formData.poles_16m}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="delivery_note_number" className="block text-sm font-medium mb-1">
-                Delivery Note Number
-              </label>
-              <Input
-                id="delivery_note_number"
-                name="delivery_note_number"
-                value={formData.delivery_note_number}
-                onChange={handleInputChange}
-              />
-            </div>
-            
-            <div className="md:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium mb-1">
-                Notes
-              </label>
-              <Textarea
-                id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                rows={3}
-              />
-            </div>
-          </div>
+          ) : (
+            <>
+              {clientStock ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="col-span-full">
+                      <h3 className="font-medium mb-2">Poles to Deliver</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Enter the quantity of treated poles to be delivered
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="telecom_poles" className="block text-sm font-medium mb-1">
+                        Telecom Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_telecom_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="telecom_poles"
+                        name="telecom_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_telecom_poles || 0}
+                        value={formData.telecom_poles}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="9m_poles" className="block text-sm font-medium mb-1">
+                        9m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_9m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="9m_poles"
+                        name="9m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_9m_poles || 0}
+                        value={formData["9m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="10m_poles" className="block text-sm font-medium mb-1">
+                        10m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_10m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="10m_poles"
+                        name="10m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_10m_poles || 0}
+                        value={formData["10m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="11m_poles" className="block text-sm font-medium mb-1">
+                        11m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_11m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="11m_poles"
+                        name="11m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_11m_poles || 0}
+                        value={formData["11m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="12m_poles" className="block text-sm font-medium mb-1">
+                        12m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_12m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="12m_poles"
+                        name="12m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_12m_poles || 0}
+                        value={formData["12m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="14m_poles" className="block text-sm font-medium mb-1">
+                        14m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_14m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="14m_poles"
+                        name="14m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_14m_poles || 0}
+                        value={formData["14m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="16m_poles" className="block text-sm font-medium mb-1">
+                        16m Poles
+                        <span className="text-xs text-muted-foreground ml-2">
+                          (Available: {clientStock.treated_16m_poles || 0})
+                        </span>
+                      </label>
+                      <Input
+                        id="16m_poles"
+                        name="16m_poles"
+                        type="number"
+                        min="0"
+                        max={clientStock.treated_16m_poles || 0}
+                        value={formData["16m_poles"]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="reference" className="block text-sm font-medium mb-1">
+                      Reference Number (Optional)
+                    </label>
+                    <Input
+                      id="reference"
+                      name="reference"
+                      value={formData.reference}
+                      onChange={handleInputChange}
+                      placeholder="Enter delivery reference number"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="notes" className="block text-sm font-medium mb-1">
+                      Notes (Optional)
+                    </label>
+                    <Textarea
+                      id="notes"
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleInputChange}
+                      placeholder="Enter any additional notes"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              ) : (
+                selectedClient && (
+                  <div className="py-4 text-center">
+                    <p className="text-muted-foreground">No stock found for this client.</p>
+                    <p className="text-sm mt-2">
+                      Please add stock for this client before recording deliveries.
+                    </p>
+                  </div>
+                )
+              )}
+            </>
+          )}
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              disabled={isLoading || isLoadingStock || !selectedClient || !clientStock} 
+              className="cursor-pointer"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Recording...
+                  Recording Delivery...
                 </>
               ) : (
                 "Record Delivery"
