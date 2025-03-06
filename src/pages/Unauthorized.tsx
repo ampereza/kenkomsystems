@@ -1,17 +1,33 @@
 
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { AlertTriangle } from 'lucide-react';
 
 export default function Unauthorized() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
 
   return (
-    <div className="container flex flex-col items-center justify-center min-h-screen py-6">
-      <h1 className="text-4xl font-bold mb-4">Unauthorized Access</h1>
-      <p className="text-muted-foreground mb-6">
-        You don't have permission to access this page.
-      </p>
-      <Button onClick={() => navigate("/")}>Return to Home</Button>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="max-w-md text-center">
+        <AlertTriangle className="mx-auto h-16 w-16 text-amber-500 mb-6" />
+        <h1 className="text-3xl font-bold tracking-tight">Access Denied</h1>
+        <p className="mt-4 text-muted-foreground">
+          You don't have permission to access this page. Your current role is{' '}
+          <strong>{profile?.role?.replace(/_/g, ' ') || 'unknown'}</strong>, which
+          doesn't have the required permissions.
+        </p>
+        <div className="mt-8 flex flex-col space-y-4">
+          <Button onClick={() => navigate('/')}>
+            Return to Home
+          </Button>
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            Go Back
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
