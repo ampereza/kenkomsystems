@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -169,7 +168,6 @@ export default function FinancialReport() {
             <IncomeStatement />
             
             <FinancialStatements
-              /* Remove the balanceSheet prop since it's now fetched inside the component */
               incomeStatement={incomeStatement}
               onExportBalanceSheet={handleExportBalanceSheet}
               onExportIncomeStatement={handleExportIncomeStatement}
