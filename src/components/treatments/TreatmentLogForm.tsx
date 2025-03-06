@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -101,12 +100,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
   const onSubmit = async (values: TreatmentFormValues) => {
     try {
       setIsSubmitting(true);
-      const totalPoles = 
-        (values.facingPoles || 0) + 
-        (values.telecomPoles || 0) + 
-        (values.distributionPoles || 0) + 
-        (values.highVoltagePoles || 0);
-
+      
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
         cylinder_id: values.cylinderId,
@@ -120,7 +114,6 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
         telecom_poles: values.telecomPoles || 0,
         distribution_poles: values.distributionPoles || 0,
         high_voltage_poles: values.highVoltagePoles || 0,
-        total_poles: totalPoles,
         notes: values.notes,
         is_client_owned: values.isClientOwnedPoles,
       };
