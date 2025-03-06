@@ -4,25 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useReactToPrint } from "react-to-print";
-import { DeliveryNotePrintTemplate } from "./print-templates/DeliveryNotePrintTemplate";
 import { PaymentVoucherPrintTemplate } from "./print-templates/PaymentVoucherPrintTemplate";
-import { ExpenseAuthorizationPrintTemplate } from "./print-templates/ExpenseAuthorizationPrintTemplate";
 import { ReceiptPrintTemplate } from "./print-templates/ReceiptPrintTemplate";
-
-interface DeliveryNote {
-  id: string;
-  note_number: string;
-  date: string;
-  client_name: string;
-  client_id?: string;
-  batch_number?: string;
-  vehicle_number?: string;
-  transporter?: string;
-  loaded_by?: string;
-  received_by?: string;
-  total_quantity: number;
-  notes?: string;
-}
 
 interface PaymentVoucher {
   id: string;
@@ -36,18 +19,6 @@ interface PaymentVoucher {
   received_by?: string;
 }
 
-interface ExpenseAuthorization {
-  id: string;
-  authorization_number: string;
-  date: string;
-  received_from?: string;
-  supplier_id?: string;
-  sum_of_shillings: number;
-  being_payment_of?: string;
-  cash_cheque_no?: string;
-  balance?: number;
-}
-
 interface Receipt {
   id: string;
   receipt_number: string;
@@ -59,8 +30,8 @@ interface Receipt {
   for_payment?: string;
 }
 
-type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
-type Document = DeliveryNote | PaymentVoucher | ExpenseAuthorization | Receipt;
+type DocumentType = "payment-vouchers" | "receipts";
+type Document = PaymentVoucher | Receipt;
 
 interface PrintDocumentProps {
   documentType: DocumentType;
@@ -79,12 +50,8 @@ export function PrintDocument({ documentType, document }: PrintDocumentProps) {
 
   const renderTemplate = () => {
     switch (documentType) {
-      case "delivery-notes":
-        return <DeliveryNotePrintTemplate document={document as DeliveryNote} />;
       case "payment-vouchers":
         return <PaymentVoucherPrintTemplate document={document as PaymentVoucher} />;
-      case "expense-authorizations":
-        return <ExpenseAuthorizationPrintTemplate document={document as ExpenseAuthorization} />;
       case "receipts":
         return <ReceiptPrintTemplate document={document as Receipt} />;
       default:
