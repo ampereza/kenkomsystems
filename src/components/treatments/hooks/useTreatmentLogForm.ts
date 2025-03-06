@@ -65,6 +65,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
   const onSubmit = async (values: TreatmentFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log("Starting treatment log submission process");
       
       // Check if required values are provided
       if (!values.cylinderNumber) {
@@ -115,6 +116,8 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         return;
       }
       
+      console.log("Preparing treatment data for submission");
+      
       // Prepare the treatment data object with the correct field names for the database
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
@@ -159,6 +162,8 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         treatmentData.quantity = 0;
       }
       
+      console.log("Submitting treatment data to database", treatmentData);
+      
       const { data, error } = await supabase
         .from("treatments")
         .insert(treatmentData)
@@ -167,6 +172,11 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
       if (error) {
         console.error("Error details:", error);
         toast.error(`Failed to create treatment log: ${error.message}`);
+        if (error.code === "42501") {
+          toast.error("Permission denied. You may not have the right access level.");
+        } else if (error.details) {
+          toast.error(`Details: ${error.details}`);
+        }
         setIsSubmitting(false);
         return;
       }
