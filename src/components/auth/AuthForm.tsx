@@ -12,18 +12,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }).default('md@kenkomdistributorsltd.com'),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters' }).default('Password123'),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant'], {
     required_error: 'Please select a role',
   }),
-  usePassword: z.boolean().default(true),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,7 +39,6 @@ export function AuthForm() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [usePassword, setUsePassword] = useState(true);
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
@@ -50,7 +47,6 @@ export function AuthForm() {
       email: 'md@kenkomdistributorsltd.com',
       password: 'Password123',
       role: 'managing_director',
-      usePassword: true,
     },
   });
 
@@ -69,8 +65,9 @@ export function AuthForm() {
     setLoginError(null);
     
     try {
-      console.log('Logging in with:', values.email, 'password:', values.password);
+      console.log('Attempting to log in with:', values.email);
       
+      // First try to sign in with existing credentials
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
@@ -78,7 +75,23 @@ export function AuthForm() {
 
       if (authError) {
         console.error('Login error details:', authError);
-        throw authError;
+        
+        // Provide more specific error message
+        if (authError.message.includes('Invalid login credentials')) {
+          setLoginError('Invalid email or password. Please verify your credentials and try again.');
+        } else {
+          setLoginError(authError.message);
+        }
+        
+        // Display toast with error message
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: 'Invalid email or password. Please verify your credentials and try again.',
+        });
+        
+        setIsLoading(false);
+        return;
       }
 
       console.log('Login successful:', authData);
@@ -96,11 +109,7 @@ export function AuthForm() {
       let errorMessage = "Failed to log in. Please check your credentials.";
       
       if (error instanceof Error) {
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Invalid email or password. Please try again.";
-        } else {
-          errorMessage = error.message;
-        }
+        errorMessage = error.message;
       }
       
       setLoginError(errorMessage);
@@ -114,12 +123,6 @@ export function AuthForm() {
       setIsLoading(false);
     }
   }
-
-  const togglePasswordMode = () => {
-    const currentValue = form.getValues('usePassword');
-    form.setValue('usePassword', !currentValue);
-    setUsePassword(!currentValue);
-  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -215,39 +218,15 @@ export function AuthForm() {
             
             <FormField
               control={form.control}
-              name="usePassword"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel>Use Password</FormLabel>
-                    <FormDescription>
-                      {usePassword ? "Sign in with a password" : "Sign in without a password (uses default)"}
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={(checked) => {
-                        field.onChange(checked);
-                        setUsePassword(checked);
-                      }}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="Password123" type="password" {...field} />
+                    <Input placeholder="Enter your password" type="password" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Default password for all accounts is: Password123
+                    Default password for demo accounts is: Password123
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
