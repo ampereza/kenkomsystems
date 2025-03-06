@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -180,7 +179,7 @@ export function AuthForm() {
             signupError.message.includes('Database error saving new user')) {
           
           toast({
-            variant: "info",
+            variant: "default",
             title: "Account Already Exists",
             description: "Attempting to sign in with the provided credentials.",
           });
