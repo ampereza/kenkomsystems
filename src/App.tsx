@@ -22,7 +22,6 @@ import ReceiveSortedStock from "./pages/stock/ReceiveSortedStock";
 import Transactions from "./pages/finance/Transactions";
 import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
-import Documents from "./pages/finance/Documents";
 
 // Report Routes
 import FinancialReport from "./pages/reports/FinancialReport";
@@ -77,7 +76,6 @@ const App = () => (
             <Route path="/finance/transactions" element={<Transactions />} />
             <Route path="/finance/expenses" element={<Expenses />} />
             <Route path="/finance/employees" element={<Employees />} />
-            <Route path="/finance/documents" element={<Documents />} />
             
             {/* Report Routes */}
             <Route path="/reports/financial" element={<FinancialReport />} />

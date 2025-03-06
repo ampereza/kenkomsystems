@@ -3,11 +3,14 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
+type DocumentType = "payment-vouchers" | "receipts";
+
 interface DocumentFormProps {
+  documentType: DocumentType;
   onSuccess: () => void;
 }
 
-export function DocumentForm({ onSuccess }: DocumentFormProps) {
+export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   // Create a simple form placeholder
   const form = useForm<any>({
     defaultValues: {
