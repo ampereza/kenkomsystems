@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,18 +96,6 @@ export default function FinancialReport() {
     },
   });
 
-  const { data: balanceSheet } = useQuery({
-    queryKey: ["balance-sheet"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("balance_sheet")
-        .select("*");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const { data: incomeStatement } = useQuery({
     queryKey: ["income-statement"],
     queryFn: async () => {
@@ -140,8 +127,17 @@ export default function FinancialReport() {
   }));
 
   const handleExportBalanceSheet = () => {
-    if (!balanceSheet) return;
-    exportToExcel(balanceSheet, `balance-sheet-${new Date().toISOString().split('T')[0]}`);
+    // This function will be passed to FinancialStatements component
+    const balanceSheetData = document.querySelectorAll('[data-export-balance-sheet="true"]');
+    if (balanceSheetData) {
+      const data = Array.from(balanceSheetData).map(row => ({
+        account_code: row.getAttribute('data-account-code'),
+        account_name: row.getAttribute('data-account-name'),
+        account_type: row.getAttribute('data-account-type'),
+        balance: row.getAttribute('data-balance')
+      }));
+      exportToExcel(data, `balance-sheet-${new Date().toISOString().split('T')[0]}`);
+    }
   };
 
   const handleExportIncomeStatement = () => {
@@ -172,7 +168,6 @@ export default function FinancialReport() {
             <IncomeStatement />
             
             <FinancialStatements
-              balanceSheet={balanceSheet}
               incomeStatement={incomeStatement}
               onExportBalanceSheet={handleExportBalanceSheet}
               onExportIncomeStatement={handleExportIncomeStatement}
