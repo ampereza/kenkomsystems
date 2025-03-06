@@ -6,18 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { DeliveryNotesTable } from "@/components/finance/documents/DeliveryNotesTable";
 import { PaymentVouchersTable } from "@/components/finance/documents/PaymentVouchersTable";
-import { ExpenseAuthorizationsTable } from "@/components/finance/documents/ExpenseAuthorizationsTable";
 import { ReceiptsTable } from "@/components/finance/documents/ReceiptsTable";
 import { ViewDocumentDialog } from "@/components/finance/documents/ViewDocumentDialog";
 import { AddDocumentDialog } from "@/components/finance/documents/AddDocumentDialog";
 
-// Types for our documents
-type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
+type DocumentType = "payment-vouchers" | "receipts";
 
 export default function Documents() {
-  const [activeTab, setActiveTab] = useState<DocumentType>("delivery-notes");
+  const [activeTab, setActiveTab] = useState<DocumentType>("payment-vouchers");
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -52,25 +49,9 @@ export default function Documents() {
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DocumentType)} className="w-full">
           <TabsList className="mb-4">
-            <TabsTrigger value="delivery-notes">Delivery Notes</TabsTrigger>
             <TabsTrigger value="payment-vouchers">Payment Vouchers</TabsTrigger>
-            <TabsTrigger value="expense-authorizations">Expense Authorizations</TabsTrigger>
             <TabsTrigger value="receipts">Receipts</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="delivery-notes">
-            <Card>
-              <CardHeader>
-                <CardTitle>Delivery Notes</CardTitle>
-                <CardDescription>
-                  View and manage all delivery notes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DeliveryNotesTable onViewDocument={handleViewDocument} />
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="payment-vouchers">
             <Card>
@@ -82,20 +63,6 @@ export default function Documents() {
               </CardHeader>
               <CardContent>
                 <PaymentVouchersTable onViewDocument={handleViewDocument} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="expense-authorizations">
-            <Card>
-              <CardHeader>
-                <CardTitle>Expense Authorizations</CardTitle>
-                <CardDescription>
-                  View and manage all expense authorizations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ExpenseAuthorizationsTable onViewDocument={handleViewDocument} />
               </CardContent>
             </Card>
           </TabsContent>

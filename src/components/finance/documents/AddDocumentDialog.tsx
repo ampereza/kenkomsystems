@@ -2,7 +2,7 @@
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DocumentForm } from "@/components/finance/DocumentForm";
 
-type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
+type DocumentType = "payment-vouchers" | "receipts";
 
 interface AddDocumentDialogProps {
   documentType: DocumentType;

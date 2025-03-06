@@ -1,9 +1,8 @@
-
 import { format } from "date-fns";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PrintDocument } from "@/components/finance/PrintDocument";
 
-type DocumentType = "delivery-notes" | "payment-vouchers" | "expense-authorizations" | "receipts";
+type DocumentType = "payment-vouchers" | "receipts";
 
 interface ViewDocumentDialogProps {
   documentType: DocumentType;
