@@ -109,6 +109,32 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
         }
       }
       
+      // If this is a receipt, create a corresponding income transaction record
+      if (tableName === "receipts" && documentData && documentData.length > 0) {
+        const receipt = documentData[0] as unknown as {
+          id: string;
+          amount: number;
+          date: string;
+          received_from?: string;
+          receipt_number: string;
+          for_payment?: string;
+        };
+        
+        const { error: transactionError } = await supabase
+          .from("transactions")
+          .insert({
+            type: "sale",  // Set type to sale for income
+            amount: receipt.amount,
+            transaction_date: receipt.date,
+            description: `Receipt from ${receipt.received_from || 'customer'} ${receipt.for_payment ? `for ${receipt.for_payment}` : ''}`,
+            reference_number: receipt.receipt_number
+          });
+        
+        if (transactionError) {
+          console.error("Error creating transaction:", transactionError);
+        }
+      }
+      
       toast({
         title: "Success",
         description: "Document created successfully",
