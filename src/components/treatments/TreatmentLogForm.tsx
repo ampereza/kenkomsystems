@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type TreatmentFormValues = {
   treatmentDate: string;
-  cylinderId: string;
+  cylinderNumber: string; // Changed from cylinderId to cylinderNumber
   clientId: string;
   waterAddedLiters: number;
   kegsAdded: number;
@@ -54,6 +55,7 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
   const form = useForm<TreatmentFormValues>({
     defaultValues: {
       treatmentDate: new Date().toISOString().split('T')[0],
+      cylinderNumber: "", // Initialize with empty string
       waterAddedLiters: 0,
       kegsAdded: 0,
       kegsRemaining: 0,
@@ -77,8 +79,8 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
     },
   });
 
-  // Fetch treatment cylinders for dropdown
-  const { data: cylinders, isLoading: isLoadingCylinders } = useQuery({
+  // Fetch cylinders for validation if needed (but we won't use this for dropdown selection)
+  const { data: cylinders } = useQuery({
     queryKey: ["treatment_cylinders"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -106,8 +108,8 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       setIsSubmitting(true);
       
       // Check if required values are provided
-      if (!values.cylinderId) {
-        toast.error("Please select a cylinder");
+      if (!values.cylinderNumber) {
+        toast.error("Please enter a cylinder number");
         setIsSubmitting(false);
         return;
       }
@@ -136,9 +138,26 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
       
       console.log("Submitting treatment data:", values);
       
+      // Find the cylinder_id by cylinder_number
+      const { data: cylinderData, error: cylinderError } = await supabase
+        .from("treatment_cylinders")
+        .select("id")
+        .eq("cylinder_number", values.cylinderNumber)
+        .single();
+      
+      if (cylinderError) {
+        console.error("Error finding cylinder:", cylinderError);
+        toast.error(`Cylinder #${values.cylinderNumber} not found`);
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const cylinderId = cylinderData.id;
+      console.log("Found cylinder ID:", cylinderId);
+      
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
-        cylinder_id: values.cylinderId,
+        cylinder_id: cylinderId,
         client_id: values.clientId,
         water_added_liters: values.waterAddedLiters,
         kegs_added: values.kegsAdded,
@@ -215,31 +234,17 @@ export const TreatmentLogForm = ({ onSubmitSuccess, onCancel }: TreatmentLogForm
 
               <FormField
                 control={form.control}
-                name="cylinderId"
+                name="cylinderNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cylinder</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isLoadingCylinders}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select cylinder" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {cylinders?.map((cylinder) => (
-                          <SelectItem 
-                            key={cylinder.id} 
-                            value={cylinder.id}
-                          >
-                            Cylinder #{cylinder.cylinder_number} ({cylinder.capacity_liters}L)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Cylinder Number</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="text" 
+                        placeholder="Enter cylinder number" 
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
