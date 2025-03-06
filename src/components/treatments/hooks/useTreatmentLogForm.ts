@@ -39,20 +39,6 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     },
   });
 
-  // Fetch cylinders for validation if needed
-  const { data: cylinders } = useQuery({
-    queryKey: ["treatment_cylinders"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("treatment_cylinders")
-        .select("*")
-        .order('cylinder_number');
-      if (error) throw error;
-      console.log("Fetched cylinders:", data);
-      return data;
-    },
-  });
-
   // Fetch sorted stock for dropdown
   const { data: sortedStock } = useQuery({
     queryKey: ["sorted_stock"],
@@ -98,7 +84,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
       
       console.log("Submitting treatment data:", values);
       
-      // Find the cylinder_id by cylinder_number - convert the string to a number for comparison
+      // Convert cylinder number to integer
       const cylinderNumberInt = parseInt(values.cylinderNumber, 10);
       
       if (isNaN(cylinderNumberInt)) {
@@ -107,25 +93,9 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         return;
       }
       
-      const { data: cylinderData, error: cylinderError } = await supabase
-        .from("treatment_cylinders")
-        .select("id")
-        .eq("cylinder_number", cylinderNumberInt)
-        .single();
-      
-      if (cylinderError) {
-        console.error("Error finding cylinder:", cylinderError);
-        toast.error(`Cylinder #${values.cylinderNumber} not found`);
-        setIsSubmitting(false);
-        return;
-      }
-      
-      const cylinderId = cylinderData.id;
-      console.log("Found cylinder ID:", cylinderId);
-      
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
-        cylinder_id: cylinderId,
+        cylinder_number: cylinderNumberInt,
         client_id: values.clientId,
         water_added_liters: values.waterAddedLiters,
         kegs_added: values.kegsAdded,
@@ -179,7 +149,6 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
     isSubmitting,
     onSubmit,
     clients,
-    cylinders,
     sortedStock,
     isClientOwnedPoles
   };
