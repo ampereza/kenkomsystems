@@ -7,7 +7,6 @@ export function FinancialNavbar() {
     { href: "/finance/transactions", label: "Transactions" },
     { href: "/finance/expenses", label: "Expenses" },
     { href: "/finance/employees", label: "Employees" },
-    { href: "/finance/documents", label: "Documents" },
     { href: "/reports/ledger", label: "General Ledger" },
     { href: "/reports/financial", label: "Financial Report" },
     { href: "/reports/employees", label: "Employee Report" },
