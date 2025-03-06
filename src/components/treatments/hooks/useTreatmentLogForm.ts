@@ -93,6 +93,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
         return;
       }
       
+      // Prepare the treatment data object with the correct field names for the database
       const treatmentData: any = {
         treatment_date: values.treatmentDate,
         cylinder_number: cylinderNumberInt,
@@ -145,16 +146,18 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
 
       if (error) {
         console.error("Error details:", error);
-        throw error;
+        toast.error(`Failed to create treatment log: ${error.message}`);
+        setIsSubmitting(false);
+        return;
       }
       
       console.log("Treatment created successfully:", data);
       toast.success("Treatment log entry created successfully");
       form.reset();
       onSubmitSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting treatment log:", error);
-      toast.error("Failed to create treatment log entry");
+      toast.error(`Failed to create treatment log entry: ${error.message || "Unknown error"}`);
     } finally {
       setIsSubmitting(false);
     }
