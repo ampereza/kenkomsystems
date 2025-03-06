@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserRole } from './AuthProvider';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }).default('admin@kenkomdistributors.ltd'),
+  email: z.string().email({ message: 'Please enter a valid email address' }).default('kenkomdistributorsltd@gmail.com'),
   password: z.string().optional(),
   role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant'], {
     required_error: 'Please select a role',
@@ -38,7 +38,7 @@ export function AuthForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: 'admin@kenkomdistributors.ltd',
+      email: 'kenkomdistributorsltd@gmail.com',
       password: '',
       role: 'stock_manager',
       usePassword: true,
@@ -133,7 +133,7 @@ export function AuthForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="admin@kenkomdistributors.ltd" type="email" {...field} />
+                    <Input placeholder="kenkomdistributorsltd@gmail.com" type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
