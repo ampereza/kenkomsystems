@@ -20,6 +20,7 @@ import Transactions from "./pages/finance/Transactions";
 import Receipts from "./pages/finance/Receipts";
 import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
+import PaymentVouchers from "./pages/finance/PaymentVouchers";
 
 // Report pages
 import GeneralLedger from "./pages/reports/GeneralLedger";
@@ -52,6 +53,7 @@ function App() {
           <Route path="/finance/receipts" element={<Receipts />} />
           <Route path="/finance/expenses" element={<Expenses />} />
           <Route path="/finance/employees" element={<Employees />} />
+          <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
 
           {/* Report routes */}
           <Route path="/reports">
