@@ -42,8 +42,8 @@ export default function FinancialReport() {
   const { data: financialData, isLoading } = useQuery({
     queryKey: ["financial-summary", startDate, endDate],
     queryFn: async () => {
-      // Include payment vouchers explicitly in the query
-      const { data, error } = await supabase
+      // Include transaction data
+      const { data: transactionData, error } = await supabase
         .from("financial_summary")
         .select("*")
         .gte("date", startDate.toISOString())
@@ -51,6 +51,8 @@ export default function FinancialReport() {
         .order("date");
 
       if (error) throw error;
+      
+      const combinedData = [...(transactionData || [])];
       
       // Also fetch payment vouchers in the date range
       const { data: paymentVouchers, error: voucherError } = await supabase
@@ -64,11 +66,20 @@ export default function FinancialReport() {
         console.error("Error fetching payment vouchers:", voucherError);
       }
       
-      // Combine the financial data with payment vouchers
-      const combinedData = [...(data || [])];
+      // Also fetch receipts in the date range
+      const { data: receipts, error: receiptError } = await supabase
+        .from("receipts")
+        .select("date, amount")
+        .gte("date", startDate.toISOString().split('T')[0])
+        .lte("date", endDate.toISOString().split('T')[0])
+        .order("date");
       
+      if (receiptError) {
+        console.error("Error fetching receipts:", receiptError);
+      }
+      
+      // Group payment vouchers by date and add to combined data
       if (paymentVouchers) {
-        // Group payment vouchers by date
         const vouchersByDate = paymentVouchers.reduce((acc, voucher) => {
           const dateStr = voucher.date.toString();
           if (!acc[dateStr]) {
@@ -82,11 +93,35 @@ export default function FinancialReport() {
           return acc;
         }, {} as Record<string, { count: number, total: number }>);
         
-        // Add grouped vouchers to the combined data
         Object.entries(vouchersByDate).forEach(([date, { count, total }]) => {
           combinedData.push({
             date: new Date(date).toISOString(),
             type: "expense",
+            transaction_count: count,
+            total_amount: total
+          });
+        });
+      }
+      
+      // Group receipts by date and add to combined data as income
+      if (receipts) {
+        const receiptsByDate = receipts.reduce((acc, receipt) => {
+          const dateStr = receipt.date.toString();
+          if (!acc[dateStr]) {
+            acc[dateStr] = {
+              count: 0,
+              total: 0
+            };
+          }
+          acc[dateStr].count += 1;
+          acc[dateStr].total += Number(receipt.amount);
+          return acc;
+        }, {} as Record<string, { count: number, total: number }>);
+        
+        Object.entries(receiptsByDate).forEach(([date, { count, total }]) => {
+          combinedData.push({
+            date: new Date(date).toISOString(),
+            type: "sale", // Using 'sale' to represent income
             transaction_count: count,
             total_amount: total
           });

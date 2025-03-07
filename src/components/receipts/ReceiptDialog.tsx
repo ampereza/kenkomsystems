@@ -85,10 +85,18 @@ export function ReceiptDialog() {
       return receiptData;
     },
     onSuccess: () => {
+      // Invalidate all related queries to ensure data is refreshed everywhere
       queryClient.invalidateQueries({ queryKey: ["receipts"] });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       queryClient.invalidateQueries({ queryKey: ["income-statement"] });
+      queryClient.invalidateQueries({ queryKey: ["income-statement-detailed"] });
+      queryClient.invalidateQueries({ queryKey: ["income-statement-by-account"] });
+      queryClient.invalidateQueries({ queryKey: ["income-statement-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["balance-sheet"] });
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["financial-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["md-financial-summary"] });
       
       toast({
         title: "Success",

@@ -35,6 +35,13 @@ export function IncomeStatement() {
         
       if (voucherError) throw voucherError;
       
+      // Also fetch receipts that may not be in the income statement yet
+      const { data: receiptData, error: receiptError } = await supabase
+        .from("receipts")
+        .select("date, receipt_number, received_from, amount");
+        
+      if (receiptError) throw receiptError;
+      
       // Convert payment vouchers to income statement format if they're not already in journal entries
       const voucherEntries = voucherData.map(voucher => {
         // Check if this voucher is already included in journal entries
@@ -57,8 +64,30 @@ export function IncomeStatement() {
         return null;
       }).filter(entry => entry !== null);
       
-      // Combine both data sources
-      return [...journalData, ...voucherEntries] as DetailedIncomeStatement[];
+      // Convert receipts to income statement format if they're not already in journal entries
+      const receiptEntries = receiptData.map(receipt => {
+        // Check if this receipt is already included in journal entries
+        const existingEntry = journalData.find(
+          entry => entry.reference_number === receipt.receipt_number
+        );
+        
+        // Only include if not already in income statement data
+        if (!existingEntry) {
+          return {
+            entry_date: receipt.date,
+            amount: receipt.amount,
+            account_code: '4000',
+            account_name: 'Sales Revenue',
+            account_type: 'revenue',
+            reference_number: receipt.receipt_number,
+            description: `Receipt from ${receipt.received_from}`
+          };
+        }
+        return null;
+      }).filter(entry => entry !== null);
+      
+      // Combine all data sources
+      return [...journalData, ...voucherEntries, ...receiptEntries] as DetailedIncomeStatement[];
     },
   });
 
