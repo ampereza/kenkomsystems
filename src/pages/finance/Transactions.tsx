@@ -10,7 +10,7 @@ export default function Transactions() {
   const { toast } = useToast();
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ["transactions"],
+    queryKey: ["transactions"], ["clients"]
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transactions")
@@ -26,6 +26,13 @@ export default function Transactions() {
           )
         `)
         .order("transaction_date", { ascending: false });
+        .from("clients")
+        .select(
+          *. 
+          clients(
+            name
+          ),
+        )
 
       if (error) {
         toast({
