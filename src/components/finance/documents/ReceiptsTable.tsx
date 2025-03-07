@@ -37,7 +37,7 @@ export function ReceiptsTable() {
       {isLoading ? (
         <div className="text-center py-8">Loading receipts...</div>
       ) : receipts && receipts.length > 0 ? (
-        <div className="rounded-lg border">
+        <div className="rounded-lg border overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted">
               <tr>
@@ -95,7 +95,7 @@ export function ReceiptsTable() {
       {selectedReceiptId && (
         <ViewDocumentDialog
           documentId={selectedReceiptId}
-          documentType="receipt"
+          documentType="receipts"
           open={!!selectedReceiptId}
           onOpenChange={(open) => {
             if (!open) setSelectedReceiptId(null);

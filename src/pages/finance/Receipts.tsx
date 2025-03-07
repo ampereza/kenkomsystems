@@ -4,11 +4,11 @@ import { ReceiptsTable } from "@/components/finance/documents/ReceiptsTable";
 
 export default function Receipts() {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <FinancialNavbar />
-      <main className="container py-6">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Receipts</h1>
+      <main className="container py-4 md:py-6 flex-1">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Receipts</h1>
         </div>
         <ReceiptsTable />
       </main>
