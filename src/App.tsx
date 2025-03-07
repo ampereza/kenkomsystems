@@ -1,6 +1,7 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "./pages/Index";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
@@ -29,43 +30,48 @@ import EmployeeReport from "./pages/reports/EmployeeReport";
 
 import { Toaster } from "@/components/ui/toaster";
 
+// Create a client
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="*" element={<NotFound />} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="*" element={<NotFound />} />
 
-          {/* Dashboards */}
-          <Route path="/dashboards">
-            <Route path="financial" element={<FinancialDashboard />} />
-            <Route path="general-manager" element={<GeneralManagerDashboard />} />
-            <Route path="md" element={<MDDashboard />} />
-            <Route path="stock" element={<StockDashboard />} />
-            <Route path="treatments" element={<TreatmentDashboardWrapper />} />
-          </Route>
+            {/* Dashboards */}
+            <Route path="/dashboards">
+              <Route path="financial" element={<FinancialDashboard />} />
+              <Route path="general-manager" element={<GeneralManagerDashboard />} />
+              <Route path="md" element={<MDDashboard />} />
+              <Route path="stock" element={<StockDashboard />} />
+              <Route path="treatments" element={<TreatmentDashboardWrapper />} />
+            </Route>
 
-          {/* Financial routes */}
-          <Route path="/finance/transactions" element={<Transactions />} />
-          <Route path="/finance/receipts" element={<Receipts />} />
-          <Route path="/finance/expenses" element={<Expenses />} />
-          <Route path="/finance/employees" element={<Employees />} />
-          <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
+            {/* Financial routes */}
+            <Route path="/finance/transactions" element={<Transactions />} />
+            <Route path="/finance/receipts" element={<Receipts />} />
+            <Route path="/finance/expenses" element={<Expenses />} />
+            <Route path="/finance/employees" element={<Employees />} />
+            <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
 
-          {/* Report routes */}
-          <Route path="/reports">
-            <Route path="ledger" element={<GeneralLedger />} />
-            <Route path="financial" element={<FinancialReport />} />
-            <Route path="employees" element={<EmployeeReport />} />
-          </Route>
-        </Routes>
-        
-        <Toaster />
-      </AuthProvider>
-    </BrowserRouter>
+            {/* Report routes */}
+            <Route path="/reports">
+              <Route path="ledger" element={<GeneralLedger />} />
+              <Route path="financial" element={<FinancialReport />} />
+              <Route path="employees" element={<EmployeeReport />} />
+            </Route>
+          </Routes>
+          
+          <Toaster />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
