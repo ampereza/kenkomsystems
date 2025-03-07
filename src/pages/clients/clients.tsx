@@ -1,26 +1,47 @@
+import React, { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
+import { Client } from "./types"; // Import the Client interface
 
-import { Card, CardContent } from "@/components/ui/card";
-import { ClientsHeader } from "@/components/treatments/ClientsHeader";
-import { ClientForm } from "@/components/treatments/ClientForm";
-import { ClientsList } from "@/components/treatments/ClientsList";
-import { useClients } from "@/hooks/useClients";
-import { TreatmentNavbar } from "@/components/navigation/TreatmentNavbar";
+const Clients: React.FC = () => {
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-const Clients = () => {
-  const { clients, fetchClients } = useClients();
+  useEffect(() => {
+    const fetchClients = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.from<Client>("clients").select("*");
+        if (error) {
+          throw error;
+        }
+        setClients(data || []);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  if (loading) return <p>Loading clients...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <>
-      <TreatmentNavbar />
-      <div className="container mx-auto p-6">
-        <ClientsHeader />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <ClientForm onClientAdded={fetchClients} />
-          <ClientsList clients={clients} />
-        </div>
-      </div>
-    </>
+    <div>
+      <h1>Clients List</h1>
+      <ul>
+        {clients.map((client) => (
+          <li key={client.id}>
+            <p>{client.name}</p>
+            <p>{client.telepnone}</p>
+            {/* Add any other fields you want to display */}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 
