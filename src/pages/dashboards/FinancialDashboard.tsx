@@ -126,7 +126,7 @@ export default function FinancialDashboard() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">23</div>
+              <div className="text-2xl font-bold"></div>
             </CardContent>
           </Card>
         </div>
