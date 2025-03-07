@@ -10,6 +10,7 @@ import { ReceiptDialog } from "@/components/receipts/ReceiptDialog";
 
 export function ReceiptsTable() {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   
   const { data: receipts, isLoading } = useQuery({
     queryKey: ["receipts"],
@@ -24,8 +25,21 @@ export function ReceiptsTable() {
     },
   });
 
-  const handleView = (id: string) => {
+  const handleView = async (id: string) => {
     setSelectedReceiptId(id);
+    // Fetch the selected receipt
+    const { data, error } = await supabase
+      .from("receipts")
+      .select("*")
+      .eq("id", id)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching receipt:", error);
+      return;
+    }
+    
+    setSelectedReceipt(data);
   };
 
   return (
@@ -92,13 +106,16 @@ export function ReceiptsTable() {
         </Card>
       )}
       
-      {selectedReceiptId && (
+      {selectedReceipt && (
         <ViewDocumentDialog
-          documentId={selectedReceiptId}
           documentType="receipts"
+          document={selectedReceipt}
           open={!!selectedReceiptId}
           onOpenChange={(open) => {
-            if (!open) setSelectedReceiptId(null);
+            if (!open) {
+              setSelectedReceiptId(null);
+              setSelectedReceipt(null);
+            }
           }}
         />
       )}
