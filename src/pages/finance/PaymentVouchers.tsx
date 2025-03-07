@@ -1,5 +1,6 @@
 
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
+import { PaymentVouchersTable } from "@/components/finance/documents/PaymentVouchersTable";
 
 export default function PaymentVouchers() {
   return (
@@ -9,7 +10,7 @@ export default function PaymentVouchers() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Payment Vouchers</h1>
         </div>
-        <p>Payment vouchers functionality will be implemented soon.</p>
+        <PaymentVouchersTable />
       </main>
     </div>
   );

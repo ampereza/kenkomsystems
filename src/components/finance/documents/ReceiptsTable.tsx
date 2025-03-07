@@ -11,6 +11,7 @@ import { ReceiptDialog } from "@/components/receipts/ReceiptDialog";
 export function ReceiptsTable() {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
   const { data: receipts, isLoading } = useQuery({
     queryKey: ["receipts"],
@@ -40,6 +41,7 @@ export function ReceiptsTable() {
     }
     
     setSelectedReceipt(data);
+    setDialogOpen(true);
   };
 
   return (
@@ -110,8 +112,8 @@ export function ReceiptsTable() {
         <ViewDocumentDialog
           documentType="receipts"
           document={selectedReceipt}
-          open={!!selectedReceiptId}
           onOpenChange={(open) => {
+            setDialogOpen(open);
             if (!open) {
               setSelectedReceiptId(null);
               setSelectedReceipt(null);

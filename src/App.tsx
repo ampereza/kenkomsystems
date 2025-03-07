@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import Index from "./pages/Index";
 import Unauthorized from "./pages/Unauthorized";
