@@ -193,6 +193,33 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          company_name: string | null
+          created_at: string
+          full_name: string | null
+          id: number
+          telepnone: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: number
+          telepnone?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: number
+          telepnone?: string | null
+        }
+        Relationships: []
+      }
       delivery_note_items: {
         Row: {
           created_at: string
@@ -233,8 +260,6 @@ export type Database = {
       }
       delivery_notes: {
         Row: {
-          batch_number: string | null
-          client_name: string | null
           created_at: string
           date: string
           driver_sign: boolean | null
@@ -245,13 +270,12 @@ export type Database = {
           notes: string | null
           received_at: string | null
           received_by: string | null
+          to_name: string | null
           total_quantity: number
           transporter: string | null
           vehicle_number: string | null
         }
         Insert: {
-          batch_number?: string | null
-          client_name?: string | null
           created_at?: string
           date?: string
           driver_sign?: boolean | null
@@ -262,13 +286,12 @@ export type Database = {
           notes?: string | null
           received_at?: string | null
           received_by?: string | null
+          to_name?: string | null
           total_quantity?: number
           transporter?: string | null
           vehicle_number?: string | null
         }
         Update: {
-          batch_number?: string | null
-          client_name?: string | null
           created_at?: string
           date?: string
           driver_sign?: boolean | null
@@ -279,6 +302,7 @@ export type Database = {
           notes?: string | null
           received_at?: string | null
           received_by?: string | null
+          to_name?: string | null
           total_quantity?: number
           transporter?: string | null
           vehicle_number?: string | null
@@ -458,21 +482,18 @@ export type Database = {
       }
       ledger_accounts: {
         Row: {
-          account_code: string
           account_name: string
           account_type: string
           created_at: string | null
           id: string
         }
         Insert: {
-          account_code: string
           account_name: string
           account_type: string
           created_at?: string | null
           id?: string
         }
         Update: {
-          account_code?: string
           account_name?: string
           account_type?: string
           created_at?: string | null
@@ -619,40 +640,34 @@ export type Database = {
         }
         Relationships: []
       }
-      received_sorted_stock: {
+      rejected_Poles: {
         Row: {
-          created_at: string | null
-          id: string
-          notes: string | null
-          processing_status: Database["public"]["Enums"]["processing_status"]
-          quantity: number
-          received_date: string | null
-          sorted_stock_id: string
+          category: string | null
+          created_at: string
+          id: number
+          quantity: number | null
+          supplier_id: string | null
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          processing_status?: Database["public"]["Enums"]["processing_status"]
-          quantity: number
-          received_date?: string | null
-          sorted_stock_id: string
+          category?: string | null
+          created_at?: string
+          id?: number
+          quantity?: number | null
+          supplier_id?: string | null
         }
         Update: {
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          processing_status?: Database["public"]["Enums"]["processing_status"]
-          quantity?: number
-          received_date?: string | null
-          sorted_stock_id?: string
+          category?: string | null
+          created_at?: string
+          id?: number
+          quantity?: number | null
+          supplier_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "received_sorted_stock_sorted_stock_id_fkey"
-            columns: ["sorted_stock_id"]
+            foreignKeyName: "rejected_Poles_supplier_id_fkey"
+            columns: ["supplier_id"]
             isOneToOne: false
-            referencedRelation: "sorted_stock"
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -1053,15 +1068,6 @@ export type Database = {
       }
     }
     Views: {
-      balance_sheet: {
-        Row: {
-          account_code: string | null
-          account_name: string | null
-          account_type: string | null
-          balance: number | null
-        }
-        Relationships: []
-      }
       client_stock_summary: {
         Row: {
           client_name: string | null
@@ -1108,27 +1114,6 @@ export type Database = {
           total_amount: number | null
           transaction_count: number | null
           type: Database["public"]["Enums"]["transaction_type"] | null
-        }
-        Relationships: []
-      }
-      income_statement: {
-        Row: {
-          account_code: string | null
-          account_name: string | null
-          account_type: string | null
-          amount: number | null
-          description: string | null
-          entry_date: string | null
-          reference_number: string | null
-        }
-        Relationships: []
-      }
-      income_statement_by_account: {
-        Row: {
-          account_code: string | null
-          account_name: string | null
-          account_type: string | null
-          total_amount: number | null
         }
         Relationships: []
       }
@@ -1211,46 +1196,6 @@ export type Database = {
     }
   }
 }
-
-
-
-export interface ClientStock {
-  id: string;
-  client_id: string;
-  created_at: string | null;
-  updated_at: string | null;
-  untreated_telecom_poles: number;
-  untreated_9m_poles: number;
-  untreated_10m_poles: number;
-  untreated_11m_poles: number;
-  untreated_12m_poles: number;
-  untreated_14m_poles: number;
-  untreated_16m_poles: number;
-  treated_telecom_poles: number;
-  treated_9m_poles: number;
-  treated_10m_poles: number;
-  treated_11m_poles: number;
-  treated_12m_poles: number;
-  treated_14m_poles: number;
-  treated_16m_poles: number;
-  delivered_telecom_poles: number;
-  delivered_9m_poles: number;
-  delivered_10m_poles: number;
-  delivered_11m_poles: number;
-  delivered_12m_poles: number;
-  delivered_14m_poles: number;
-  delivered_16m_poles: number;
-  notes: string | null;
-}
-
-
-export interface Client {
-  id: string;
-  name: string;
-  email: string;
-  // Add any other client-related fields here
-}
-
 
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
