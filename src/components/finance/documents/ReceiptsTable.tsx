@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Download, Calendar, DollarSign } from "lucide-react";
+import { Eye, Download, Calendar, BanknoteIcon } from "lucide-react";
 import { ViewDocumentDialog } from "./ViewDocumentDialog";
 import { useState } from "react";
 import { ReceiptDialog } from "@/components/receipts/ReceiptDialog";
@@ -28,6 +28,14 @@ export function ReceiptsTable({ receipts = [] }: ReceiptsTableProps) {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  const formatUGX = (amount: number) => {
+    return new Intl.NumberFormat("en-UG", {
+      style: "currency",
+      currency: "UGX",
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
   
   const handleView = async (id: string) => {
     setSelectedReceiptId(id);
@@ -79,8 +87,8 @@ export function ReceiptsTable({ receipts = [] }: ReceiptsTableProps) {
                   <td className="p-4">{receipt.received_from}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-green-500" />
-                      {Number(receipt.amount).toFixed(2)}
+                      <BanknoteIcon className="w-4 h-4 text-green-500" />
+                      {formatUGX(Number(receipt.amount))}
                     </div>
                   </td>
                   <td className="p-4">{receipt.payment_method || "Cash"}</td>

@@ -16,6 +16,14 @@ interface DetailedViewProps {
 }
 
 export function DetailedView({ data, calculateNetIncome }: DetailedViewProps) {
+  const formatUGX = (amount: number) => {
+    return new Intl.NumberFormat("en-UG", {
+      style: "currency",
+      currency: "UGX",
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -37,14 +45,14 @@ export function DetailedView({ data, calculateNetIncome }: DetailedViewProps) {
             <TableCell>{item.account_name}</TableCell>
             <TableCell className="capitalize">{item.account_type}</TableCell>
             <TableCell className="text-right">
-              ${Number(item.amount).toFixed(2)}
+              {formatUGX(Number(item.amount))}
             </TableCell>
           </TableRow>
         ))}
         <TableRow className="font-bold">
           <TableCell colSpan={5}>Net Income</TableCell>
           <TableCell className="text-right">
-            ${calculateNetIncome(data || []).toFixed(2)}
+            {formatUGX(calculateNetIncome(data || []))}
           </TableCell>
         </TableRow>
       </TableBody>

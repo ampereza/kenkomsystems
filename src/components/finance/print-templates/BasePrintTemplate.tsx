@@ -10,9 +10,9 @@ export const formatDate = (dateString: string) => {
 };
 
 export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-KE", {
+  return new Intl.NumberFormat("en-UG", {
     style: "currency",
-    currency: "KES",
+    currency: "UGX",
   }).format(amount);
 };
 

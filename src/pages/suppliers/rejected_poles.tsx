@@ -11,12 +11,9 @@ import { format } from "date-fns";
 interface RejectedPole {
   id: string;
   supplier_id: string;
-  rejection_date: string;
-  quantity: number;
-  pole_type: string;
-  rejection_reason: string;
-  action_taken: string;
   created_at: string;
+  quantity: number;
+  category: string;
   suppliers?: { name: string };
 }
 
@@ -25,7 +22,7 @@ export default function RejectedPoles() {
     queryKey: ["rejected-poles"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("rejected_Poles") // Using the correct table name from the DB schema
+        .from("rejected_Poles") // Using the correct table name case-sensitive from the DB schema
         .select("*, suppliers(name)")
         .order("created_at", { ascending: false });
 
@@ -71,13 +68,13 @@ export default function RejectedPoles() {
                   {rejectedPoles?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        {format(new Date(item.rejection_date || item.created_at), "dd/MM/yyyy")}
+                        {format(new Date(item.created_at), "dd/MM/yyyy")}
                       </TableCell>
                       <TableCell>{item.suppliers?.name || "Unknown"}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.pole_type || "Standard"}</TableCell>
-                      <TableCell>{item.rejection_reason || item.category || "Quality issues"}</TableCell>
-                      <TableCell>{item.action_taken || "Returned to supplier"}</TableCell>
+                      <TableCell>{item.category || "Standard"}</TableCell>
+                      <TableCell>{"Quality issues"}</TableCell>
+                      <TableCell>{"Returned to supplier"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

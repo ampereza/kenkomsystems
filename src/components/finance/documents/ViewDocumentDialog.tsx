@@ -5,7 +5,7 @@ import { PrintDocument } from "@/components/finance/PrintDocument";
 
 type DocumentType = "payment-vouchers" | "receipts";
 
-interface ViewDocumentDialogProps {
+export interface ViewDocumentDialogProps {
   documentType: DocumentType;
   document: any;
   onOpenChange: (open: boolean) => void;
@@ -13,6 +13,14 @@ interface ViewDocumentDialogProps {
 
 export function ViewDocumentDialog({ documentType, document, onOpenChange }: ViewDocumentDialogProps) {
   if (!document) return null;
+  
+  const formatUGX = (amount: number) => {
+    return new Intl.NumberFormat("en-UG", {
+      style: "currency",
+      currency: "UGX",
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
   
   return (
     <Dialog open={true} onOpenChange={onOpenChange}>
@@ -46,10 +54,7 @@ export function ViewDocumentDialog({ documentType, document, onOpenChange }: Vie
                 
                 // Format currency amounts
                 if ((key === "amount" || key === "total_amount" || key === "sum_of_shillings") && typeof value === "number") {
-                  displayValue = new Intl.NumberFormat("en-KE", {
-                    style: "currency",
-                    currency: "KES",
-                  }).format(value as number);
+                  displayValue = formatUGX(value as number);
                 }
                 
                 const displayKey = key
