@@ -54,7 +54,7 @@ export default function Receipts() {
               </Button>
             </DialogTrigger>
             <AddDocumentDialog
-              documentType="receipt"
+              documentType="receipts"
               onSuccess={handleSuccess}
             />
           </Dialog>
@@ -83,7 +83,7 @@ export default function Receipts() {
                 </Button>
               </DialogTrigger>
               <AddDocumentDialog
-                documentType="receipt"
+                documentType="receipts"
                 onSuccess={handleSuccess}
               />
             </Dialog>

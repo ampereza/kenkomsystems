@@ -5,11 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Search, Edit, CreditCard } from "lucide-react";
+import { Building2, Plus, Search, Edit, Trash2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 export default function Customers() {
   const { toast } = useToast();
@@ -37,10 +36,9 @@ export default function Customers() {
   });
 
   const filteredCustomers = customers?.filter(customer => 
-    (customer.full_name && customer.full_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    customer.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (customer.company_name && customer.company_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (customer.address && customer.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (customer.telepnone && customer.telepnone.toLowerCase().includes(searchQuery.toLowerCase()))
+    (customer.address && customer.address.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -78,15 +76,10 @@ export default function Customers() {
             {filteredCustomers.map((customer) => (
               <Card key={customer.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                      <Users className="h-5 w-5 text-primary/70" />
-                      {customer.full_name || customer.company_name || "Unnamed Customer"}
-                    </CardTitle>
-                    <Badge variant="outline" className="capitalize">
-                      {customer.company_name ? "Company" : "Individual"}
-                    </Badge>
-                  </div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Building2 className="h-5 w-5 text-primary/70" />
+                    {customer.full_name}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4">
@@ -94,12 +87,6 @@ export default function Customers() {
                       <p className="text-sm">
                         <span className="text-muted-foreground">Company:</span>{" "}
                         {customer.company_name}
-                      </p>
-                    )}
-                    {customer.full_name && (
-                      <p className="text-sm">
-                        <span className="text-muted-foreground">Full Name:</span>{" "}
-                        {customer.full_name}
                       </p>
                     )}
                     {customer.telepnone && (
@@ -116,9 +103,6 @@ export default function Customers() {
                     )}
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <CreditCard className="h-3.5 w-3.5 mr-1" /> Transactions
-                    </Button>
                     <Link to={`/customers/edit_cutomers?id=${customer.id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Edit className="h-3.5 w-3.5 mr-1" /> Edit
@@ -131,7 +115,7 @@ export default function Customers() {
           </div>
         ) : (
           <div className="text-center py-12 border rounded-lg bg-muted/20">
-            <Users className="h-12 w-12 mx-auto text-muted-foreground/60" />
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground/60" />
             <h3 className="mt-4 text-lg font-medium">No customers found</h3>
             <p className="text-muted-foreground mt-1">
               {searchQuery ? "Try a different search query" : "Add your first customer to get started"}

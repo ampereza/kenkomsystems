@@ -1,38 +1,51 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Customer {
+  id: number;
+  full_name: string;
+  company_name?: string;
+  telepnone?: string;
+  address?: string;
+  created_at: string;
+}
 
 export default function EditCustomer() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const customerId = searchParams.get("id");
   const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  const [formData, setFormData] = useState({
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const [customerData, setCustomerData] = useState<Customer>({
+    id: 0,
     full_name: "",
     company_name: "",
     telepnone: "",
-    address: ""
+    address: "",
+    created_at: "",
   });
+
+  // Extract customer ID from URL query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const customerId = queryParams.get("id");
 
   useEffect(() => {
     const fetchCustomer = async () => {
       if (!customerId) {
         toast({
           variant: "destructive",
-          title: "Customer ID missing",
-          description: "Unable to edit customer without an ID.",
+          title: "Error",
+          description: "No customer ID provided",
         });
         navigate("/customers/customers");
         return;
@@ -42,31 +55,28 @@ export default function EditCustomer() {
         const { data, error } = await supabase
           .from("customers")
           .select("*")
-          .eq("id", parseInt(customerId))
+          .eq("id", parseInt(customerId, 10))
           .single();
 
         if (error) throw error;
+
         if (!data) {
           toast({
             variant: "destructive",
-            title: "Customer not found",
-            description: "The requested customer could not be found.",
+            title: "Error",
+            description: "Customer not found",
           });
           navigate("/customers/customers");
           return;
         }
 
-        setFormData({
-          full_name: data.full_name || "",
-          company_name: data.company_name || "",
-          telepnone: data.telepnone || "",
-          address: data.address || ""
-        });
-      } catch (error: any) {
+        setCustomerData(data);
+      } catch (error) {
+        console.error("Error fetching customer:", error);
         toast({
           variant: "destructive",
-          title: "Error loading customer",
-          description: error.message || "Failed to load customer details",
+          title: "Error",
+          description: "Failed to load customer data",
         });
       } finally {
         setIsLoading(false);
@@ -78,61 +88,41 @@ export default function EditCustomer() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setCustomerData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsSaving(true);
 
     try {
       const { error } = await supabase
         .from("customers")
-        .update(formData)
-        .eq("id", parseInt(customerId!));
+        .update({
+          full_name: customerData.full_name,
+          company_name: customerData.company_name,
+          telepnone: customerData.telepnone,
+          address: customerData.address,
+        })
+        .eq("id", parseInt(customerId!, 10));
 
       if (error) throw error;
 
       toast({
-        title: "Customer updated successfully",
-        description: `${formData.full_name || formData.company_name} has been updated.`,
+        title: "Success",
+        description: "Customer updated successfully",
       });
 
       navigate("/customers/customers");
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error updating customer:", error);
       toast({
         variant: "destructive",
-        title: "Failed to update customer",
-        description: error.message || "An unexpected error occurred.",
+        title: "Error",
+        description: "Failed to update customer",
       });
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from("customers")
-        .delete()
-        .eq("id", parseInt(customerId!));
-
-      if (error) throw error;
-
-      toast({
-        title: "Customer deleted",
-        description: "The customer has been successfully removed.",
-      });
-
-      navigate("/customers/customers");
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Failed to delete customer",
-        description: error.message || "An unexpected error occurred.",
-      });
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
 
@@ -141,9 +131,7 @@ export default function EditCustomer() {
       <div className="min-h-screen flex flex-col">
         <FinancialNavbar />
         <main className="container py-6 flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-muted-foreground">Loading customer details...</p>
-          </div>
+          <p>Loading customer data...</p>
         </main>
       </div>
     );
@@ -153,110 +141,74 @@ export default function EditCustomer() {
     <div className="min-h-screen flex flex-col">
       <FinancialNavbar />
       <main className="container py-6 flex-1">
-        <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="mr-2" 
-            onClick={() => navigate("/customers/customers")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
-          </Button>
+        <div className="mb-6">
           <h1 className="text-2xl font-bold">Edit Customer</h1>
+          <p className="text-muted-foreground">Update customer information</p>
         </div>
 
-        <Card className="max-w-2xl mx-auto">
+        <Card>
           <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle>Edit Customer Information</CardTitle>
-                <CardDescription>Update details for {formData.full_name || formData.company_name}</CardDescription>
-              </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the customer 
-                      and all associated data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+            <CardTitle>Customer Information</CardTitle>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  placeholder="Enter individual name"
-                />
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input 
+                    id="full_name" 
+                    name="full_name" 
+                    value={customerData.full_name} 
+                    onChange={handleChange} 
+                    required 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="company_name">Company Name</Label>
+                  <Input 
+                    id="company_name" 
+                    name="company_name" 
+                    value={customerData.company_name || ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="telepnone">Phone</Label>
+                  <Input 
+                    id="telepnone" 
+                    name="telepnone" 
+                    value={customerData.telepnone || ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea 
+                    id="address" 
+                    name="address" 
+                    value={customerData.address || ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name</Label>
-                <Input
-                  id="company_name"
-                  name="company_name"
-                  value={formData.company_name}
-                  onChange={handleChange}
-                  placeholder="Enter company name"
-                />
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/customers/customers")}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSaving}>
+                  {isSaving ? "Saving..." : "Update Customer"}
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telepnone">Telephone</Label>
-                <Input
-                  id="telepnone"
-                  name="telepnone"
-                  value={formData.telepnone}
-                  onChange={handleChange}
-                  placeholder="Phone number"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  placeholder="Physical address"
-                  rows={2}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate("/customers/customers")}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                <Save className="h-4 w-4 mr-2" />
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardFooter>
-          </form>
+            </form>
+          </CardContent>
         </Card>
       </main>
     </div>
