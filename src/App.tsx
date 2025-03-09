@@ -23,6 +23,16 @@ import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
 import PaymentVouchers from "./pages/finance/PaymentVouchers";
 
+// Customer and Client pages
+import Customers from "./pages/customers/customers";
+import AddCustomer from "./pages/customers/add_customer";
+import EditCustomer from "./pages/customers/edit_cutomers";
+import Clients from "./pages/clients/clients";
+import AddClientStock from "./pages/clients/add_clients_stock";
+import EditClient from "./pages/clients/edit_client";
+import ViewClientStock from "./pages/clients/view_clients_stock";
+import InsertClientStock from "./pages/clients/insertclientsstock";
+
 // Report pages
 import GeneralLedger from "./pages/reports/GeneralLedger";
 import FinancialReport from "./pages/reports/FinancialReport";
@@ -59,6 +69,18 @@ function App() {
             <Route path="/finance/expenses" element={<Expenses />} />
             <Route path="/finance/employees" element={<Employees />} />
             <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
+
+            {/* Customer routes */}
+            <Route path="/customers/customers" element={<Customers />} />
+            <Route path="/customers/add_customer" element={<AddCustomer />} />
+            <Route path="/customers/edit_cutomers" element={<EditCustomer />} />
+
+            {/* Client routes */}
+            <Route path="/clients/clients" element={<Clients />} />
+            <Route path="/clients/add_clients_stock" element={<AddClientStock />} />
+            <Route path="/clients/edit_client" element={<EditClient />} />
+            <Route path="/clients/view_clients_stock" element={<ViewClientStock />} />
+            <Route path="/clients/insertclientsstock" element={<InsertClientStock />} />
 
             {/* Report routes */}
             <Route path="/reports">
