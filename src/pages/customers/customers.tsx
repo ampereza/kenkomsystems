@@ -21,7 +21,7 @@ export default function Customers() {
       const { data, error } = await supabase
         .from("customers")
         .select("*")
-        .order("name", { ascending: true });
+        .order("full_name", { ascending: true });
 
       if (error) {
         toast({
@@ -37,10 +37,10 @@ export default function Customers() {
   });
 
   const filteredCustomers = customers?.filter(customer => 
-    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (customer.contact_person && customer.contact_person.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (customer.email && customer.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (customer.category && customer.category.toLowerCase().includes(searchQuery.toLowerCase()))
+    (customer.full_name && customer.full_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (customer.company_name && customer.company_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (customer.address && customer.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (customer.telepnone && customer.telepnone.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -81,33 +81,31 @@ export default function Customers() {
                   <div className="flex justify-between items-start">
                     <CardTitle className="flex items-center gap-2 text-xl">
                       <Users className="h-5 w-5 text-primary/70" />
-                      {customer.name}
+                      {customer.full_name || customer.company_name || "Unnamed Customer"}
                     </CardTitle>
-                    {customer.category && (
-                      <Badge variant="outline" className="capitalize">
-                        {customer.category}
-                      </Badge>
-                    )}
+                    <Badge variant="outline" className="capitalize">
+                      {customer.company_name ? "Company" : "Individual"}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 mb-4">
-                    {customer.contact_person && (
+                    {customer.company_name && (
                       <p className="text-sm">
-                        <span className="text-muted-foreground">Contact Person:</span>{" "}
-                        {customer.contact_person}
+                        <span className="text-muted-foreground">Company:</span>{" "}
+                        {customer.company_name}
                       </p>
                     )}
-                    {customer.email && (
+                    {customer.full_name && (
                       <p className="text-sm">
-                        <span className="text-muted-foreground">Email:</span>{" "}
-                        {customer.email}
+                        <span className="text-muted-foreground">Full Name:</span>{" "}
+                        {customer.full_name}
                       </p>
                     )}
-                    {customer.phone && (
+                    {customer.telepnone && (
                       <p className="text-sm">
                         <span className="text-muted-foreground">Phone:</span>{" "}
-                        {customer.phone}
+                        {customer.telepnone}
                       </p>
                     )}
                     {customer.address && (

@@ -21,73 +21,72 @@ export function IncomeStatement() {
   const { data: detailedData, isLoading: detailedLoading } = useQuery({
     queryKey: ["income-statement-detailed"],
     queryFn: async () => {
-      // First fetch regular income statement data
-      const { data: journalData, error } = await supabase
-        .from("income_statement")
+      // First fetch transactions data
+      const { data: transactionData, error: transactionError } = await supabase
+        .from("transactions")
         .select("*");
 
-      if (error) throw error;
+      if (transactionError) throw transactionError;
       
-      // Also fetch payment vouchers that may not be in the income statement yet
+      // Also fetch payment vouchers
       const { data: voucherData, error: voucherError } = await supabase
         .from("payment_vouchers")
         .select("date, voucher_number, paid_to, total_amount");
         
       if (voucherError) throw voucherError;
       
-      // Also fetch receipts that may not be in the income statement yet
+      // Also fetch receipts
       const { data: receiptData, error: receiptError } = await supabase
         .from("receipts")
         .select("date, receipt_number, received_from, amount");
         
       if (receiptError) throw receiptError;
       
-      // Convert payment vouchers to income statement format if they're not already in journal entries
+      // Convert payment vouchers to income statement format
       const voucherEntries = voucherData.map(voucher => {
-        // Check if this voucher is already included in journal entries
-        const existingEntry = journalData.find(
-          entry => entry.reference_number === voucher.voucher_number
-        );
-        
-        // Only include if not already in income statement data
-        if (!existingEntry) {
-          return {
-            entry_date: voucher.date,
-            amount: voucher.total_amount,
-            account_code: '2000',
-            account_name: 'Accounts Payable',
-            account_type: 'expense',
-            reference_number: voucher.voucher_number,
-            description: `Payment to ${voucher.paid_to}`
-          };
-        }
-        return null;
-      }).filter(entry => entry !== null);
+        return {
+          entry_date: voucher.date,
+          amount: voucher.total_amount,
+          account_code: '2000',
+          account_name: 'Accounts Payable',
+          account_type: 'expense',
+          reference_number: voucher.voucher_number,
+          description: `Payment to ${voucher.paid_to}`
+        };
+      });
       
-      // Convert receipts to income statement format if they're not already in journal entries
+      // Convert receipts to income statement format
       const receiptEntries = receiptData.map(receipt => {
-        // Check if this receipt is already included in journal entries
-        const existingEntry = journalData.find(
-          entry => entry.reference_number === receipt.receipt_number
-        );
+        return {
+          entry_date: receipt.date,
+          amount: receipt.amount,
+          account_code: '4000',
+          account_name: 'Sales Revenue',
+          account_type: 'revenue',
+          reference_number: receipt.receipt_number,
+          description: `Receipt from ${receipt.received_from}`
+        };
+      });
+      
+      // Convert transactions to income statement format
+      const transactionEntries = transactionData.map(transaction => {
+        const accountType = transaction.type === 'sale' ? 'revenue' : 'expense';
+        const accountCode = transaction.type === 'sale' ? '4000' : '5000';
+        const accountName = transaction.type === 'sale' ? 'Sales Revenue' : 'Purchases';
         
-        // Only include if not already in income statement data
-        if (!existingEntry) {
-          return {
-            entry_date: receipt.date,
-            amount: receipt.amount,
-            account_code: '4000',
-            account_name: 'Sales Revenue',
-            account_type: 'revenue',
-            reference_number: receipt.receipt_number,
-            description: `Receipt from ${receipt.received_from}`
-          };
-        }
-        return null;
-      }).filter(entry => entry !== null);
+        return {
+          entry_date: transaction.transaction_date,
+          amount: transaction.amount,
+          account_code: accountCode,
+          account_name: accountName,
+          account_type: accountType,
+          reference_number: transaction.reference_number,
+          description: transaction.description
+        };
+      });
       
       // Combine all data sources
-      return [...journalData, ...voucherEntries, ...receiptEntries] as DetailedIncomeStatement[];
+      return [...transactionEntries, ...voucherEntries, ...receiptEntries] as DetailedIncomeStatement[];
     },
   });
 
@@ -95,14 +94,9 @@ export function IncomeStatement() {
     queryKey: ["income-statement-by-account"],
     queryFn: async () => {
       // Get the detailed data first
-      const detailedResults = await detailedData || [];
+      const detailedResults = detailedData || [];
       if (!detailedResults.length) {
-        const { data, error } = await supabase
-          .from("income_statement_by_account")
-          .select("*");
-
-        if (error) throw error;
-        return data as AccountIncomeStatement[];
+        return [] as AccountIncomeStatement[];
       }
       
       // Group the detailed data by account
@@ -129,14 +123,9 @@ export function IncomeStatement() {
     queryKey: ["income-statement-summary"],
     queryFn: async () => {
       // Get the account data first
-      const accountResults = await byAccountData || [];
+      const accountResults = byAccountData || [];
       if (!accountResults.length) {
-        const { data, error } = await supabase
-          .from("income_statement_summary")
-          .select("*");
-
-        if (error) throw error;
-        return data as BaseIncomeStatement[];
+        return [] as BaseIncomeStatement[];
       }
       
       // Group the account data by type

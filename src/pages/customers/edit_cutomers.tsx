@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
@@ -21,13 +20,10 @@ export default function EditCustomer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: "",
-    contact_person: "",
-    email: "",
-    phone: "",
-    address: "",
-    category: "",
-    notes: ""
+    full_name: "",
+    company_name: "",
+    telepnone: "",
+    address: ""
   });
 
   useEffect(() => {
@@ -46,7 +42,7 @@ export default function EditCustomer() {
         const { data, error } = await supabase
           .from("customers")
           .select("*")
-          .eq("id", customerId)
+          .eq("id", parseInt(customerId))
           .single();
 
         if (error) throw error;
@@ -61,13 +57,10 @@ export default function EditCustomer() {
         }
 
         setFormData({
-          name: data.name || "",
-          contact_person: data.contact_person || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          address: data.address || "",
-          category: data.category || "",
-          notes: data.notes || ""
+          full_name: data.full_name || "",
+          company_name: data.company_name || "",
+          telepnone: data.telepnone || "",
+          address: data.address || ""
         });
       } catch (error: any) {
         toast({
@@ -88,10 +81,6 @@ export default function EditCustomer() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -100,13 +89,13 @@ export default function EditCustomer() {
       const { error } = await supabase
         .from("customers")
         .update(formData)
-        .eq("id", customerId);
+        .eq("id", parseInt(customerId!));
 
       if (error) throw error;
 
       toast({
         title: "Customer updated successfully",
-        description: `${formData.name} has been updated.`,
+        description: `${formData.full_name || formData.company_name} has been updated.`,
       });
 
       navigate("/customers/customers");
@@ -127,7 +116,7 @@ export default function EditCustomer() {
       const { error } = await supabase
         .from("customers")
         .delete()
-        .eq("id", customerId);
+        .eq("id", parseInt(customerId!));
 
       if (error) throw error;
 
@@ -181,7 +170,7 @@ export default function EditCustomer() {
             <div className="flex justify-between items-start">
               <div>
                 <CardTitle>Edit Customer Information</CardTitle>
-                <CardDescription>Update details for {formData.name}</CardDescription>
+                <CardDescription>Update details for {formData.full_name || formData.company_name}</CardDescription>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -210,50 +199,36 @@ export default function EditCustomer() {
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Customer Name <span className="text-red-500">*</span></Label>
+                <Label htmlFor="full_name">Full Name</Label>
                 <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="full_name"
+                  name="full_name"
+                  value={formData.full_name}
                   onChange={handleChange}
-                  placeholder="Enter company or individual name"
-                  required
+                  placeholder="Enter individual name"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contact_person">Contact Person</Label>
+                <Label htmlFor="company_name">Company Name</Label>
                 <Input
-                  id="contact_person"
-                  name="contact_person"
-                  value={formData.contact_person}
+                  id="company_name"
+                  name="company_name"
+                  value={formData.company_name}
                   onChange={handleChange}
-                  placeholder="Primary contact person"
+                  placeholder="Enter company name"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email address"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="Phone number"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="telepnone">Telephone</Label>
+                <Input
+                  id="telepnone"
+                  name="telepnone"
+                  value={formData.telepnone}
+                  onChange={handleChange}
+                  placeholder="Phone number"
+                />
               </div>
 
               <div className="space-y-2">
@@ -267,38 +242,6 @@ export default function EditCustomer() {
                   rows={2}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Customer Category</Label>
-                <Select 
-                  onValueChange={(value) => handleSelectChange("category", value)}
-                  value={formData.category}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="retail">Retail</SelectItem>
-                    <SelectItem value="wholesale">Wholesale</SelectItem>
-                    <SelectItem value="corporate">Corporate</SelectItem>
-                    <SelectItem value="government">Government</SelectItem>
-                    <SelectItem value="non-profit">Non-Profit</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  placeholder="Additional notes about the customer"
-                  rows={3}
-                />
-              </div>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button 
@@ -308,7 +251,7 @@ export default function EditCustomer() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formData.name}>
+              <Button type="submit" disabled={isSubmitting}>
                 <Save className="h-4 w-4 mr-2" />
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>

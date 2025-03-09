@@ -28,14 +28,9 @@ import Customers from "./pages/customers/customers";
 import AddCustomer from "./pages/customers/add_customer";
 import EditCustomer from "./pages/customers/edit_cutomers";
 import Clients from "./pages/clients/clients";
-import AddClientStock from "./pages/clients/add_clients_stock";
-import EditClient from "./pages/clients/edit_client";
 import ViewClientStock from "./pages/clients/view_clients_stock";
-import InsertClientStock from "./pages/clients/insertclientsstock";
 
 // Report pages
-import GeneralLedger from "./pages/reports/GeneralLedger";
-import FinancialReport from "./pages/reports/FinancialReport";
 import EmployeeReport from "./pages/reports/EmployeeReport";
 
 import { Toaster } from "@/components/ui/toaster";
@@ -77,15 +72,10 @@ function App() {
 
             {/* Client routes */}
             <Route path="/clients/clients" element={<Clients />} />
-            <Route path="/clients/add_clients_stock" element={<AddClientStock />} />
-            <Route path="/clients/edit_client" element={<EditClient />} />
             <Route path="/clients/view_clients_stock" element={<ViewClientStock />} />
-            <Route path="/clients/insertclientsstock" element={<InsertClientStock />} />
 
             {/* Report routes */}
             <Route path="/reports">
-              <Route path="ledger" element={<GeneralLedger />} />
-              <Route path="financial" element={<FinancialReport />} />
               <Route path="employees" element={<EmployeeReport />} />
             </Route>
           </Routes>
