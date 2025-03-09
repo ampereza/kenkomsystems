@@ -25,39 +25,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StockNavbar } from "@/components/navigation/StockNavbar";
 
 export default function StockReport() {
-  const [startDate, setStartDate] = useState(startOfMonth(new Date()));
-  const [endDate, setEndDate] = useState(endOfMonth(new Date()));
+  const [dateRange, setDateRange] = useState({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    to: new Date()
+  });
 
   const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
     const now = new Date();
     switch (range) {
       case "day":
-        setStartDate(startOfDay(now));
-        setEndDate(endOfDay(now));
+        setDateRange({
+          from: startOfDay(now),
+          to: endOfDay(now)
+        });
         break;
       case "week":
-        setStartDate(startOfWeek(now));
-        setEndDate(endOfWeek(now));
+        setDateRange({
+          from: startOfWeek(now),
+          to: endOfWeek(now)
+        });
         break;
       case "month":
-        setStartDate(startOfMonth(now));
-        setEndDate(endOfMonth(now));
+        setDateRange({
+          from: startOfMonth(now),
+          to: endOfMonth(now)
+        });
         break;
       case "year":
-        setStartDate(startOfYear(now));
-        setEndDate(endOfYear(now));
+        setDateRange({
+          from: startOfYear(now),
+          to: endOfYear(now)
+        });
         break;
     }
   };
 
   const { data: stockData, isLoading } = useQuery({
-    queryKey: ["stock-movements", startDate, endDate],
+    queryKey: ["stock-movements", dateRange.from, dateRange.to],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stock_movements")
         .select("*")
-        .gte("date", startDate.toISOString())
-        .lte("date", endDate.toISOString())
+        .gte("date", dateRange.from.toISOString())
+        .lte("date", dateRange.to.toISOString())
         .order("date");
 
       if (error) throw error;
@@ -84,13 +94,11 @@ export default function StockReport() {
     <>
       <StockNavbar />
       <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Stock Movement Report</h1>
+        <h1 className="text-3xl font-bold mb-6">Stock Report</h1>
         
         <DateRangeSelector
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
           onRangeSelect={handleRangeSelect}
         />
 

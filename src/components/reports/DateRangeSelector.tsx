@@ -16,16 +16,47 @@ export interface DateRangeProps {
 }
 
 export interface DateRangeSelectorProps {
-  dateRange: DateRangeProps;
-  setDateRange: React.Dispatch<React.SetStateAction<DateRangeProps>>;
+  // New API - preferred
+  dateRange?: DateRangeProps;
+  setDateRange?: React.Dispatch<React.SetStateAction<DateRangeProps>>;
+  
+  // Legacy API - for backward compatibility
+  startDate?: Date;
+  endDate?: Date;
+  onStartDateChange?: React.Dispatch<React.SetStateAction<Date>>;
+  onEndDateChange?: React.Dispatch<React.SetStateAction<Date>>;
+  
+  // Common props
   onRangeSelect?: (range: "day" | "week" | "month" | "year") => void;
 }
 
 export function DateRangeSelector({ 
-  dateRange, 
-  setDateRange, 
+  dateRange,
+  setDateRange,
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange,
   onRangeSelect 
 }: DateRangeSelectorProps) {
+  // Use either the new API or the legacy API
+  const from = dateRange?.from || startDate || new Date();
+  const to = dateRange?.to || endDate || new Date();
+  
+  // Handle date selection based on which API is being used
+  const handleDateSelection = (range: { from?: Date; to?: Date }) => {
+    if (range?.from && range?.to) {
+      if (setDateRange) {
+        // New API
+        setDateRange({ from: range.from, to: range.to });
+      } else if (onStartDateChange && onEndDateChange) {
+        // Legacy API
+        onStartDateChange(range.from);
+        onEndDateChange(range.to);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Popover>
@@ -35,23 +66,19 @@ export function DateRangeSelector({
             className="justify-start text-left font-normal h-9"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {format(dateRange.from, "PPP")} - {format(dateRange.to, "PPP")}
+            {format(from, "PPP")} - {format(to, "PPP")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={dateRange.from}
+            defaultMonth={from}
             selected={{
-              from: dateRange.from,
-              to: dateRange.to,
+              from: from,
+              to: to,
             }}
-            onSelect={(range) => {
-              if (range?.from && range?.to) {
-                setDateRange({ from: range.from, to: range.to });
-              }
-            }}
+            onSelect={handleDateSelection}
             numberOfMonths={2}
           />
         </PopoverContent>

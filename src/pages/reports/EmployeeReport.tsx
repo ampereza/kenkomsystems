@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { startOfMonth, endOfMonth } from "date-fns";
 import {
   Table,
   TableBody,
@@ -18,41 +18,49 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
+import { formatCurrency } from "@/components/finance/print-templates/BasePrintTemplate";
 
 export default function EmployeeReport() {
-  const [startDate, setStartDate] = useState(startOfMonth(new Date()));
-  const [endDate, setEndDate] = useState(endOfMonth(new Date()));
+  const [dateRange, setDateRange] = useState({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date())
+  });
 
   const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
     const now = new Date();
+    let from = dateRange.from;
+    let to = dateRange.to;
+    
     switch (range) {
       case "day":
-        setStartDate(startOfDay(now));
-        setEndDate(endOfDay(now));
+        from = startOfDay(now);
+        to = endOfDay(now);
         break;
       case "week":
-        setStartDate(startOfWeek(now));
-        setEndDate(endOfWeek(now));
+        from = startOfWeek(now);
+        to = endOfWeek(now);
         break;
       case "month":
-        setStartDate(startOfMonth(now));
-        setEndDate(endOfMonth(now));
+        from = startOfMonth(now);
+        to = endOfMonth(now);
         break;
       case "year":
-        setStartDate(startOfYear(now));
-        setEndDate(endOfYear(now));
+        from = startOfYear(now);
+        to = endOfYear(now);
         break;
     }
+
+    setDateRange({ from, to });
   };
 
   const { data: employeePayments, isLoading } = useQuery({
-    queryKey: ["employee-payments", startDate, endDate],
+    queryKey: ["employee-payments", dateRange],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("employee_payments")
         .select("*")
-        .gte("payment_date", startDate.toISOString())
-        .lte("payment_date", endDate.toISOString())
+        .gte("payment_date", dateRange.from.toISOString())
+        .lte("payment_date", dateRange.to.toISOString())
         .order("payment_date");
 
       if (error) throw error;
@@ -72,10 +80,8 @@ export default function EmployeeReport() {
         <h1 className="text-3xl font-bold mb-6">Employee Payments Report</h1>
         
         <DateRangeSelector
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
           onRangeSelect={handleRangeSelect}
         />
 

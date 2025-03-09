@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { startOfMonth, endOfMonth } from "date-fns";
 import {
   Table,
   TableBody,
@@ -18,41 +18,52 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StockNavbar } from "@/components/navigation/StockNavbar";
+import { formatCurrency } from "@/components/finance/print-templates/BasePrintTemplate";
 
 export default function SupplierReport() {
-  const [startDate, setStartDate] = useState(startOfMonth(new Date()));
-  const [endDate, setEndDate] = useState(endOfMonth(new Date()));
+  const [dateRange, setDateRange] = useState({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date())
+  });
 
   const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
     const now = new Date();
     switch (range) {
       case "day":
-        setStartDate(startOfDay(now));
-        setEndDate(endOfDay(now));
+        setDateRange({
+          from: startOfDay(now),
+          to: endOfDay(now)
+        });
         break;
       case "week":
-        setStartDate(startOfWeek(now));
-        setEndDate(endOfWeek(now));
+        setDateRange({
+          from: startOfWeek(now),
+          to: endOfWeek(now)
+        });
         break;
       case "month":
-        setStartDate(startOfMonth(now));
-        setEndDate(endOfMonth(now));
+        setDateRange({
+          from: startOfMonth(now),
+          to: endOfMonth(now)
+        });
         break;
       case "year":
-        setStartDate(startOfYear(now));
-        setEndDate(endOfYear(now));
+        setDateRange({
+          from: startOfYear(now),
+          to: endOfYear(now)
+        });
         break;
     }
   };
 
   const { data: supplierTransactions, isLoading } = useQuery({
-    queryKey: ["supplier-transactions", startDate, endDate],
+    queryKey: ["supplier-transactions", dateRange],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("supplier_transactions")
         .select("*")
-        .gte("transaction_date", startDate.toISOString())
-        .lte("transaction_date", endDate.toISOString())
+        .gte("transaction_date", dateRange.from.toISOString())
+        .lte("transaction_date", dateRange.to.toISOString())
         .order("transaction_date");
 
       if (error) throw error;
@@ -67,10 +78,8 @@ export default function SupplierReport() {
         <h1 className="text-3xl font-bold mb-6">Supplier Transactions Report</h1>
         
         <DateRangeSelector
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
           onRangeSelect={handleRangeSelect}
         />
 
