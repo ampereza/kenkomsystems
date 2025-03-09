@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from "date-fns";
 
 interface RejectedPole {
-  id: string;
+  id: number;
   supplier_id: string;
   created_at: string;
   quantity: number;

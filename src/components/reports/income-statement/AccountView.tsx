@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatCurrency } from "@/components/finance/print-templates/BasePrintTemplate";
 
 interface AccountViewProps {
   data: AccountIncomeStatement[];
@@ -16,14 +17,6 @@ interface AccountViewProps {
 }
 
 export function AccountView({ data, calculateNetIncome }: AccountViewProps) {
-  const formatUGX = (amount: number) => {
-    return new Intl.NumberFormat("en-UG", {
-      style: "currency",
-      currency: "UGX",
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -41,14 +34,14 @@ export function AccountView({ data, calculateNetIncome }: AccountViewProps) {
             <TableCell>{item.account_name}</TableCell>
             <TableCell className="capitalize">{item.account_type}</TableCell>
             <TableCell className="text-right">
-              {formatUGX(Number(item.total_amount))}
+              {formatCurrency(Number(item.total_amount))}
             </TableCell>
           </TableRow>
         ))}
         <TableRow className="font-bold">
           <TableCell colSpan={3}>Net Income</TableCell>
           <TableCell className="text-right">
-            {formatUGX(calculateNetIncome(data || []))}
+            {formatCurrency(calculateNetIncome(data || []))}
           </TableCell>
         </TableRow>
       </TableBody>

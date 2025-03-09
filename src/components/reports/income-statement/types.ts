@@ -22,8 +22,10 @@ export interface AccountIncomeStatement {
 }
 
 export interface Account {
-  account_code: string;
+  id: string;
+  account_code?: string;
   account_name: string;
   account_type: string;
-  balance: number;
+  balance?: number;
+  created_at: string;
 }
