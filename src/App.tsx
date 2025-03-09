@@ -22,6 +22,8 @@ import Receipts from "./pages/finance/Receipts";
 import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
 import PaymentVouchers from "./pages/finance/PaymentVouchers";
+import BalanceSheetPage from "./pages/finance/balancesheet";
+import IncomeStatementPage from "./pages/finance/incomestatement";
 
 // Customer and Client pages
 import Customers from "./pages/customers/customers";
@@ -35,6 +37,8 @@ import InsertClientStock from "./pages/clients/insertclientsstock";
 
 // Report pages
 import EmployeeReport from "./pages/reports/EmployeeReport";
+import GeneralLedger from "./pages/reports/GeneralLedger";
+import FinancialReport from "./pages/reports/FinancialReport";
 import { Toaster } from "@/components/ui/toaster";
 
 // Create a client
@@ -66,6 +70,8 @@ function App() {
             <Route path="/finance/expenses" element={<Expenses />} />
             <Route path="/finance/employees" element={<Employees />} />
             <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
+            <Route path="/finance/balance-sheet" element={<BalanceSheetPage />} />
+            <Route path="/finance/income-statement" element={<IncomeStatementPage />} />
 
             {/* Customer routes */}
             <Route path="/customers/customers" element={<Customers />} />
@@ -82,6 +88,8 @@ function App() {
             {/* Report routes */}
             <Route path="/reports">
               <Route path="employees" element={<EmployeeReport />} />
+              <Route path="ledger" element={<GeneralLedger />} />
+              <Route path="financial" element={<FinancialReport />} />
             </Route>
           </Routes>
           

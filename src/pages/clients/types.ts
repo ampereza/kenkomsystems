@@ -1,6 +1,6 @@
 
 export interface Client {
-  id: number;
+  id: string;  // Changed from number to string as Supabase UUIDs are strings
   name: string;
   contact_person?: string;
   email?: string;
@@ -11,8 +11,8 @@ export interface Client {
 }
 
 export interface ClientStock {
-  id: number;
-  client_id: number;
+  id: string;  // Changed from number to string as Supabase UUIDs are strings
+  client_id: string;  // Changed from number to string
   stock_type: string;
   quantity: number;
   description?: string;

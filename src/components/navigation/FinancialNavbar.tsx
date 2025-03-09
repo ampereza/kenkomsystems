@@ -9,6 +9,8 @@ export function FinancialNavbar() {
     { href: "/finance/expenses", label: "Expenses" },
     { href: "/finance/employees", label: "Employees" },
     { href: "/finance/payment-vouchers", label: "Payment Vouchers" },
+    { href: "/finance/balance-sheet", label: "Balance Sheet" },
+    { href: "/finance/income-statement", label: "Income Statement" },
     { href: "/customers/customers", label: "Customers" },
     { href: "/clients/clients", label: "Clients" },
     { href: "/reports/ledger", label: "General Ledger" },
