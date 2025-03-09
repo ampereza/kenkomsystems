@@ -20,7 +20,11 @@ interface Receipt {
   signature?: string;
 }
 
-export function ReceiptsTable({ receipts = [] }: { receipts?: Receipt[] }) {
+interface ReceiptsTableProps {
+  receipts?: Receipt[];
+}
+
+export function ReceiptsTable({ receipts = [] }: ReceiptsTableProps) {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -105,11 +109,10 @@ export function ReceiptsTable({ receipts = [] }: { receipts?: Receipt[] }) {
         </Card>
       )}
       
-      {selectedReceipt && (
+      {selectedReceipt && dialogOpen && (
         <ViewDocumentDialog
           documentType="receipts"
           document={selectedReceipt}
-          open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) {

@@ -8,17 +8,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 
+interface RejectedPole {
+  id: string;
+  supplier_id: string;
+  rejection_date: string;
+  quantity: number;
+  pole_type: string;
+  rejection_reason: string;
+  action_taken: string;
+  created_at: string;
+  suppliers?: { name: string };
+}
+
 export default function RejectedPoles() {
   const { data: rejectedPoles, isLoading } = useQuery({
     queryKey: ["rejected-poles"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("rejected_stock")
+        .from("rejected_Poles") // Using the correct table name from the DB schema
         .select("*, suppliers(name)")
-        .order("rejection_date", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data as RejectedPole[];
     },
   });
 
@@ -59,12 +71,12 @@ export default function RejectedPoles() {
                   {rejectedPoles?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        {format(new Date(item.rejection_date), "dd/MM/yyyy")}
+                        {format(new Date(item.rejection_date || item.created_at), "dd/MM/yyyy")}
                       </TableCell>
                       <TableCell>{item.suppliers?.name || "Unknown"}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>{item.pole_type || "Standard"}</TableCell>
-                      <TableCell>{item.rejection_reason}</TableCell>
+                      <TableCell>{item.rejection_reason || item.category || "Quality issues"}</TableCell>
                       <TableCell>{item.action_taken || "Returned to supplier"}</TableCell>
                     </TableRow>
                   ))}
