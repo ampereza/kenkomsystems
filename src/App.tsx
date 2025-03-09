@@ -35,7 +35,6 @@ import InsertClientStock from "./pages/clients/insertclientsstock";
 
 // Report pages
 import EmployeeReport from "./pages/reports/EmployeeReport";
-
 import { Toaster } from "@/components/ui/toaster";
 
 // Create a client
