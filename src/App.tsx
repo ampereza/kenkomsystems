@@ -35,6 +35,19 @@ import EditClient from "./pages/clients/edit_client";
 import ViewClientStock from "./pages/clients/view_clients_stock";
 import InsertClientStock from "./pages/clients/insertclientsstock";
 
+// Stock Pages
+import ReceiveStock from "./pages/stock/ReceiveStock";
+import SortStock from "./pages/stock/SortStock";
+import StockReport from "./pages/stock/StockReport";
+import SupplierReport from "./pages/suppliers/SupplierReport";
+import ViewSuppliers from "./pages/suppliers/view_suppliers";
+import AddSuppliers from "./pages/suppliers/add_suppliers";
+import RejectedPoles from "./pages/suppliers/rejected_poles";
+
+// Treatment Pages
+import TreatmentLog from "./pages/treatments/TreatmentLogWrapper";
+import TreatmentReport from "./pages/treatments/treatment_report";
+
 // Report pages
 import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
@@ -61,29 +74,56 @@ function App() {
               <Route path="general-manager" element={<GeneralManagerDashboard />} />
               <Route path="md" element={<MDDashboard />} />
               <Route path="stock" element={<StockDashboard />} />
-              <Route path="treatments" element={<TreatmentDashboardWrapper />} />
+              <Route path="treatment" element={<TreatmentDashboardWrapper />} />
             </Route>
 
             {/* Financial routes */}
-            <Route path="/finance/transactions" element={<Transactions />} />
-            <Route path="/finance/receipts" element={<Receipts />} />
-            <Route path="/finance/expenses" element={<Expenses />} />
-            <Route path="/finance/employees" element={<Employees />} />
-            <Route path="/finance/payment-vouchers" element={<PaymentVouchers />} />
-            <Route path="/finance/balance-sheet" element={<BalanceSheetPage />} />
-            <Route path="/finance/income-statement" element={<IncomeStatementPage />} />
+            <Route path="/finance">
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="receipts" element={<Receipts />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="employees" element={<Employees />} />
+              <Route path="payment-vouchers" element={<PaymentVouchers />} />
+              <Route path="balance-sheet" element={<BalanceSheetPage />} />
+              <Route path="income-statement" element={<IncomeStatementPage />} />
+            </Route>
 
             {/* Customer routes */}
-            <Route path="/customers/customers" element={<Customers />} />
-            <Route path="/customers/add_customer" element={<AddCustomer />} />
-            <Route path="/customers/edit_cutomers" element={<EditCustomer />} />
+            <Route path="/customers">
+              <Route path="list" element={<Customers />} />
+              <Route path="add" element={<AddCustomer />} />
+              <Route path="edit" element={<EditCustomer />} />
+            </Route>
 
             {/* Client routes */}
-            <Route path="/clients/clients" element={<Clients />} />
-            <Route path="/clients/add_clients_stock" element={<AddClientStock />} />
-            <Route path="/clients/edit_client" element={<EditClient />} />
-            <Route path="/clients/view_clients_stock" element={<ViewClientStock />} />
-            <Route path="/clients/insertclientsstock" element={<InsertClientStock />} />
+            <Route path="/clients">
+              <Route path="list" element={<Clients />} />
+              <Route path="add-stock" element={<AddClientStock />} />
+              <Route path="edit" element={<EditClient />} />
+              <Route path="view-stock" element={<ViewClientStock />} />
+              <Route path="insert-stock" element={<InsertClientStock />} />
+            </Route>
+
+            {/* Stock routes */}
+            <Route path="/stock">
+              <Route path="receive" element={<ReceiveStock />} />
+              <Route path="sort" element={<SortStock />} />
+              <Route path="report" element={<StockReport />} />
+              <Route path="suppliers">
+                <Route path="" element={<ViewSuppliers />} />
+                <Route path="add" element={<AddSuppliers />} />
+                <Route path="rejected" element={<RejectedPoles />} />
+                <Route path="report" element={<SupplierReport />} />
+              </Route>
+            </Route>
+
+            {/* Treatment routes */}
+            <Route path="/treatment">
+              <Route path="log" element={<TreatmentLog />} />
+              <Route path="report" element={<TreatmentReport />} />
+              <Route path="clients" element={<Clients />} />
+              <Route path="stock" element={<ViewClientStock />} />
+            </Route>
 
             {/* Report routes */}
             <Route path="/reports">
