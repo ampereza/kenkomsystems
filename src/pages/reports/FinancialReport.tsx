@@ -48,21 +48,21 @@ const FinancialReport = () => {
     queryKey: ["balance-sheet", dateRange],
     queryFn: async () => {
       try {
-        // Fetch transactions for assets
+        // Fetch transactions for assets (using purchase type as stand-in for assets)
         const { data: assetTransactions, error: assetError } = await supabase
           .from("transactions")
           .select("*")
-          .eq("type", "asset")
+          .eq("type", "purchase")
           .gte("transaction_date", formatDateForQuery(dateRange.from))
           .lte("transaction_date", formatDateForQuery(dateRange.to));
 
         if (assetError) throw assetError;
 
-        // Fetch transactions for liabilities
+        // Fetch transactions for liabilities (using expense type as stand-in for liabilities)
         const { data: liabilityTransactions, error: liabilityError } = await supabase
           .from("transactions")
           .select("*")
-          .eq("type", "liability")
+          .eq("type", "expense")
           .gte("transaction_date", formatDateForQuery(dateRange.from))
           .lte("transaction_date", formatDateForQuery(dateRange.to));
 
@@ -184,18 +184,33 @@ const FinancialReport = () => {
     queryKey: ["chart-of-accounts"],
     queryFn: async () => {
       try {
-        // For this demo, we're creating a simplified chart of accounts
-        // In a real application, you would fetch this from your database
-        const accounts: Account[] = [
-          { account_code: "1000", account_name: "Cash", account_type: "asset", balance: 5000 },
-          { account_code: "1100", account_name: "Accounts Receivable", account_type: "asset", balance: 3000 },
-          { account_code: "2000", account_name: "Accounts Payable", account_type: "liability", balance: 2000 },
-          { account_code: "3000", account_name: "Owner's Equity", account_type: "equity", balance: 6000 },
-          { account_code: "4000", account_name: "Revenue", account_type: "revenue", balance: 10000 },
-          { account_code: "5000", account_name: "Expenses", account_type: "expense", balance: 4000 },
-        ];
+        // Fetch actual accounts from ledger_accounts
+        const { data: accounts, error } = await supabase
+          .from("ledger_accounts")
+          .select("*");
+          
+        if (error) throw error;
         
-        return accounts;
+        // If there are no accounts, create a demo set
+        if (!accounts || accounts.length === 0) {
+          const demoAccounts: Account[] = [
+            { account_code: "1000", account_name: "Cash", account_type: "asset", balance: 5000 },
+            { account_code: "1100", account_name: "Accounts Receivable", account_type: "asset", balance: 3000 },
+            { account_code: "2000", account_name: "Accounts Payable", account_type: "liability", balance: 2000 },
+            { account_code: "3000", account_name: "Owner's Equity", account_type: "equity", balance: 6000 },
+            { account_code: "4000", account_name: "Revenue", account_type: "revenue", balance: 10000 },
+            { account_code: "5000", account_name: "Expenses", account_type: "expense", balance: 4000 },
+          ];
+          return demoAccounts;
+        }
+        
+        // Transform data into the Account interface
+        return accounts.map(acct => ({
+          account_code: acct.account_code || "",
+          account_name: acct.account_name || "",
+          account_type: acct.account_type || "",
+          balance: 0 // We don't have balance in the database, so default to 0
+        }));
       } catch (error) {
         console.error("Error fetching chart of accounts:", error);
         throw error;

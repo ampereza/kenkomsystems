@@ -8,24 +8,27 @@ import { ViewDocumentDialog } from "./ViewDocumentDialog";
 import { useState } from "react";
 import { ReceiptDialog } from "@/components/receipts/ReceiptDialog";
 
-export function ReceiptsTable() {
+interface Receipt {
+  id: string;
+  receipt_number: string;
+  date: string;
+  received_from: string;
+  amount: number;
+  payment_method?: string;
+  created_at: string;
+  for_payment: string;
+  signature?: string;
+}
+
+interface ReceiptsTableProps {
+  receipts: Receipt[];
+}
+
+export function ReceiptsTable({ receipts }: ReceiptsTableProps) {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  const { data: receipts, isLoading } = useQuery({
-    queryKey: ["receipts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("receipts")
-        .select("*")
-        .order("date", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const handleView = async (id: string) => {
     setSelectedReceiptId(id);
     // Fetch the selected receipt
@@ -50,9 +53,7 @@ export function ReceiptsTable() {
         <ReceiptDialog />
       </div>
       
-      {isLoading ? (
-        <div className="text-center py-8">Loading receipts...</div>
-      ) : receipts && receipts.length > 0 ? (
+      {receipts && receipts.length > 0 ? (
         <div className="rounded-lg border overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted">

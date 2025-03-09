@@ -28,19 +28,19 @@ const BalanceSheetPage = () => {
     const fetchBalanceSheetData = async () => {
       setLoading(true);
       try {
-        // Fetch transactions for assets
+        // Fetch transactions for assets (using purchase as proxy for asset)
         const { data: assetTransactions, error: assetError } = await supabase
           .from("transactions")
           .select("*")
-          .eq("type", "asset");
+          .eq("type", "purchase");
 
         if (assetError) throw assetError;
 
-        // Fetch transactions for liabilities
+        // Fetch transactions for liabilities (using expense as proxy for liability)
         const { data: liabilityTransactions, error: liabilityError } = await supabase
           .from("transactions")
           .select("*")
-          .eq("type", "liability");
+          .eq("type", "expense");
 
         if (liabilityError) throw liabilityError;
 
