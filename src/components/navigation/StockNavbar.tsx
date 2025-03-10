@@ -32,18 +32,8 @@ export function StockNavbar() {
       icon: <PackageCheck className="h-4 w-4" /> 
     },
     { 
-      href: "/stock/suppliers", 
-      label: "Suppliers", 
-      icon: <Store className="h-4 w-4" /> 
-    },
-    { 
       href: "/stock/report", 
       label: "Stock Report", 
-      icon: <BarChart3 className="h-4 w-4" /> 
-    },
-    { 
-      href: "/stock/suppliers/report", 
-      label: "Supplier Report", 
       icon: <BarChart3 className="h-4 w-4" /> 
     },
   ];
