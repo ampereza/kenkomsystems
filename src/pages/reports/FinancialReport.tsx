@@ -1,13 +1,15 @@
-import React, { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
-import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { formatCurrency } from "@/components/finance/print-templates/BasePrintTemplate";
-import { Account } from "@/components/reports/income-statement/types";
+import React, { useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { DateRangeSelector } from '@/components/reports/DateRangeSelector';
+import { FinancialMetrics } from '@/components/reports/FinancialMetrics';
+import { FinancialTrends } from '@/components/reports/FinancialTrends';
+import { DetailedTransactions } from '@/components/reports/DetailedTransactions';
+import { FinancialStatements } from '@/components/reports/FinancialStatements';
+import { DetailedView as DetailedIncomeStatement } from '@/components/reports/income-statement/DetailedView';
 
 // Type definitions
 interface BalanceSheetItem {

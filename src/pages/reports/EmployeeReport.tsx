@@ -1,143 +1,147 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { startOfMonth, endOfMonth } from "date-fns";
+import React, { useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { format } from 'date-fns';
+import { DateRangeSelector } from '@/components/reports/DateRangeSelector';
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
-import { formatCurrency } from "@/components/finance/print-templates/BasePrintTemplate";
+} from "@/components/ui/table"
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
-export default function EmployeeReport() {
-  const [dateRange, setDateRange] = useState({
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date())
+const EmployeeReport = () => {
+  const [dateRange, setDateRange] = useState<{ from: Date | null, to: Date | null }>({
+    from: null,
+    to: null,
   });
+  const [selectedRange, setSelectedRange] = useState<string>('today');
+  const tableRef = useRef(null);
 
-  const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
-    const now = new Date();
-    let from = dateRange.from;
-    let to = dateRange.to;
-    
-    switch (range) {
-      case "day":
-        from = startOfDay(now);
-        to = endOfDay(now);
-        break;
-      case "week":
-        from = startOfWeek(now);
-        to = endOfWeek(now);
-        break;
-      case "month":
-        from = startOfMonth(now);
-        to = endOfMonth(now);
-        break;
-      case "year":
-        from = startOfYear(now);
-        to = endOfYear(now);
-        break;
-    }
-
-    setDateRange({ from, to });
-  };
-
-  const { data: employeePayments, isLoading } = useQuery({
-    queryKey: ["employee-payments", dateRange],
+  const { data: employeeData, isLoading, error } = useQuery({
+    queryKey: ['employee-report', dateRange.from, dateRange.to],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employee_payments")
-        .select("*")
-        .gte("payment_date", dateRange.from.toISOString())
-        .lte("payment_date", dateRange.to.toISOString())
-        .order("payment_date");
+      let fromDate, toDate;
 
-      if (error) throw error;
-      return data;
+      switch (selectedRange) {
+        case 'today':
+          fromDate = startOfDay(new Date());
+          toDate = endOfDay(new Date());
+          break;
+        case 'this_week':
+          fromDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+          toDate = endOfWeek(new Date(), { weekStartsOn: 1 });
+          break;
+        case 'this_month':
+          fromDate = startOfMonth(new Date());
+          toDate = endOfMonth(new Date());
+          break;
+        case 'this_year':
+          fromDate = startOfYear(new Date());
+          toDate = endOfYear(new Date());
+          break;
+        case 'custom':
+          if (dateRange.from && dateRange.to) {
+            fromDate = startOfDay(dateRange.from);
+            toDate = endOfDay(dateRange.to);
+          } else {
+            return [];
+          }
+          break;
+        default:
+          return [];
+      }
+
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .gte('created_at', fromDate.toISOString())
+        .lte('created_at', toDate.toISOString());
+
+      if (error) {
+        console.error("Error fetching employee data:", error);
+        throw error;
+      }
+
+      return data || [];
     },
   });
 
-  const totalPayments = employeePayments?.reduce(
-    (sum, payment) => sum + Number(payment.amount),
-    0
-  ) || 0;
+  const handleExport = () => {
+    const table = tableRef.current;
+    if (!table) {
+      console.error("Table ref is not available.");
+      return;
+    }
+
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Employee Report" });
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([new Uint8Array(wbout)], { type: 'application/octet-stream' });
+    saveAs(blob, `employee_report_${format(new Date(), 'yyyyMMddHHmmss')}.xlsx`);
+  };
 
   return (
-    <>
-      <FinancialNavbar />
-      <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Employee Payments Report</h1>
-        
-        <DateRangeSelector
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          onRangeSelect={handleRangeSelect}
-        />
-
-        {isLoading ? (
-          <div className="text-center py-8">Loading employee data...</div>
-        ) : (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Payments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${totalPayments.toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Payment Date</TableHead>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Position</TableHead>
-                      <TableHead>Period</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {employeePayments?.map((payment, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          {new Date(payment.payment_date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{payment.employee_name}</TableCell>
-                        <TableCell>{payment.position}</TableCell>
-                        <TableCell>
-                          {new Date(payment.payment_period_start).toLocaleDateString()} - {new Date(payment.payment_period_end).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          ${Number(payment.amount).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+    <div className="container mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Employee Report</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <DateRangeSelector
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+              selectedRange={selectedRange}
+              setSelectedRange={setSelectedRange}
+            />
           </div>
-        )}
-      </div>
-    </>
+
+          <div className="mb-4">
+            <Button onClick={handleExport} disabled={isLoading}>
+              {isLoading ? "Loading..." : "Export to Excel"}
+            </Button>
+          </div>
+
+          {error && <p className="text-red-500">Error: {error.message}</p>}
+
+          <div className="overflow-x-auto">
+            <Table ref={tableRef}>
+              <TableCaption>A list of your employees.</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Created At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employeeData?.map((employee) => (
+                  <TableRow key={employee.id}>
+                    <TableCell className="font-medium">{employee.id}</TableCell>
+                    <TableCell>{employee.name}</TableCell>
+                    <TableCell>{employee.email}</TableCell>
+                    <TableCell>{employee.role}</TableCell>
+                    <TableCell>{format(new Date(employee.created_at), 'yyyy-MM-dd HH:mm:ss')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
-}
+};
+
+export default EmployeeReport;

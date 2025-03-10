@@ -1,4 +1,3 @@
-
 export interface BaseIncomeStatement {
   account_type: string;
   total_amount: number;
@@ -26,6 +25,6 @@ export interface Account {
   account_code?: string;
   account_name: string;
   account_type: string;
-  balance?: number;
   created_at: string;
+  balance?: number;
 }

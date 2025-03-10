@@ -1044,7 +1044,9 @@ export type Database = {
           id: string
           last_login: string | null
           name: string | null
+          password: string | null
           updated_at: string
+          user_role: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -1053,7 +1055,9 @@ export type Database = {
           id: string
           last_login?: string | null
           name?: string | null
+          password?: string | null
           updated_at?: string
+          user_role?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -1062,7 +1066,9 @@ export type Database = {
           id?: string
           last_login?: string | null
           name?: string | null
+          password?: string | null
           updated_at?: string
+          user_role?: string | null
         }
         Relationships: []
       }

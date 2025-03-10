@@ -1,10 +1,13 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "./pages/Index";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/authentication/login";
+import AddUser from "./pages/authentication/adduser";
+import RemoveUser from "./pages/authentication/removeuser";
 
 // Auth
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
@@ -63,7 +66,13 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
+            {/* Set login as the default route */}
+            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin/add-user" element={<AddUser />} />
+            <Route path="/admin/remove-user" element={<RemoveUser />} />
+            
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
