@@ -190,12 +190,54 @@ const FinancialReport = () => {
         // If there are no accounts, create a demo set
         if (!accounts || accounts.length === 0) {
           const demoAccounts: Account[] = [
-            { id: "1", account_code: "1000", account_name: "Cash", account_type: "asset", balance: 5000, created_at: new Date().toISOString() },
-            { id: "2", account_code: "1100", account_name: "Accounts Receivable", account_type: "asset", balance: 3000, created_at: new Date().toISOString() },
-            { id: "3", account_code: "2000", account_name: "Accounts Payable", account_type: "liability", balance: 2000, created_at: new Date().toISOString() },
-            { id: "4", account_code: "3000", account_name: "Owner's Equity", account_type: "equity", balance: 6000, created_at: new Date().toISOString() },
-            { id: "5", account_code: "4000", account_name: "Revenue", account_type: "revenue", balance: 10000, created_at: new Date().toISOString() },
-            { id: "6", account_code: "5000", account_name: "Expenses", account_type: "expense", balance: 4000, created_at: new Date().toISOString() },
+            { 
+              id: "1", 
+              account_code: "1000", 
+              account_name: "Cash", 
+              account_type: "asset", 
+              balance: 5000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "2", 
+              account_code: "1100", 
+              account_name: "Accounts Receivable", 
+              account_type: "asset", 
+              balance: 3000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "3", 
+              account_code: "2000", 
+              account_name: "Accounts Payable", 
+              account_type: "liability", 
+              balance: 2000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "4", 
+              account_code: "3000", 
+              account_name: "Owner's Equity", 
+              account_type: "equity", 
+              balance: 6000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "5", 
+              account_code: "4000", 
+              account_name: "Revenue", 
+              account_type: "revenue", 
+              balance: 10000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "6", 
+              account_code: "5000", 
+              account_name: "Expenses", 
+              account_type: "expense", 
+              balance: 4000, 
+              created_at: new Date().toISOString() 
+            },
           ];
           return demoAccounts;
         }

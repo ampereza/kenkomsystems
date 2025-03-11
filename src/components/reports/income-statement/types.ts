@@ -29,4 +29,3 @@ export interface Account {
   created_at: string;
   balance: number;
 }
-
