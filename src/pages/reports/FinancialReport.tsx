@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +10,16 @@ import { FinancialMetrics } from '@/components/reports/FinancialMetrics';
 import { FinancialTrends } from '@/components/reports/FinancialTrends';
 import { DetailedTransactions } from '@/components/reports/DetailedTransactions';
 import { FinancialStatements } from '@/components/reports/FinancialStatements';
-import { DetailedView as DetailedIncomeStatement } from '@/components/reports/income-statement/DetailedView';
+import { FinancialNavbar } from '@/components/navigation/FinancialNavbar';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Account, DetailedIncomeStatement } from '@/components/reports/income-statement/types';
 
 // Type definitions
 interface BalanceSheetItem {
@@ -196,7 +206,7 @@ const FinancialReport = () => {
           account_code: acct.account_code || "",
           account_name: acct.account_name || "",
           account_type: acct.account_type || "",
-          balance: 0, // We don't have balance in the database, so default to 0
+          balance: acct.balance || 0,
           created_at: acct.created_at || new Date().toISOString()
         }));
       } catch (error) {
