@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "./supabaseClient";
+import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +17,36 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { profile } = useAuth();
+
+  const from = (location.state as any)?.from?.pathname || getDashboardByRole();
+
+  function getDashboardByRole() {
+    if (!profile) return "/dashboards/financial";
+    
+    switch (profile.role) {
+      case "accountant":
+        return "/dashboards/financial";
+      case "stock_manager":
+        return "/dashboards/stock";
+      case "production_manager":
+        return "/dashboards/treatment";
+      case "managing_director":
+      case "general_manager":
+        return "/dashboards/md";
+      default:
+        return "/dashboards/financial";
+    }
+  }
 
   useEffect(() => {
-    // Check if user is already logged in
+    if (profile) {
+      navigate(getDashboardByRole());
+    }
+  }, [profile]);
+
+  useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated === "true") {
       navigate("/dashboard");
@@ -33,7 +60,6 @@ const Login: React.FC = () => {
     setSuccess(null);
 
     try {
-      // Query the users table to check credentials
       const { data: user, error } = await supabase
         .from("users")
         .select("*")
@@ -45,7 +71,6 @@ const Login: React.FC = () => {
         throw new Error("Invalid email or password. Try admin@example.com / password");
       }
 
-      // Store authenticated state in localStorage
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("userRole", user.user_role);
       localStorage.setItem("userName", user.name || "User");
@@ -53,7 +78,6 @@ const Login: React.FC = () => {
 
       setSuccess("Login successful!");
 
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
