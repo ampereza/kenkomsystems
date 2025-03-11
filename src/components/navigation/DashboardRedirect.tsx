@@ -3,14 +3,14 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export function DashboardRedirect() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  if (!user || !user.role) {
+  if (!profile || !profile.role) {
     return <Navigate to="/login" />;
   }
   
   // Redirect based on user role
-  switch (user.role) {
+  switch (profile.role) {
     case "accountant":
       return <Navigate to="/dashboards/financial" />;
     case "stock_manager":
@@ -26,3 +26,4 @@ export function DashboardRedirect() {
       return <Navigate to="/dashboards/financial" />;
   }
 }
+
