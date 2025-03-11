@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,7 @@ import { FinancialMetrics } from '@/components/reports/FinancialMetrics';
 import { FinancialTrends } from '@/components/reports/FinancialTrends';
 import { DetailedTransactions } from '@/components/reports/DetailedTransactions';
 import { FinancialStatements } from '@/components/reports/FinancialStatements';
-import { FinancialNavbar } from '@/components/navigation/FinancialNavbar';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
 import {
   Table,
   TableBody,
@@ -261,8 +260,7 @@ const FinancialReport = () => {
   const isLoading = balanceSheetLoading || incomeStatementLoading || accountsLoading;
 
   return (
-    <>
-      <FinancialNavbar />
+    <DashboardLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Financial Reports</h1>
         
@@ -437,7 +435,7 @@ const FinancialReport = () => {
           </Tabs>
         )}
       </div>
-    </>
+    </DashboardLayout>
   );
 };
 
