@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute, UserRole } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import RemoveUser from "./pages/authentication/removeuser";
 
 // Auth
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
+import { DashboardRedirect } from "./components/navigation/DashboardRedirect";
 
 // Dashboard 
 import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
