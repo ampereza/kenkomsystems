@@ -240,11 +240,11 @@ const FinancialReport = () => {
     }
   });
 
-  const accountsWithBalance = chartOfAccounts.map(account => ({
+  const accountsWithBalance = chartOfAccounts?.map(account => ({
     ...account,
-    account_code: account.account_code || '',
+    account_code: account.account_code || 'N/A',
     balance: account.balance || 0
-  }));
+  })) || [];
 
   const isLoading = balanceSheetLoading || incomeStatementLoading || accountsLoading;
 

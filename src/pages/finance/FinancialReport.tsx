@@ -242,9 +242,9 @@ export default function FinancialReport() {
         }
         
         // Transform data into the Account interface
-        const accountsWithBalance = accounts.map(account => ({
+        const accountsWithBalance = chartOfAccounts.map(account => ({
           ...account,
-          account_code: account.account_code || '',
+          account_code: account.account_code || 'N/A',
           balance: account.balance || 0
         }));
         
