@@ -77,7 +77,15 @@ export const supabase = {
           data: [],
           error: null
         };
-      }
+      },
+      in: (column: string, values: any[]) => ({
+        gte: (column: string, value: any) => ({
+          lte: (column: string, value: any) => ({
+            data: [],
+            error: null
+          })
+        })
+      })
     }),
     delete: () => ({
       eq: (column: string, value: any) => {
@@ -90,16 +98,29 @@ export const supabase = {
         return Promise.resolve({ error: null });
       }
     }),
-    insert: (values: any[]) => {
+    insert: (values: any) => {
       if (table === "users") {
-        for (const value of values) {
+        if (Array.isArray(values)) {
+          for (const value of values) {
+            mockUsers.push({
+              ...value,
+              id: String(mockUsers.length + 1),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          }
+        } else {
           mockUsers.push({
-            ...value,
+            ...values,
             id: String(mockUsers.length + 1),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
         }
+      }
+      // Support for client_deliveries
+      if (table === "client_deliveries") {
+        return Promise.resolve({ error: null });
       }
       return Promise.resolve({ error: null });
     },

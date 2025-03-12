@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
 import { 
   Form,
   FormControl,
@@ -49,7 +52,7 @@ export function ClientDeliveryForm({ treatmentId, clientId, onSuccess, onCancel 
     try {
       setIsSubmitting(true);
 
-      // Create delivery record in the new client_deliveries view
+      // Create delivery record in the client_deliveries table
       const { error } = await supabase.from("client_deliveries").insert({
         treatment_id: treatmentId,
         client_id: clientId,
@@ -57,7 +60,10 @@ export function ClientDeliveryForm({ treatmentId, clientId, onSuccess, onCancel 
         quantity: data.quantity,
         delivery_note: data.delivery_note,
         received_by: data.received_by,
-        remarks: data.remarks
+        remarks: data.remarks,
+        delivery_status: "completed",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
 
       if (error) throw error;
@@ -79,14 +85,36 @@ export function ClientDeliveryForm({ treatmentId, clientId, onSuccess, onCancel 
           control={form.control}
           name="delivery_date"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Delivery Date</FormLabel>
-              <FormControl>
-                <DatePicker
-                  date={field.value}
-                  setDate={field.onChange}
-                />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
