@@ -9,6 +9,70 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_deliveries: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          delivery_date: string | null
+          delivery_note: string | null
+          delivery_status: string | null
+          id: string
+          quantity: number
+          received_by: string | null
+          remarks: string | null
+          treatment_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          delivery_date?: string | null
+          delivery_note?: string | null
+          delivery_status?: string | null
+          id?: string
+          quantity: number
+          received_by?: string | null
+          remarks?: string | null
+          treatment_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          delivery_date?: string | null
+          delivery_note?: string | null
+          delivery_status?: string | null
+          id?: string
+          quantity?: number
+          received_by?: string | null
+          remarks?: string | null
+          treatment_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_deliveries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_deliveries_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_deliveries_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_stock: {
         Row: {
           client_id: string
@@ -426,20 +490,26 @@ export type Database = {
       }
       ledger_accounts: {
         Row: {
+          account_code: string | null
           account_name: string
           account_type: string
+          balance: number | null
           created_at: string | null
           id: string
         }
         Insert: {
+          account_code?: string | null
           account_name: string
           account_type: string
+          balance?: number | null
           created_at?: string | null
           id?: string
         }
         Update: {
+          account_code?: string | null
           account_name?: string
           account_type?: string
+          balance?: number | null
           created_at?: string | null
           id?: string
         }
