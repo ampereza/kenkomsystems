@@ -1,4 +1,3 @@
-
 /**
  * Custom client for database operations without using Supabase authentication
  */
@@ -71,7 +70,6 @@ export const supabase = {
       single: () => {
         return Promise.resolve({ data: null, error: null });
       },
-      // For view tables 
       contains: (column: string, value: any) => {
         return {
           data: [],
@@ -118,17 +116,14 @@ export const supabase = {
           });
         }
       }
-      // Support for client_deliveries
       if (table === "client_deliveries") {
         return Promise.resolve({ error: null });
       }
       return Promise.resolve({ error: null });
     },
-    // For development purposes, expose the mockUsers
     _mockUsers: mockUsers
   }),
   
-  // Add a simple auth interface that mimics Supabase auth
   auth: {
     getSession: () => {
       const userId = localStorage.getItem("userId");
@@ -159,7 +154,6 @@ export const supabase = {
     },
     
     onAuthStateChange: (callback: any) => {
-      // Listen for storage events to detect login/logout
       const handleStorageChange = () => {
         const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
         const userId = localStorage.getItem("userId");
@@ -185,14 +179,11 @@ export const supabase = {
         }
       };
       
-      // Check immediately
       handleStorageChange();
       
-      // Add listener
       window.addEventListener('storage', handleStorageChange);
       document.addEventListener('visibilitychange', handleStorageChange);
       
-      // Return unsubscribe function
       return {
         unsubscribe: () => {
           window.removeEventListener('storage', handleStorageChange);
