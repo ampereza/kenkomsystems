@@ -13,7 +13,7 @@ import { DashboardRedirect } from "@/components/navigation/DashboardRedirect";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<DashboardRedirect />} />
+      <Route path="/" element={<login />} />
       <Route path="/dashboards" element={<DashboardRedirect />} />
       <AuthRoutes />
       <FinanceRoutes />
