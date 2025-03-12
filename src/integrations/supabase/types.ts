@@ -9,62 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      client_deliveries: {
-        Row: {
-          client_id: string
-          created_at: string | null
-          delivery_date: string | null
-          delivery_note_number: string | null
-          id: string
-          notes: string | null
-          poles_10m: number | null
-          poles_11m: number | null
-          poles_12m: number | null
-          poles_14m: number | null
-          poles_16m: number | null
-          poles_9m: number | null
-          telecom_poles: number | null
-        }
-        Insert: {
-          client_id: string
-          created_at?: string | null
-          delivery_date?: string | null
-          delivery_note_number?: string | null
-          id?: string
-          notes?: string | null
-          poles_10m?: number | null
-          poles_11m?: number | null
-          poles_12m?: number | null
-          poles_14m?: number | null
-          poles_16m?: number | null
-          poles_9m?: number | null
-          telecom_poles?: number | null
-        }
-        Update: {
-          client_id?: string
-          created_at?: string | null
-          delivery_date?: string | null
-          delivery_note_number?: string | null
-          id?: string
-          notes?: string | null
-          poles_10m?: number | null
-          poles_11m?: number | null
-          poles_12m?: number | null
-          poles_14m?: number | null
-          poles_16m?: number | null
-          poles_9m?: number | null
-          telecom_poles?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_deliveries_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       client_stock: {
         Row: {
           client_id: string

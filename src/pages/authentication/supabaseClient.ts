@@ -9,16 +9,34 @@ const mockUsers = [
     id: "1",
     email: "admin@example.com",
     name: "Administrator",
-    user_role: "admin",
+    user_role: "managing_director",
     password: "password",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   },
   {
     id: "2",
-    email: "user@example.com",
-    name: "Regular User",
-    user_role: "user",
+    email: "finance@example.com",
+    name: "Finance Manager",
+    user_role: "accountant",
+    password: "password",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: "3",
+    email: "stock@example.com",
+    name: "Stock Manager",
+    user_role: "stock_manager",
+    password: "password",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: "4",
+    email: "production@example.com",
+    name: "Production Manager",
+    user_role: "production_manager",
     password: "password",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -80,5 +98,84 @@ export const supabase = {
     },
     // For development purposes, expose the mockUsers
     _mockUsers: mockUsers
-  })
+  }),
+  
+  // Add a simple auth interface that mimics Supabase auth
+  auth: {
+    getSession: () => {
+      const userId = localStorage.getItem("userId");
+      const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+      
+      if (isAuthenticated && userId) {
+        const user = mockUsers.find(u => u.id === userId);
+        if (user) {
+          return Promise.resolve({
+            data: {
+              session: {
+                user: {
+                  id: user.id,
+                  email: user.email,
+                  user_metadata: {
+                    name: user.name,
+                    role: user.user_role
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
+      
+      return Promise.resolve({ data: { session: null } });
+    },
+    
+    onAuthStateChange: (callback: any) => {
+      // Listen for storage events to detect login/logout
+      const handleStorageChange = () => {
+        const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+        const userId = localStorage.getItem("userId");
+        
+        if (isAuthenticated && userId) {
+          const user = mockUsers.find(u => u.id === userId);
+          if (user) {
+            callback('SIGNED_IN', {
+              user: {
+                id: user.id,
+                email: user.email,
+                user_metadata: {
+                  name: user.name,
+                  role: user.user_role
+                }
+              }
+            });
+          }
+        } else {
+          callback('SIGNED_OUT', null);
+        }
+      };
+      
+      // Check immediately
+      handleStorageChange();
+      
+      // Add listener
+      window.addEventListener('storage', handleStorageChange);
+      document.addEventListener('visibilitychange', handleStorageChange);
+      
+      // Return unsubscribe function
+      return {
+        unsubscribe: () => {
+          window.removeEventListener('storage', handleStorageChange);
+          document.removeEventListener('visibilitychange', handleStorageChange);
+        }
+      };
+    },
+    
+    signOut: () => {
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("userRole");
+      return Promise.resolve({ error: null });
+    }
+  }
 };
