@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -245,7 +244,7 @@ const FinancialReport = () => {
         // Transform data into the Account interface
         return accounts.map(acct => ({
           id: acct.id || "",
-          account_code: acct.account_code || "", 
+          account_code: acct.account_code || "",
           account_name: acct.account_name || "",
           account_type: acct.account_type || "",
           balance: acct.balance || 0,
