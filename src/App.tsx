@@ -1,6 +1,5 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./components/auth/AuthProvider";
+import { AuthProvider, ProtectedRoute, UserRole } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Index from "./pages/Index";
 import Unauthorized from "./pages/Unauthorized";
@@ -60,86 +59,236 @@ import { Toaster } from "@/components/ui/toaster";
 // Create a client
 const queryClient = new QueryClient();
 
+const ROUTE_ROLES: Record<string, UserRole[]> = {
+  "/dashboards/financial": ["accountant", "managing_director", "general_manager"],
+  "/dashboards/stock": ["stock_manager", "managing_director", "general_manager"],
+  "/dashboards/treatment": ["production_manager", "managing_director", "general_manager"],
+  "/admin/add-user": ["managing_director"],
+  "/admin/remove-user": ["managing_director"],
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Set login as the default route */}
+            {/* Public routes */}
             <Route path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/admin/add-user" element={<AddUser />} />
-            <Route path="/admin/remove-user" element={<RemoveUser />} />
-            
-            <Route path="/dashboard" element={<Index />} />
             <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
 
-            {/* Dashboards */}
-            <Route path="/dashboards">
-              <Route path="financial" element={<FinancialDashboard />} />
-              <Route path="general-manager" element={<GeneralManagerDashboard />} />
-              <Route path="md" element={<MDDashboard />} />
-              <Route path="stock" element={<StockDashboard />} />
-              <Route path="treatment" element={<TreatmentDashboardWrapper />} />
+            {/* Protected routes - Finance */}
+            <Route path="/finance">
+              <Route path="transactions" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Transactions />
+                </ProtectedRoute>
+              } />
+              <Route path="receipts" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Receipts />
+                </ProtectedRoute>
+              } />
+              <Route path="expenses" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Expenses />
+                </ProtectedRoute>
+              } />
+              <Route path="employees" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Employees />
+                </ProtectedRoute>
+              } />
+              <Route path="payment-vouchers" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <PaymentVouchers />
+                </ProtectedRoute>
+              } />
+              <Route path="balance-sheet" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <BalanceSheetPage />
+                </ProtectedRoute>
+              } />
+              <Route path="income-statement" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <IncomeStatementPage />
+                </ProtectedRoute>
+              } />
             </Route>
 
-            {/* Financial routes */}
-            <Route path="/finance">
-              <Route path="transactions" element={<Transactions />} />
-              <Route path="receipts" element={<Receipts />} />
-              <Route path="expenses" element={<Expenses />} />
-              <Route path="employees" element={<Employees />} />
-              <Route path="payment-vouchers" element={<PaymentVouchers />} />
-              <Route path="balance-sheet" element={<BalanceSheetPage />} />
-              <Route path="income-statement" element={<IncomeStatementPage />} />
+            {/* Protected routes - Dashboards */}
+            <Route path="/dashboards">
+              <Route path="financial" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <FinancialDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="general-manager" element={
+                <ProtectedRoute allowedRoles={["general_manager", "managing_director"]}>
+                  <GeneralManagerDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="md" element={
+                <ProtectedRoute allowedRoles={["managing_director"]}>
+                  <MDDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="stock" element={
+                <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                  <StockDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="treatment" element={
+                <ProtectedRoute allowedRoles={["production_manager", "managing_director", "general_manager"]}>
+                  <TreatmentDashboardWrapper />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Customer routes */}
             <Route path="/customers">
-              <Route path="list" element={<Customers />} />
-              <Route path="add" element={<AddCustomer />} />
-              <Route path="edit" element={<EditCustomer />} />
+              <Route path="list" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Customers />
+                </ProtectedRoute>
+              } />
+              <Route path="add" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <AddCustomer />
+                </ProtectedRoute>
+              } />
+              <Route path="edit" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <EditCustomer />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Client routes */}
             <Route path="/clients">
-              <Route path="list" element={<Clients />} />
-              <Route path="add-stock" element={<AddClientStock />} />
-              <Route path="edit" element={<EditClient />} />
-              <Route path="view-stock" element={<ViewClientStock />} />
-              <Route path="insert-stock" element={<InsertClientStock />} />
+              <Route path="list" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <Clients />
+                </ProtectedRoute>
+              } />
+              <Route path="add-stock" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <AddClientStock />
+                </ProtectedRoute>
+              } />
+              <Route path="edit" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <EditClient />
+                </ProtectedRoute>
+              } />
+              <Route path="view-stock" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <ViewClientStock />
+                </ProtectedRoute>
+              } />
+              <Route path="insert-stock" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <InsertClientStock />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Stock routes */}
             <Route path="/stock">
-              <Route path="receive" element={<ReceiveStock />} />
-              <Route path="sort" element={<SortStock />} />
-              <Route path="report" element={<StockReport />} />
+              <Route path="receive" element={
+                <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                  <ReceiveStock />
+                </ProtectedRoute>
+              } />
+              <Route path="sort" element={
+                <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                  <SortStock />
+                </ProtectedRoute>
+              } />
+              <Route path="report" element={
+                <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                  <StockReport />
+                </ProtectedRoute>
+              } />
               <Route path="suppliers">
-                <Route path="" element={<ViewSuppliers />} />
-                <Route path="add" element={<AddSuppliers />} />
-                <Route path="rejected" element={<RejectedPoles />} />
-                <Route path="report" element={<SupplierReport />} />
+                <Route path="" element={
+                  <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                    <ViewSuppliers />
+                  </ProtectedRoute>
+                } />
+                <Route path="add" element={
+                  <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                    <AddSuppliers />
+                  </ProtectedRoute>
+                } />
+                <Route path="rejected" element={
+                  <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                    <RejectedPoles />
+                  </ProtectedRoute>
+                } />
+                <Route path="report" element={
+                  <ProtectedRoute allowedRoles={["stock_manager", "managing_director", "general_manager"]}>
+                    <SupplierReport />
+                  </ProtectedRoute>
+                } />
               </Route>
             </Route>
 
             {/* Treatment routes */}
             <Route path="/treatment">
-              <Route path="log" element={<TreatmentLog />} />
-              <Route path="report" element={<TreatmentReport />} />
-              <Route path="clients" element={<Clients />} />
-              <Route path="stock" element={<ViewClientStock />} />
+              <Route path="log" element={
+                <ProtectedRoute allowedRoles={["production_manager", "managing_director", "general_manager"]}>
+                  <TreatmentLog />
+                </ProtectedRoute>
+              } />
+              <Route path="report" element={
+                <ProtectedRoute allowedRoles={["production_manager", "managing_director", "general_manager"]}>
+                  <TreatmentReport />
+                </ProtectedRoute>
+              } />
+              <Route path="clients" element={
+                <ProtectedRoute allowedRoles={["production_manager", "managing_director", "general_manager"]}>
+                  <Clients />
+                </ProtectedRoute>
+              } />
+              <Route path="stock" element={
+                <ProtectedRoute allowedRoles={["production_manager", "managing_director", "general_manager"]}>
+                  <ViewClientStock />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Report routes */}
             <Route path="/reports">
-              <Route path="employees" element={<EmployeeReport />} />
-              <Route path="ledger" element={<GeneralLedger />} />
-              <Route path="financial" element={<FinancialReport />} />
+              <Route path="employees" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <EmployeeReport />
+                </ProtectedRoute>
+              } />
+              <Route path="ledger" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <GeneralLedger />
+                </ProtectedRoute>
+              } />
+              <Route path="financial" element={
+                <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
+                  <FinancialReport />
+                </ProtectedRoute>
+              } />
             </Route>
+            <Route path="/admin/add-user" element={
+              <ProtectedRoute allowedRoles={["managing_director"]}>
+                <AddUser />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/remove-user" element={
+              <ProtectedRoute allowedRoles={["managing_director"]}>
+                <RemoveUser />
+              </ProtectedRoute>
+            } />
           </Routes>
           
           <Toaster />

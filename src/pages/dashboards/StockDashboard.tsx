@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StockMetricCard } from "@/components/stock/StockMetricCard";
 import { Package, Warehouse, AlertTriangle, Truck } from "lucide-react";
-import { StockNavbar } from "@/components/navigation/StockNavbar";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function StockDashboard() {
   const { data: stockSummary, isLoading } = useQuery({
@@ -35,8 +35,7 @@ export default function StockDashboard() {
   });
 
   return (
-    <>
-      <StockNavbar />
+    <DashboardLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Stock Management Dashboard</h1>
 
@@ -106,6 +105,6 @@ export default function StockDashboard() {
           </Card>
         </div>
       </div>
-    </>
+    </DashboardLayout>
   );
 }

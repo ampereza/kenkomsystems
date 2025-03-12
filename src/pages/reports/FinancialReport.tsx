@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +10,16 @@ import { FinancialMetrics } from '@/components/reports/FinancialMetrics';
 import { FinancialTrends } from '@/components/reports/FinancialTrends';
 import { DetailedTransactions } from '@/components/reports/DetailedTransactions';
 import { FinancialStatements } from '@/components/reports/FinancialStatements';
-import { DetailedView as DetailedIncomeStatement } from '@/components/reports/income-statement/DetailedView';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Account, DetailedIncomeStatement } from '@/components/reports/income-statement/types';
 
 // Type definitions
 interface BalanceSheetItem {
@@ -180,12 +190,54 @@ const FinancialReport = () => {
         // If there are no accounts, create a demo set
         if (!accounts || accounts.length === 0) {
           const demoAccounts: Account[] = [
-            { id: "1", account_code: "1000", account_name: "Cash", account_type: "asset", balance: 5000, created_at: new Date().toISOString() },
-            { id: "2", account_code: "1100", account_name: "Accounts Receivable", account_type: "asset", balance: 3000, created_at: new Date().toISOString() },
-            { id: "3", account_code: "2000", account_name: "Accounts Payable", account_type: "liability", balance: 2000, created_at: new Date().toISOString() },
-            { id: "4", account_code: "3000", account_name: "Owner's Equity", account_type: "equity", balance: 6000, created_at: new Date().toISOString() },
-            { id: "5", account_code: "4000", account_name: "Revenue", account_type: "revenue", balance: 10000, created_at: new Date().toISOString() },
-            { id: "6", account_code: "5000", account_name: "Expenses", account_type: "expense", balance: 4000, created_at: new Date().toISOString() },
+            { 
+              id: "1", 
+              account_code: "1000", 
+              account_name: "Cash", 
+              account_type: "asset", 
+              balance: 5000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "2", 
+              account_code: "1100", 
+              account_name: "Accounts Receivable", 
+              account_type: "asset", 
+              balance: 3000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "3", 
+              account_code: "2000", 
+              account_name: "Accounts Payable", 
+              account_type: "liability", 
+              balance: 2000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "4", 
+              account_code: "3000", 
+              account_name: "Owner's Equity", 
+              account_type: "equity", 
+              balance: 6000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "5", 
+              account_code: "4000", 
+              account_name: "Revenue", 
+              account_type: "revenue", 
+              balance: 10000, 
+              created_at: new Date().toISOString() 
+            },
+            { 
+              id: "6", 
+              account_code: "5000", 
+              account_name: "Expenses", 
+              account_type: "expense", 
+              balance: 4000, 
+              created_at: new Date().toISOString() 
+            },
           ];
           return demoAccounts;
         }
@@ -193,10 +245,10 @@ const FinancialReport = () => {
         // Transform data into the Account interface
         return accounts.map(acct => ({
           id: acct.id || "",
-          account_code: acct.account_code || "",
+          account_code: acct.account_code || "", 
           account_name: acct.account_name || "",
           account_type: acct.account_type || "",
-          balance: 0, // We don't have balance in the database, so default to 0
+          balance: acct.balance || 0,
           created_at: acct.created_at || new Date().toISOString()
         }));
       } catch (error) {
@@ -209,8 +261,7 @@ const FinancialReport = () => {
   const isLoading = balanceSheetLoading || incomeStatementLoading || accountsLoading;
 
   return (
-    <>
-      <FinancialNavbar />
+    <DashboardLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Financial Reports</h1>
         
@@ -385,7 +436,7 @@ const FinancialReport = () => {
           </Tabs>
         )}
       </div>
-    </>
+    </DashboardLayout>
   );
 };
 
