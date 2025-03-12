@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +50,14 @@ const Login: React.FC = () => {
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated === "true") {
-      navigate("/dashboard");
+      const userRole = localStorage.getItem("userRole");
+      let dashboardPath = "/dashboards/financial";
+      
+      if (userRole === "stock_manager") dashboardPath = "/dashboards/stock";
+      else if (userRole === "production_manager") dashboardPath = "/dashboards/treatment";
+      else if (userRole === "managing_director" || userRole === "general_manager") dashboardPath = "/dashboards/md";
+      
+      navigate(dashboardPath);
     }
   }, [navigate]);
 
@@ -60,27 +68,29 @@ const Login: React.FC = () => {
     setSuccess(null);
 
     try {
-      const { data: user, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
-        .eq("password", password)
-        .single();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      if (error || !user) {
-        throw new Error("Invalid email or password. Try admin@example.com / password");
+      if (error) {
+        throw new Error(error.message);
       }
 
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userRole", user.user_role);
-      localStorage.setItem("userName", user.name || "User");
-      localStorage.setItem("userId", user.id);
-
-      setSuccess("Login successful!");
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      if (data?.user) {
+        setSuccess("Login successful!");
+        
+        setTimeout(() => {
+          const userRole = localStorage.getItem("userRole");
+          let dashboardPath = "/dashboards/financial";
+          
+          if (userRole === "stock_manager") dashboardPath = "/dashboards/stock";
+          else if (userRole === "production_manager") dashboardPath = "/dashboards/treatment";
+          else if (userRole === "managing_director" || userRole === "general_manager") dashboardPath = "/dashboards/md";
+          
+          navigate(dashboardPath);
+        }, 1000);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

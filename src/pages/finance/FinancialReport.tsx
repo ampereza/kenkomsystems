@@ -27,7 +27,7 @@ interface BalanceSheetItem {
   amount: number;
 }
 
-const FinancialReport = () => {
+export default function FinancialReport() {
   const [dateRange, setDateRange] = useState({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
@@ -242,14 +242,13 @@ const FinancialReport = () => {
         }
         
         // Transform data into the Account interface
-        return accounts.map(acct => ({
-          id: acct.id || "",
-          account_code: acct.account_code || "",
-          account_name: acct.account_name || "",
-          account_type: acct.account_type || "",
-          balance: acct.balance || 0,
-          created_at: acct.created_at || new Date().toISOString()
+        const accountsWithBalance = accounts.map(account => ({
+          ...account,
+          account_code: account.account_code || '',
+          balance: account.balance || 0
         }));
+        
+        return accountsWithBalance;
       } catch (error) {
         console.error("Error fetching chart of accounts:", error);
         throw error;
@@ -437,6 +436,4 @@ const FinancialReport = () => {
       </div>
     </DashboardLayout>
   );
-};
-
-export default FinancialReport;
+}

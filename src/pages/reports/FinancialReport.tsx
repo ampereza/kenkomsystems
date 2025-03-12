@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { Account, DetailedIncomeStatement } from '@/components/reports/income-statement/types';
 
-// Type definitions
 interface BalanceSheetItem {
   category: string;
   description: string;
@@ -34,17 +32,14 @@ const FinancialReport = () => {
     to: new Date(),
   });
 
-  // Function to format date for Supabase query
   const formatDateForQuery = (date: Date) => {
     return date.toISOString().split('T')[0];
   };
 
-  // Query for balance sheet data
   const { data: balanceSheetData, isLoading: balanceSheetLoading } = useQuery({
     queryKey: ["balance-sheet", dateRange],
     queryFn: async () => {
       try {
-        // Fetch transactions for assets (using purchase type as stand-in for assets)
         const { data: assetTransactions, error: assetError } = await supabase
           .from("transactions")
           .select("*")
@@ -54,7 +49,6 @@ const FinancialReport = () => {
 
         if (assetError) throw assetError;
 
-        // Fetch transactions for liabilities (using expense type as stand-in for liabilities)
         const { data: liabilityTransactions, error: liabilityError } = await supabase
           .from("transactions")
           .select("*")
@@ -64,12 +58,10 @@ const FinancialReport = () => {
 
         if (liabilityError) throw liabilityError;
 
-        // Calculate totals
         const totalAssets = assetTransactions?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalLiabilities = liabilityTransactions?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalEquity = totalAssets - totalLiabilities;
 
-        // Create detailed items
         const items: BalanceSheetItem[] = [
           ...assetTransactions?.map(t => ({
             category: 'Assets',
@@ -103,12 +95,10 @@ const FinancialReport = () => {
     }
   });
 
-  // Query for income statement data
   const { data: incomeStatementData, isLoading: incomeStatementLoading } = useQuery({
     queryKey: ["income-statement", dateRange],
     queryFn: async () => {
       try {
-        // Fetch transactions for revenue
         const { data: revenueTransactions, error: revenueError } = await supabase
           .from("transactions")
           .select("*")
@@ -118,7 +108,6 @@ const FinancialReport = () => {
 
         if (revenueError) throw revenueError;
 
-        // Fetch transactions for expenses
         const { data: expenseTransactions, error: expenseError } = await supabase
           .from("transactions")
           .select("*")
@@ -128,12 +117,10 @@ const FinancialReport = () => {
 
         if (expenseError) throw expenseError;
 
-        // Calculate totals
         const totalRevenue = revenueTransactions?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const totalExpenses = expenseTransactions?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
         const netIncome = totalRevenue - totalExpenses;
 
-        // Transform the data to match the DetailedIncomeStatement interface
         const detailedItems: DetailedIncomeStatement[] = [
           ...revenueTransactions?.map(t => ({
             entry_date: t.transaction_date || t.created_at,
@@ -155,7 +142,6 @@ const FinancialReport = () => {
           })) || []
         ];
 
-        // Sort by date
         detailedItems.sort((a, b) => 
           new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
         );
@@ -175,19 +161,16 @@ const FinancialReport = () => {
     }
   });
 
-  // Query for chart of accounts (simplified for demo purposes)
   const { data: chartOfAccounts, isLoading: accountsLoading } = useQuery({
     queryKey: ["chart-of-accounts"],
     queryFn: async () => {
       try {
-        // Fetch actual accounts from ledger_accounts
         const { data: accounts, error } = await supabase
           .from("ledger_accounts")
           .select("*");
           
         if (error) throw error;
         
-        // If there are no accounts, create a demo set
         if (!accounts || accounts.length === 0) {
           const demoAccounts: Account[] = [
             { 
@@ -242,7 +225,6 @@ const FinancialReport = () => {
           return demoAccounts;
         }
         
-        // Transform data into the Account interface
         return accounts.map(acct => ({
           id: acct.id || "",
           account_code: acct.account_code || "", 
@@ -257,6 +239,12 @@ const FinancialReport = () => {
       }
     }
   });
+
+  const accountsWithBalance = chartOfAccounts.map(account => ({
+    ...account,
+    account_code: account.account_code || '',
+    balance: account.balance || 0
+  }));
 
   const isLoading = balanceSheetLoading || incomeStatementLoading || accountsLoading;
 
@@ -418,7 +406,7 @@ const FinancialReport = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {chartOfAccounts?.map((account, index) => (
+                      {accountsWithBalance.map((account, index) => (
                         <TableRow key={index}>
                           <TableCell>{account.account_code}</TableCell>
                           <TableCell>{account.account_name}</TableCell>

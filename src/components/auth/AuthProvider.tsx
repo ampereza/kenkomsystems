@@ -38,27 +38,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (data?.session?.user) {
+        const userId = data.session.user.id;
+        const email = data.session.user.email || '';
+        const role = (localStorage.getItem('userRole') || 'accountant') as UserRole;
+        const name = localStorage.getItem('userName') || '';
+        
+        setProfile({
+          id: userId,
+          email: email,
+          full_name: name,
+          role: role
+        });
+        
         setIsAuthenticated(true);
-      } else {
-        setIsLoading(false);
-        setIsAuthenticated(false);
+      }
+      setIsLoading(false);
+      
+      if (error) {
+        console.error("Session error:", error);
+        setError(error as Error);
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (session?.user) {
-          fetchProfile(session.user.id);
+          const userId = session.user.id;
+          const email = session.user.email || '';
+          const role = (localStorage.getItem('userRole') || 'accountant') as UserRole;
+          const name = localStorage.getItem('userName') || '';
+          
+          setProfile({
+            id: userId,
+            email: email,
+            full_name: name,
+            role: role
+          });
+          
           setIsAuthenticated(true);
         } else {
           setProfile(null);
           setIsAuthenticated(false);
-          setIsLoading(false);
         }
+        setIsLoading(false);
       }
     );
 
@@ -66,29 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
-
-  async function fetchProfile(userId: string) {
-    try {
-      setIsLoading(true);
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      setProfile(data as Profile);
-    } catch (error) {
-      setError(error as Error);
-      console.error('Error fetching profile:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   const hasPermission = (allowedRoles: UserRole[]): boolean => {
     if (!profile) return false;

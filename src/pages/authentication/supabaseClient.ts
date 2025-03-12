@@ -46,7 +46,7 @@ const mockUsers = [
 // Simple mock client for database operations
 export const supabase = {
   from: (table: string) => ({
-    select: (columns: string) => ({
+    select: (columns: string = "*") => ({
       eq: (column: string, value: any) => ({
         eq: (column2: string, value2: any) => ({
           single: () => {
@@ -63,13 +63,20 @@ export const supabase = {
         single: () => {
           if (table === "users") {
             const user = mockUsers.find(user => user[column as keyof typeof user] === value);
-            return Promise.resolve({ data: user || null, error: null });
+            return Promise.resolve({ data: user || null, error: user ? null : new Error("User not found") });
           }
           return Promise.resolve({ data: null, error: null });
         }
       }),
       single: () => {
         return Promise.resolve({ data: null, error: null });
+      },
+      // For view tables 
+      contains: (column: string, value: any) => {
+        return {
+          data: [],
+          error: null
+        };
       }
     }),
     delete: () => ({
@@ -121,12 +128,13 @@ export const supabase = {
                   }
                 }
               }
-            }
+            },
+            error: null
           });
         }
       }
       
-      return Promise.resolve({ data: { session: null } });
+      return Promise.resolve({ data: { session: null }, error: null });
     },
     
     onAuthStateChange: (callback: any) => {
@@ -139,12 +147,14 @@ export const supabase = {
           const user = mockUsers.find(u => u.id === userId);
           if (user) {
             callback('SIGNED_IN', {
-              user: {
-                id: user.id,
-                email: user.email,
-                user_metadata: {
-                  name: user.name,
-                  role: user.user_role
+              session: {
+                user: {
+                  id: user.id,
+                  email: user.email,
+                  user_metadata: {
+                    name: user.name,
+                    role: user.user_role
+                  }
                 }
               }
             });
@@ -176,6 +186,46 @@ export const supabase = {
       localStorage.removeItem("userName");
       localStorage.removeItem("userRole");
       return Promise.resolve({ error: null });
+    },
+
+    signInWithPassword: ({ email, password }: { email: string; password: string }) => {
+      const user = mockUsers.find(u => u.email === email && u.password === password);
+      
+      if (user) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("userName", user.name);
+        localStorage.setItem("userRole", user.user_role);
+        
+        return Promise.resolve({
+          data: {
+            user: {
+              id: user.id,
+              email: user.email,
+              user_metadata: {
+                name: user.name,
+                role: user.user_role
+              }
+            },
+            session: {
+              user: {
+                id: user.id,
+                email: user.email,
+                user_metadata: {
+                  name: user.name,
+                  role: user.user_role
+                }
+              }
+            }
+          },
+          error: null
+        });
+      } else {
+        return Promise.resolve({
+          data: { user: null, session: null },
+          error: { message: "Invalid email or password. Try admin@example.com / password" }
+        });
+      }
     }
   }
 };
