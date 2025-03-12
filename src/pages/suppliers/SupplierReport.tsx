@@ -1,11 +1,10 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRangeSelector } from '@/components/reports/DateRangeSelector';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { format } from 'date-fns';
 import {
   Document,
@@ -15,6 +14,13 @@ import {
   StyleSheet,
   PDFDownloadLink,
 } from '@react-pdf/renderer';
+import {
+  Table,
+  TableHeader,
+  TableCell,
+  TableBody,
+  DataTableCell,
+} from '@david.kramer/react-pdf-table';
 import { useToast } from "@/components/ui/use-toast"
 import {
   AlertDialog,
@@ -25,11 +31,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, Edit, Trash } from "lucide-react"
+import { MoreVertical, Edit, Copy, Trash } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,30 +45,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-// Define the user interface based on the AuthProvider implementation
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  user_role: string;
-}
-
-// Custom hook to get the current user
-const useUser = () => {
-  const userRole = localStorage.getItem('userRole');
-  const userName = localStorage.getItem('userName');
-  const userId = localStorage.getItem('userId');
-  
-  const user: User | null = userRole && userName && userId ? {
-    id: userId,
-    email: '', // not available from localStorage
-    name: userName,
-    user_role: userRole
-  } : null;
-  
-  return { user };
-};
+import { useUser } from "@/components/auth/AuthProvider"
 
 const styles = StyleSheet.create({
   page: {
@@ -77,42 +61,46 @@ const styles = StyleSheet.create({
     padding: 10,
     flexGrow: 1,
   },
+  viewer: {
+    width: "100%",
+    height: "90vh",
+  },
   title: {
     fontSize: 24,
     textAlign: 'center',
     marginBottom: 20,
     fontWeight: 'bold',
   },
-  tableContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 24,
+  table: {
+    display: "table",
+    width: "auto",
+    borderStyle: "solid",
     borderWidth: 1,
-    borderColor: '#bff',
+    borderRightWidth: 0,
+    borderBottomWidth: 0
   },
   tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#bff',
-    alignItems: 'center',
-    minHeight: 24,
-    width: '100%',
+    margin: "auto",
+    flexDirection: "row"
   },
-  tableHeaderRow: {
-    backgroundColor: '#f6f6f6',
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#bff',
-    alignItems: 'center',
-    height: 30,
-    width: '100%',
-    fontWeight: 'bold',
+  tableColHeader: {
+    width: "20%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0
   },
   tableCol: {
-    width: '20%',
-    borderRightWidth: 1,
-    borderColor: '#bff',
-    padding: 4,
+    width: "20%",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderTopWidth: 0
+  },
+  tableCellHeader: {
+    margin: 4,
+    fontSize: 12,
+    fontWeight: "bold"
   },
   tableCell: {
     margin: 5,
@@ -174,8 +162,8 @@ const SupplierReport = () => {
 
   const handleEdit = (supplier: any) => {
     setSupplierToEdit(supplier);
-    setEditedSupplierName(supplier.name);
-    setEditedSupplierContact(supplier.phone);
+    setEditedSupplierName(supplier.supplier_name);
+    setEditedSupplierContact(supplier.contact_number);
     setEditedSupplierEmail(supplier.email);
     setEditedSupplierAddress(supplier.address);
     setIsEditDialogOpen(true);
@@ -212,8 +200,8 @@ const SupplierReport = () => {
       const { error } = await supabase
         .from('suppliers')
         .update({
-          name: editedSupplierName,
-          phone: editedSupplierContact,
+          supplier_name: editedSupplierName,
+          contact_number: editedSupplierContact,
           email: editedSupplierEmail,
           address: editedSupplierAddress,
         })
@@ -238,7 +226,6 @@ const SupplierReport = () => {
     }
   };
 
-  // Custom PDF document component
   const MyDocument = () => (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -249,49 +236,22 @@ const SupplierReport = () => {
               {`From: ${format(dateRange.from, 'PPP')} To: ${format(dateRange.to, 'PPP')}`}
             </Text>
           )}
-          
-          {/* Custom table implementation without the external package */}
-          <View style={styles.tableContainer}>
-            {/* Table Header */}
-            <View style={styles.tableHeaderRow}>
-              <View style={styles.tableCol}>
-                <Text>Name</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text>Contact</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text>Email</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text>Address</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text>Created At</Text>
-              </View>
-            </View>
-            
-            {/* Table Body */}
-            {suppliers && suppliers.map((supplier, index) => (
-              <View key={index} style={styles.tableRow}>
-                <View style={styles.tableCol}>
-                  <Text>{supplier.name}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text>{supplier.phone}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text>{supplier.email}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text>{supplier.address}</Text>
-                </View>
-                <View style={styles.tableCol}>
-                  <Text>{format(new Date(supplier.created_at), 'PPP')}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
+          <Table data={suppliers || []}>
+            <TableHeader>
+              <TableCell>Name</TableCell>
+              <TableCell>Contact</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Address</TableCell>
+              <TableCell>Created At</TableCell>
+            </TableHeader>
+            <TableBody>
+              <DataTableCell getContent={(r) => r.supplier_name} />
+              <DataTableCell getContent={(r) => r.contact_number} />
+              <DataTableCell getContent={(r) => r.email} />
+              <DataTableCell getContent={(r) => r.address} />
+              <DataTableCell getContent={(r) => format(new Date(r.created_at), 'PPP')} />
+            </TableBody>
+          </Table>
         </View>
       </Page>
     </Document>
@@ -304,10 +264,7 @@ const SupplierReport = () => {
           <CardTitle>Supplier Report</CardTitle>
         </CardHeader>
         <CardContent>
-          <DateRangeSelector 
-            dateRange={dateRange} 
-            setDateRange={setDateRange} 
-          />
+          <DateRangeSelector onDateRangeChange={handleDateRangeChange} />
           <div className="mt-4">
             {suppliers && suppliers.length > 0 ? (
               <>
@@ -340,8 +297,8 @@ const SupplierReport = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {suppliers.map((supplier) => (
                         <tr key={supplier.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.phone}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.supplier_name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.contact_number}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{supplier.address}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{format(new Date(supplier.created_at), 'PPP')}</td>
@@ -390,7 +347,7 @@ const SupplierReport = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. Are you sure you want to delete <Badge variant="secondary">{supplierToDelete?.name}</Badge> ?
+              This action cannot be undone. Are you sure you want to delete <Badge variant="secondary">{supplierToDelete?.supplier_name}</Badge> ?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -408,32 +365,34 @@ const SupplierReport = () => {
               Make changes to the supplier details.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input id="name" value={editedSupplierName} onChange={(e) => setEditedSupplierName(e.target.value)} className="col-span-3" />
+          <AlertDialogContent>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input id="name" value={editedSupplierName} onChange={(e) => setEditedSupplierName(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="contact" className="text-right">
+                  Contact
+                </Label>
+                <Input id="contact" value={editedSupplierContact} onChange={(e) => setEditedSupplierContact(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  Email
+                </Label>
+                <Input id="email" type="email" value={editedSupplierEmail} onChange={(e) => setEditedSupplierEmail(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="address" className="text-right">
+                  Address
+                </Label>
+                <Input id="address" value={editedSupplierAddress} onChange={(e) => setEditedSupplierAddress(e.target.value)} className="col-span-3" />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="contact" className="text-right">
-                Contact
-              </Label>
-              <Input id="contact" value={editedSupplierContact} onChange={(e) => setEditedSupplierContact(e.target.value)} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input id="email" type="email" value={editedSupplierEmail} onChange={(e) => setEditedSupplierEmail(e.target.value)} className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="address" className="text-right">
-                Address
-              </Label>
-              <Input id="address" value={editedSupplierAddress} onChange={(e) => setEditedSupplierAddress(e.target.value)} className="col-span-3" />
-            </div>
-          </div>
+          </AlertDialogContent>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={updateSupplier}>Update</AlertDialogAction>

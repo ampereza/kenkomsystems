@@ -26,13 +26,6 @@ export interface DateRangeSelectorProps {
   onStartDateChange?: React.Dispatch<React.SetStateAction<Date>>;
   onEndDateChange?: React.Dispatch<React.SetStateAction<Date>>;
   
-  // Added these props to handle the onDateRangeChange pattern
-  onDateRangeChange?: (range: DateRangeProps) => void;
-  
-  // Support for selected range functionality
-  selectedRange?: string;
-  setSelectedRange?: React.Dispatch<React.SetStateAction<string>>;
-  
   // Common props
   onRangeSelect?: (range: "day" | "week" | "month" | "year") => void;
 }
@@ -44,9 +37,6 @@ export function DateRangeSelector({
   endDate,
   onStartDateChange,
   onEndDateChange,
-  onDateRangeChange,
-  selectedRange,
-  setSelectedRange,
   onRangeSelect 
 }: DateRangeSelectorProps) {
   // Use either the new API or the legacy API
@@ -63,27 +53,7 @@ export function DateRangeSelector({
         // Legacy API
         onStartDateChange(range.from);
         onEndDateChange(range.to);
-      } else if (onDateRangeChange) {
-        // onDateRangeChange callback pattern
-        onDateRangeChange({ from: range.from, to: range.to });
       }
-      
-      // If we have selectedRange and setSelectedRange, set to custom
-      if (selectedRange && setSelectedRange) {
-        setSelectedRange('custom');
-      }
-    }
-  };
-
-  const handleRangeButtonClick = (range: "day" | "week" | "month" | "year") => {
-    if (onRangeSelect) {
-      onRangeSelect(range);
-    }
-    
-    if (setSelectedRange) {
-      setSelectedRange(range === 'day' ? 'today' : 
-                      range === 'week' ? 'this_week' : 
-                      range === 'month' ? 'this_month' : 'this_year');
     }
   };
 
@@ -114,37 +84,37 @@ export function DateRangeSelector({
         </PopoverContent>
       </Popover>
       
-      {(onRangeSelect || setSelectedRange) && (
+      {onRangeSelect && (
         <div className="flex gap-1">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleRangeButtonClick("day")}
-            className={`h-9 ${selectedRange === 'today' ? 'bg-primary text-primary-foreground' : ''}`}
+            onClick={() => onRangeSelect("day")}
+            className="h-9"
           >
             Today
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleRangeButtonClick("week")}
-            className={`h-9 ${selectedRange === 'this_week' ? 'bg-primary text-primary-foreground' : ''}`}
+            onClick={() => onRangeSelect("week")}
+            className="h-9"
           >
             This Week
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleRangeButtonClick("month")}
-            className={`h-9 ${selectedRange === 'this_month' ? 'bg-primary text-primary-foreground' : ''}`}
+            onClick={() => onRangeSelect("month")}
+            className="h-9"
           >
             This Month
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleRangeButtonClick("year")}
-            className={`h-9 ${selectedRange === 'this_year' ? 'bg-primary text-primary-foreground' : ''}`}
+            onClick={() => onRangeSelect("year")}
+            className="h-9"
           >
             This Year
           </Button>

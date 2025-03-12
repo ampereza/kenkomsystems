@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TestTube2, Users, Activity } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 import { TreatmentLogTable } from "@/components/treatments/TreatmentLogTable";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function TreatmentDashboard() {
   const { data: treatmentSummary } = useQuery({
@@ -21,7 +21,8 @@ export default function TreatmentDashboard() {
   });
 
   return (
-    <DashboardLayout>
+    <>
+      <Navbar />
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Treatment Management Dashboard</h1>
 
@@ -74,6 +75,6 @@ export default function TreatmentDashboard() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

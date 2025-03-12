@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,18 +15,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 
 const EmployeeReport = () => {
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date; }>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    to: new Date(),
+  const [dateRange, setDateRange] = useState<{ from: Date | null, to: Date | null }>({
+    from: null,
+    to: null,
   });
-  const [selectedRange, setSelectedRange] = useState<string>('this_month');
+  const [selectedRange, setSelectedRange] = useState<string>('today');
   const tableRef = useRef(null);
 
   const { data: employeeData, isLoading, error } = useQuery({
-    queryKey: ['employee-report', dateRange.from, dateRange.to, selectedRange],
+    queryKey: ['employee-report', dateRange.from, dateRange.to],
     queryFn: async () => {
       let fromDate, toDate;
 
@@ -49,12 +50,15 @@ const EmployeeReport = () => {
           toDate = endOfYear(new Date());
           break;
         case 'custom':
-          fromDate = startOfDay(dateRange.from);
-          toDate = endOfDay(dateRange.to);
+          if (dateRange.from && dateRange.to) {
+            fromDate = startOfDay(dateRange.from);
+            toDate = endOfDay(dateRange.to);
+          } else {
+            return [];
+          }
           break;
         default:
-          fromDate = startOfMonth(new Date());
-          toDate = endOfMonth(new Date());
+          return [];
       }
 
       const { data, error } = await supabase
@@ -73,62 +77,16 @@ const EmployeeReport = () => {
   });
 
   const handleExport = () => {
-    if (!tableRef.current) {
+    const table = tableRef.current;
+    if (!table) {
       console.error("Table ref is not available.");
       return;
     }
 
-    // Create a CSV string
-    let csvContent = "ID,Name,Email,Position,Created At\n";
-    
-    employeeData?.forEach(emp => {
-      csvContent += `${emp.id},${emp.name},${emp.email},${emp.position},${format(new Date(emp.created_at), 'yyyy-MM-dd')}\n`;
-    });
-    
-    // Create a Blob and download it
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `employee_report_${format(new Date(), 'yyyyMMddHHmmss')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleRangeSelect = (range: "day" | "week" | "month" | "year") => {
-    switch (range) {
-      case "day":
-        setSelectedRange("today");
-        setDateRange({
-          from: startOfDay(new Date()),
-          to: endOfDay(new Date())
-        });
-        break;
-      case "week":
-        setSelectedRange("this_week");
-        setDateRange({
-          from: startOfWeek(new Date(), { weekStartsOn: 1 }),
-          to: endOfWeek(new Date(), { weekStartsOn: 1 })
-        });
-        break;
-      case "month":
-        setSelectedRange("this_month");
-        setDateRange({
-          from: startOfMonth(new Date()),
-          to: endOfMonth(new Date())
-        });
-        break;
-      case "year":
-        setSelectedRange("this_year");
-        setDateRange({
-          from: startOfYear(new Date()),
-          to: endOfYear(new Date())
-        });
-        break;
-    }
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Employee Report" });
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([new Uint8Array(wbout)], { type: 'application/octet-stream' });
+    saveAs(blob, `employee_report_${format(new Date(), 'yyyyMMddHHmmss')}.xlsx`);
   };
 
   return (
@@ -144,13 +102,12 @@ const EmployeeReport = () => {
               setDateRange={setDateRange}
               selectedRange={selectedRange}
               setSelectedRange={setSelectedRange}
-              onRangeSelect={handleRangeSelect}
             />
           </div>
 
           <div className="mb-4">
             <Button onClick={handleExport} disabled={isLoading}>
-              {isLoading ? "Loading..." : "Export to CSV"}
+              {isLoading ? "Loading..." : "Export to Excel"}
             </Button>
           </div>
 
@@ -164,7 +121,7 @@ const EmployeeReport = () => {
                   <TableHead className="w-[100px]">ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Position</TableHead>
+                  <TableHead>Role</TableHead>
                   <TableHead>Created At</TableHead>
                 </TableRow>
               </TableHeader>
@@ -174,7 +131,7 @@ const EmployeeReport = () => {
                     <TableCell className="font-medium">{employee.id}</TableCell>
                     <TableCell>{employee.name}</TableCell>
                     <TableCell>{employee.email}</TableCell>
-                    <TableCell>{employee.position}</TableCell>
+                    <TableCell>{employee.role}</TableCell>
                     <TableCell>{format(new Date(employee.created_at), 'yyyy-MM-dd HH:mm:ss')}</TableCell>
                   </TableRow>
                 ))}
