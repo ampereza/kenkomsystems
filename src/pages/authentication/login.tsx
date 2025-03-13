@@ -13,9 +13,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile } = useAuth();
-
-  const from = (location.state as any)?.from?.pathname || getDashboardByRole();
+  const { profile, isLoading, isAuthenticated } = useAuth();
 
   function getDashboardByRole() {
     if (!profile) return "/dashboards/financial";
@@ -27,19 +25,23 @@ const Login: React.FC = () => {
         return "/dashboards/stock";
       case "production_manager":
         return "/dashboards/treatment";
-      case "managing_director":
       case "general_manager":
+        return "/dashboards/general-manager";
+      case "managing_director":
         return "/dashboards/md";
       default:
         return "/dashboards/financial";
     }
   }
 
+  // Redirect if already authenticated
   useEffect(() => {
-    if (profile) {
-      navigate(getDashboardByRole());
+    if (!isLoading && isAuthenticated && profile) {
+      const dashboardPath = getDashboardByRole();
+      console.log("Redirecting to dashboard:", dashboardPath);
+      navigate(dashboardPath, { replace: true });
     }
-  }, [profile, navigate]);
+  }, [isLoading, isAuthenticated, profile, navigate]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -48,6 +50,9 @@ const Login: React.FC = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/login"
+        }
       });
 
       if (error) {
@@ -59,6 +64,16 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // If still loading auth state, show loading indicator
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  // If already authenticated, we'll redirect in the useEffect
+  if (isAuthenticated && profile) {
+    return <div className="min-h-screen flex items-center justify-center">Redirecting to dashboard...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
