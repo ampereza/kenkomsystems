@@ -18,6 +18,7 @@ interface AuthContextType {
   error: Error | null;
   isAuthenticated: boolean;
   hasPermission: (allowedRoles: UserRole[]) => boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +36,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Handle URL parameters for OAuth callback
+  useEffect(() => {
+    const handleAuthCallback = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const provider = urlParams.get('provider');
+      const success = urlParams.get('success');
+      
+      if (provider === 'google' && success === 'true') {
+        // Clear the URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+    
+    handleAuthCallback();
+  }, []);
 
   useEffect(() => {
     // Get initial session
@@ -92,6 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setProfile(null);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setError(error as Error);
+    }
+  };
+
   const hasPermission = (allowedRoles: UserRole[]): boolean => {
     if (!profile) return false;
     if (profile.role === 'managing_director' || profile.role === 'general_manager') return true;
@@ -99,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ profile, isLoading, error, isAuthenticated, hasPermission }}>
+    <AuthContext.Provider value={{ profile, isLoading, error, isAuthenticated, hasPermission, signOut }}>
       {children}
     </AuthContext.Provider>
   );

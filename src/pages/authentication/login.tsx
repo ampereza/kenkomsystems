@@ -4,16 +4,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, LogIn, Key } from "lucide-react";
+import { AlertCircle, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -61,35 +57,25 @@ const Login: React.FC = () => {
     }
   }, [navigate]);
 
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
       });
 
       if (error) {
         throw new Error(error.message);
       }
 
-      if (data?.user) {
-        setSuccess("Login successful!");
-        
-        setTimeout(() => {
-          const userRole = localStorage.getItem("userRole");
-          let dashboardPath = "/dashboards/financial";
-          
-          if (userRole === "stock_manager") dashboardPath = "/dashboards/stock";
-          else if (userRole === "production_manager") dashboardPath = "/dashboards/treatment";
-          else if (userRole === "managing_director" || userRole === "general_manager") dashboardPath = "/dashboards/md";
-          
-          navigate(dashboardPath);
-        }, 1000);
+      if (data) {
+        setSuccess("Redirecting to Google authentication...");
       }
     } catch (err: any) {
       setError(err.message);
@@ -110,55 +96,17 @@ const Login: React.FC = () => {
           <CardHeader className="space-y-1 bg-slate-50 rounded-t-lg">
             <div className="flex items-center justify-center mb-2">
               <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                <Key className="h-6 w-6 text-white" />
+                <LogIn className="h-6 w-6 text-white" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access the system
+              Sign in with your Google account to access the system
             </CardDescription>
           </CardHeader>
           
           <CardContent className="pt-6">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your.email@example.com"
-                    className="pl-10"
-                    required
-                  />
-                  <div className="absolute left-3 top-3 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                  <a href="#" className="text-xs text-primary hover:underline">Forgot password?</a>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                  <div className="absolute left-3 top-3 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  </div>
-                </div>
-              </div>
-              
+            <div className="space-y-4">
               {error && (
                 <Alert variant="destructive" className="animate-fade-in">
                   <AlertCircle className="h-4 w-4" />
@@ -173,9 +121,10 @@ const Login: React.FC = () => {
               )}
               
               <Button 
-                type="submit" 
-                className="w-full gap-2 transition-all"
+                type="button" 
+                className="w-full flex items-center justify-center gap-2 transition-all"
                 disabled={loading}
+                onClick={handleGoogleLogin}
               >
                 {loading ? (
                   <>
@@ -183,20 +132,26 @@ const Login: React.FC = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Logging in...
+                    Processing...
                   </>
                 ) : (
                   <>
-                    <LogIn size={18} />
-                    Login
+                    <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                      <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                        <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
+                        <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z" />
+                        <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z" />
+                        <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
+                      </g>
+                    </svg>
+                    Sign in with Google
                   </>
                 )}
               </Button>
-            </form>
+            </div>
           </CardContent>
           
           <CardFooter className="flex flex-col text-sm text-center text-muted-foreground p-6 pt-0">
-            <p className="mb-2">Demo credentials: admin@example.com / password</p>
             <div className="text-xs text-slate-500 mt-1">
               © {new Date().getFullYear()} Your Company. All rights reserved.
             </div>

@@ -1,3 +1,4 @@
+
 /**
  * Custom client for database operations without using Supabase authentication
  */
@@ -238,6 +239,33 @@ export const supabase = {
           error: { message: "Invalid email or password. Try admin@example.com / password" }
         });
       }
+    },
+
+    signInWithOAuth: ({ provider, options }: { provider: string, options?: any }) => {
+      // Mock Google sign-in for development/demo purposes
+      if (provider === 'google') {
+        // For demo purposes, let's automatically log in as admin
+        const user = mockUsers[0]; // Use the first mock user (admin)
+        
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("userName", user.name);
+        localStorage.setItem("userRole", user.user_role);
+        
+        // In a real implementation, this would redirect to Google
+        // For our mock, we'll simulate a successful sign-in
+        
+        // Return a URL to simulate redirect (though we'll handle it in the UI)
+        return Promise.resolve({
+          data: { url: `${window.location.origin}/auth-callback?provider=google&success=true` },
+          error: null
+        });
+      }
+      
+      return Promise.resolve({
+        data: null,
+        error: { message: "Provider not supported in mock implementation" }
+      });
     }
   }
 };
