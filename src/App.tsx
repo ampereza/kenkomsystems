@@ -10,6 +10,7 @@ import Login from "./pages/authentication/login";
 import AddUser from "./pages/authentication/adduser";
 import RemoveUser from "./pages/authentication/removeuser";
 
+
 // Auth
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
 
@@ -76,8 +77,12 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public routes */}
+<<<<<<< HEAD
+            <Route path="/" element={<Navigate to="/" />} />
+=======
             <Route path="/" element={<WelcomePage />} />
             <Route path="/welcome" element={<WelcomePage />} />
+>>>>>>> 83029820adf90b81ea580daf9155bc30a6131c1f
             <Route path="/login" element={<Login />} />
             <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
