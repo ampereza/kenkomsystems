@@ -1,7 +1,7 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
 
 export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant';
 
@@ -36,22 +36,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data, error }) => {
-      if (data?.session?.user) {
-        fetchUserProfile(data.session.user.id);
-      } else {
+    const initializeAuth = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data?.session?.user) {
+          await fetchUserProfile(data.session.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error("Session initialization error:", err);
+        setError(err as Error);
         setIsLoading(false);
       }
-      
-      if (error) {
-        console.error("Session error:", error);
-        setError(error as Error);
-        setIsLoading(false);
-      }
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -73,36 +82,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      // Get user email from auth
+      const { data: authData } = await supabase.auth.getUser();
+      const userEmail = authData.user?.email || '';
+      const userFullName = authData.user?.user_metadata?.full_name || null;
+      
       // Try to get user from profiles table
-      const { data, error } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-        // For demo purposes, create a default profile
+      if (profileError) {
+        // Profile doesn't exist, create one
+        console.log("Profile not found, creating new profile");
+        
+        // Default role - you might want to adjust this based on your requirements
+        const defaultRole: UserRole = 'accountant';
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert([
+            { 
+              id: userId, 
+              email: userEmail,
+              full_name: userFullName,
+              role: defaultRole
+            }
+          ])
+          .select();
+        
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+          toast({
+            title: "Error Creating Profile",
+            description: "There was a problem creating your user profile. Please try again or contact support.",
+            variant: "destructive"
+          });
+          throw new Error(`Database error saving new user: ${insertError.message}`);
+        }
+        
         setProfile({
           id: userId,
-          email: "admin@example.com",
-          full_name: "Administrator",
-          role: "managing_director"
+          email: userEmail,
+          full_name: userFullName,
+          role: defaultRole
         });
-      } else if (data) {
+        
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created successfully."
+        });
+      } else {
+        // Profile exists
         setProfile({
-          id: data.id,
-          email: data.email,
-          full_name: data.full_name,
-          role: data.role as UserRole
+          id: profileData.id,
+          email: profileData.email,
+          full_name: profileData.full_name,
+          role: profileData.role as UserRole
         });
       }
       
       setIsAuthenticated(true);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Profile fetch error:", error);
-      setError(error as Error);
+    } catch (err) {
+      console.error("Profile fetch/creation error:", err);
+      setError(err as Error);
+      toast({
+        title: "Authentication Error",
+        description: "There was a problem with your account. Please try again or contact support.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -112,9 +163,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setProfile(null);
       setIsAuthenticated(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
-      setError(error as Error);
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out."
+      });
+    } catch (err) {
+      console.error("Error signing out:", err);
+      setError(err as Error);
+      toast({
+        title: "Sign Out Error",
+        description: "There was a problem signing you out. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -151,7 +211,7 @@ export function ProtectedRoute({
   const location = useLocation();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!isAuthenticated) {
