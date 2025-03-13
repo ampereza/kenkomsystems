@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,7 @@ import { AlertCircle, ArrowLeft, UserPlus } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { v4 as uuidv4 } from 'uuid';
 
 type UserRole = "admin" | "managing_director" | "general_manager" | "production_manager" | "stock_manager" | "accountant" | "user";
 
@@ -41,10 +43,14 @@ const AddUser: React.FC = () => {
         throw new Error("A user with this email already exists");
       }
 
+      // Generate a UUID for the new user
+      const userId = uuidv4();
+
       // Insert new user
       const { error: insertError } = await supabase
         .from("users")
         .insert({
+          id: userId,
           email, 
           password, 
           name, 
