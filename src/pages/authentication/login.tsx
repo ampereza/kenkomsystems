@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,6 @@ import { motion } from "framer-motion";
 const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
@@ -21,7 +19,7 @@ const Login: React.FC = () => {
 
   function getDashboardByRole() {
     if (!profile) return "/dashboards/financial";
-    
+
     switch (profile.role) {
       case "accountant":
         return "/dashboards/financial";
@@ -43,23 +41,17 @@ const Login: React.FC = () => {
     }
   }, [profile, navigate]);
 
-  const handleEmailLogin = async () => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: "admin@example.com",
-        password: "password"
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
       });
 
       if (error) {
         throw new Error(error.message);
-      }
-
-      if (data) {
-        setSuccess("Logged in successfully!");
       }
     } catch (err: any) {
       setError(err.message);
@@ -85,10 +77,10 @@ const Login: React.FC = () => {
             </div>
             <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
-              Sign in to access the system
+              Sign in with Google to access the system
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="pt-6">
             <div className="space-y-4">
               {error && (
@@ -97,37 +89,47 @@ const Login: React.FC = () => {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
-              {success && (
-                <Alert className="bg-green-50 border-green-500 text-green-700 animate-fade-in">
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
-              
-              <Button 
-                type="button" 
+
+              <Button
+                type="button"
                 className="w-full flex items-center justify-center gap-2 transition-all"
                 disabled={loading}
-                onClick={handleEmailLogin}
+                onClick={handleGoogleLogin}
               >
                 {loading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
-                    Processing...
+                    Redirecting...
                   </>
                 ) : (
                   <>
                     <LogIn className="h-5 w-5 mr-2" />
-                    Sign in with Email
+                    Sign in with Google
                   </>
                 )}
               </Button>
             </div>
           </CardContent>
-          
+
           <CardFooter className="flex flex-col text-sm text-center text-muted-foreground p-6 pt-0">
             <div className="text-xs text-slate-500 mt-1">
               © {new Date().getFullYear()} Your Company. All rights reserved.
