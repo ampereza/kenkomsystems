@@ -44,14 +44,12 @@ const AddUser: React.FC = () => {
       // Insert new user
       const { error: insertError } = await supabase
         .from("users")
-        .insert([
-          { 
-            email, 
-            password, 
-            name, 
-            user_role: userRole
-          }
-        ]);
+        .insert({
+          email, 
+          password, 
+          name, 
+          user_role: userRole
+        });
 
       if (insertError) {
         throw new Error(insertError.message);
