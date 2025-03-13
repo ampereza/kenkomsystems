@@ -37,70 +37,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Handle URL parameters for OAuth callback
-  useEffect(() => {
-    const handleAuthCallback = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const provider = urlParams.get('provider');
-      const success = urlParams.get('success');
-      
-      if (provider === 'google' && success === 'true') {
-        // Clear the URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    };
-    
-    handleAuthCallback();
-  }, []);
-
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data, error }) => {
       if (data?.session?.user) {
-        const userId = data.session.user.id;
-        const email = data.session.user.email || '';
-        const role = (localStorage.getItem('userRole') || 'accountant') as UserRole;
-        const name = localStorage.getItem('userName') || '';
-        
-        setProfile({
-          id: userId,
-          email: email,
-          full_name: name,
-          role: role
-        });
-        
-        setIsAuthenticated(true);
+        fetchUserProfile(data.session.user.id);
+      } else {
+        setIsLoading(false);
       }
-      setIsLoading(false);
       
       if (error) {
         console.error("Session error:", error);
         setError(error as Error);
+        setIsLoading(false);
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (session?.user) {
-          const userId = session.user.id;
-          const email = session.user.email || '';
-          const role = (localStorage.getItem('userRole') || 'accountant') as UserRole;
-          const name = localStorage.getItem('userName') || '';
-          
-          setProfile({
-            id: userId,
-            email: email,
-            full_name: name,
-            role: role
-          });
-          
-          setIsAuthenticated(true);
+          await fetchUserProfile(session.user.id);
         } else {
           setProfile(null);
           setIsAuthenticated(false);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
@@ -108,6 +70,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      // Try to get user from profiles table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        // For demo purposes, create a default profile
+        setProfile({
+          id: userId,
+          email: "admin@example.com",
+          full_name: "Administrator",
+          role: "managing_director"
+        });
+      } else if (data) {
+        setProfile({
+          id: data.id,
+          email: data.email,
+          full_name: data.full_name,
+          role: data.role as UserRole
+        });
+      }
+      
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+      setError(error as Error);
+      setIsLoading(false);
+    }
+  };
 
   const signOut = async () => {
     try {
