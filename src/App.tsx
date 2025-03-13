@@ -1,6 +1,8 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute, UserRole } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import WelcomePage from "./pages/welcome/index";
 import Index from "./pages/Index";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
@@ -74,7 +76,8 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/" element={<WelcomePage />} />
+            <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
