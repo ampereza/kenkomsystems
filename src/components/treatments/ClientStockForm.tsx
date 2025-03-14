@@ -49,7 +49,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from("client_poles_stock") // Updated to use the correct table name
+        .from("client_poles_stock")
         .select("*")
         .eq("client_id", clientId)
         .single();
@@ -124,7 +124,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
     try {
       // Check if client stock already exists
       const { data: existingStock, error: checkError } = await supabase
-        .from("client_poles_stock") // Updated to use the correct table name
+        .from("client_poles_stock")
         .select("id")
         .eq("client_id", selectedClient)
         .single();
@@ -138,7 +138,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
       if (existingStock) {
         // Update existing stock
         result = await supabase
-          .from("client_poles_stock") // Updated to use the correct table name
+          .from("client_poles_stock")
           .update({
             ...processedData,
             client_id: selectedClient
@@ -147,7 +147,7 @@ export function ClientStockForm({ onSuccess, clientId }: ClientStockFormProps) {
       } else {
         // Insert new stock record
         result = await supabase
-          .from("client_poles_stock") // Updated to use the correct table name
+          .from("client_poles_stock")
           .insert({
             client_id: selectedClient,
             ...processedData,

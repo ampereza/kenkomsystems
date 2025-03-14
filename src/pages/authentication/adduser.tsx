@@ -1,275 +1,240 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ArrowLeft, UserPlus } from "lucide-react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { UserRole } from "@/lib/auth";
 
-interface UserFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role: UserRole;
-  full_name: string;
-}
-
-const AddUser: React.FC = () => {
-  const [formData, setFormData] = useState<UserFormData>({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "accountant",
-    full_name: "",
-  });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const navigate = useNavigate();
+const AddUser = () => {
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState("viewer");
+  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    // Check if user is authenticated with admin role
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/login");
-        return;
-      }
-      
-      // Check user role from profiles table
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-      
-      if (profileError || !profileData) {
-        navigate("/login");
-        return;
-      }
-      
-      if (profileData.role !== "managing_director" && profileData.role !== "general_manager") {
-        navigate("/unauthorized");
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch users",
+          description: error.message
+        });
       }
     };
-    
-    checkAuth();
-  }, [navigate]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    fetchUsers();
+  }, [toast]);
 
-  const handleRoleChange = (value: UserRole) => {
-    setFormData({ ...formData, role: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    
+    if (!email || !fullName || !role) {
+      toast({
+        variant: "destructive",
+        title: "Invalid input",
+        description: "Please fill in all fields"
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Create the user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.full_name,
-          },
-        },
-      });
-
-      if (authError) throw new Error(authError.message);
-
-      if (!authData.user) throw new Error("Failed to create user");
-
-      // 2. Update the user's profile with role
-      const { error: profileError } = await supabase
+      // Check if user already exists
+      const { data: existingUsers, error: checkError } = await supabase
         .from("profiles")
-        .update({ 
-          role: formData.role,
-          full_name: formData.full_name
-        })
-        .eq("id", authData.user.id);
+        .select("*")
+        .eq("email", email);
 
-      if (profileError) throw new Error(profileError.message);
+      if (checkError) throw checkError;
 
-      setSuccess(`User ${formData.email} created successfully with role: ${formData.role}`);
-      setFormData({
-        email: "",
-        password: "",
-        confirmPassword: "",
-        role: "accountant",
-        full_name: "",
+      if (existingUsers && existingUsers.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "User already exists",
+          description: "A user with this email already exists"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Create the user in the profiles table
+      const { error } = await supabase
+        .from("profiles")
+        .insert([
+          { 
+            email, 
+            full_name: fullName, 
+            user_role: role 
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "User added successfully",
+        description: `${email} has been added as a ${role}`
       });
-    } catch (err: any) {
-      setError(err.message);
+
+      // Reset form
+      setEmail("");
+      setFullName("");
+      setRole("viewer");
+      
+      // Reload users list
+      const { data: updatedUsers, error: fetchError } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (fetchError) throw fetchError;
+      setUsers(updatedUsers || []);
+      
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Failed to add user",
+        description: error.message
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-lg border-slate-200">
-          <CardHeader className="space-y-1 bg-slate-50 rounded-t-lg">
-            <div className="flex items-center space-x-2">
-              <Link to="/dashboard" className="text-slate-500 hover:text-slate-700 transition-colors">
-                <ArrowLeft size={18} />
-              </Link>
-              <CardTitle className="text-2xl font-bold">Add New User</CardTitle>
-            </div>
-            <CardDescription>
-              Create a new user account with assigned role
-            </CardDescription>
+    <div className="container mx-auto py-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Add User</CardTitle>
+            <CardDescription>Create a new user account</CardDescription>
           </CardHeader>
-          
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              {success && (
-                <Alert className="bg-green-50 border-green-500 text-green-700">
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
-              
+          <CardContent>
+            <form onSubmit={handleAddUser} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <label htmlFor="email" className="text-sm font-medium">Email Address</label>
                 <Input
                   id="email"
-                  name="email"
                   type="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@example.com"
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <label htmlFor="fullName" className="text-sm font-medium">Full Name</label>
                 <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="******"
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe"
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="******"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="role">User Role</Label>
+                <label htmlFor="role" className="text-sm font-medium">User Role</label>
                 <Select 
-                  value={formData.role} 
-                  onValueChange={(value) => handleRoleChange(value as UserRole)}
+                  value={role}
+                  onValueChange={setRole}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="accountant">Accountant</SelectItem>
-                    <SelectItem value="stock_manager">Stock Manager</SelectItem>
-                    <SelectItem value="production_manager">Production Manager</SelectItem>
-                    <SelectItem value="general_manager">General Manager</SelectItem>
-                    <SelectItem value="managing_director">Managing Director</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="financial">Financial</SelectItem>
+                    <SelectItem value="stock">Stock</SelectItem>
+                    <SelectItem value="treatment">Treatment</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating User...
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Create User
-                  </>
-                )}
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? "Adding User..." : "Add User"}
               </Button>
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Existing Users</CardTitle>
+            <CardDescription>Users currently in the system</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {users.length > 0 ? (
+                <div className="rounded-md border">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Role
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {users.map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              {user.user_role || user.role || "viewer"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">No users found</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

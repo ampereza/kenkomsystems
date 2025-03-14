@@ -47,7 +47,7 @@ export function ClientStockTable({ clientId }: ClientStockTableProps) {
       try {
         setLoading(true);
         let query = supabase
-          .from("client_poles_stock") // Updated to use the correct table
+          .from("client_poles_stock")
           .select(`
             id,
             client_id,

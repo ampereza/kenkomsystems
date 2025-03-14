@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -187,7 +186,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           
           // First check if the client already has a stock record
           const { data: existingStock, error: stockCheckError } = await supabase
-            .from("client_poles_stock") // Updated to use the correct table name
+            .from("client_poles_stock")
             .select("id")
             .eq("client_id", values.clientId)
             .maybeSingle();
@@ -200,7 +199,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           // If client doesn't have a stock record yet, create one
           if (!existingStock) {
             const { error: createStockError } = await supabase
-              .from("client_poles_stock") // Updated to use the correct table name
+              .from("client_poles_stock")
               .insert({
                 client_id: values.clientId,
                 quantity: 1, // Required field
@@ -220,10 +219,9 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           } 
           // If client does have a stock record, update it
           else {
-            // For client-owned poles, update treated pole quantities directly
-            // Get current values first, then increment
+            // Get current values first
             const { data: currentStock, error: getCurrentError } = await supabase
-              .from("client_poles_stock") // Updated to use the correct table name
+              .from("client_poles_stock")
               .select("*")
               .eq("id", existingStock.id)
               .single();
@@ -238,7 +236,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
             
             // Update with new values
             const { error: updateStockError } = await supabase
-              .from("client_poles_stock") // Updated to use the correct table name
+              .from("client_poles_stock")
               .update({
                 treated_telecom_poles: newTelecomPoles
                 // Other pole types would be updated similarly if needed

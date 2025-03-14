@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Client } from "./types";
@@ -66,7 +67,7 @@ const InsertClientStock = () => {
 
     setLoading(true);
     
-    // First check if a client_stock entry already exists
+    // First check if a client_poles_stock entry already exists
     const { data: existingStock, error: queryError } = await supabase
       .from("client_poles_stock")
       .select("*")

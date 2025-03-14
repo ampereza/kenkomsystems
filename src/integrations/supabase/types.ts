@@ -73,6 +73,83 @@ export type Database = {
           },
         ]
       }
+      client_poles_stock: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          treated_10m_poles: number | null
+          treated_11m_poles: number | null
+          treated_12m_poles: number | null
+          treated_14m_poles: number | null
+          treated_16m_poles: number | null
+          treated_9m_poles: number | null
+          treated_telecom_poles: number | null
+          untreated_10m_poles: number | null
+          untreated_11m_poles: number | null
+          untreated_12m_poles: number | null
+          untreated_14m_poles: number | null
+          untreated_16m_poles: number | null
+          untreated_9m_poles: number | null
+          untreated_telecom_poles: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          treated_10m_poles?: number | null
+          treated_11m_poles?: number | null
+          treated_12m_poles?: number | null
+          treated_14m_poles?: number | null
+          treated_16m_poles?: number | null
+          treated_9m_poles?: number | null
+          treated_telecom_poles?: number | null
+          untreated_10m_poles?: number | null
+          untreated_11m_poles?: number | null
+          untreated_12m_poles?: number | null
+          untreated_14m_poles?: number | null
+          untreated_16m_poles?: number | null
+          untreated_9m_poles?: number | null
+          untreated_telecom_poles?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          treated_10m_poles?: number | null
+          treated_11m_poles?: number | null
+          treated_12m_poles?: number | null
+          treated_14m_poles?: number | null
+          treated_16m_poles?: number | null
+          treated_9m_poles?: number | null
+          treated_telecom_poles?: number | null
+          untreated_10m_poles?: number | null
+          untreated_11m_poles?: number | null
+          untreated_12m_poles?: number | null
+          untreated_14m_poles?: number | null
+          untreated_16m_poles?: number | null
+          untreated_9m_poles?: number | null
+          untreated_telecom_poles?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_poles_stock_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_stock: {
         Row: {
           allocation_date: string | null
@@ -570,6 +647,7 @@ export type Database = {
           full_name: string | null
           id: string
           role: string | null
+          user_role: string | null
         }
         Insert: {
           created_at?: string | null
@@ -577,6 +655,7 @@ export type Database = {
           full_name?: string | null
           id: string
           role?: string | null
+          user_role?: string | null
         }
         Update: {
           created_at?: string | null
@@ -584,6 +663,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           role?: string | null
+          user_role?: string | null
         }
         Relationships: []
       }
