@@ -5,7 +5,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
 // ------------------ Types -------------------
-export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant';
+export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant' | 'developer';
 
 interface Profile {
   id: string;
@@ -32,6 +32,7 @@ export const ROLE_BASED_ROUTES = {
   production_manager: ['/treatment', '/reports/treatment'],
   managing_director: ['*'], // All routes
   general_manager: ['*'],  // All routes
+  developer : ['*'],  // All routes
 } as const;
 
 // External domain mapping for roles
