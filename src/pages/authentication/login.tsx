@@ -74,10 +74,6 @@ const Login: React.FC = () => {
     }
   };
 
-  // If still loading auth state, show loading indicator
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
 
   // If already authenticated, we'll redirect in the useEffect
   if (isAuthenticated && profile) {
