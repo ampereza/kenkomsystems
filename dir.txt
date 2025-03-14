@@ -1,0 +1,59 @@
+src
+├── components
+│   ├── auth
+│   │   ├── AuthProvider.tsx
+│   │   └── login.tsx
+│   └── ui
+│       ├── button.tsx
+│       ├── card.tsx
+│       └── toaster.tsx
+│   └── Navbar.tsx
+│   └── reports
+│       └── FinancialTrends.tsx
+├── pages
+│   ├── authentication
+│   │   ├── login.tsx
+│   │   ├── adduser.tsx
+│   │   └── removeuser.tsx
+│   ├── dashboards
+│   │   ├── MDDashboard.tsx
+│   │   ├── GeneralManagerDashboard.tsx
+│   │   ├── FinancialDashboard.tsx
+│   │   ├── TreatmentDashboard.tsx
+│   │   ├── TreatmentDashboardWrapper.tsx
+│   │   └── StockDashboard.tsx
+│   ├── customers
+│   │   ├── customers.tsx
+│   │   ├── add_customer.tsx
+│   │   └── edit_cutomers.tsx
+│   ├── suppliers
+│   │   ├── add_suppliers.tsx
+│   │   ├── SupplierReport.tsx
+│   │   ├── view_suppliers.tsx
+│   │   └── rejected_poles.tsx
+│   ├── stock
+│   │   ├── SortStock.tsx
+│   │   ├── ReceiveStock.tsx
+│   │   └── StockReport.tsx
+│   ├── finance
+│   │   ├── Receipts.tsx
+│   │   ├── PaymentVouchers.tsx
+│   │   ├── incomestatement.tsx
+│   │   ├── balancesheet.tsx
+│   │   ├── FinancialReport.tsx
+│   │   └── Expenses.tsx
+│   ├── clients
+│   │   ├── clients.tsx
+│   │   ├── add_clients_stock.tsx
+│   │   ├── edit_client.tsx
+│   │   └── view_clients_stock.tsx
+│   ├── treatments
+│   │   ├── TreatmentLog.tsx
+│   │   ├── TreatmentLogWrapper.tsx
+│   │   └── treatment_report.tsx
+│   ├── reports
+│   │   ├── EmployeeReport.tsx
+│   │   └── GeneralLedger.tsx
+│   └── Index.tsx
+│   └── NotFound.tsx
+│   └── Unauthorized.tsx
