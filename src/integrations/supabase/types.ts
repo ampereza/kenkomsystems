@@ -75,88 +75,43 @@ export type Database = {
       }
       client_stock: {
         Row: {
-          client_id: string
+          allocation_date: string | null
+          client_id: string | null
           created_at: string | null
-          delivered_10m_poles: number | null
-          delivered_11m_poles: number | null
-          delivered_12m_poles: number | null
-          delivered_14m_poles: number | null
-          delivered_16m_poles: number | null
-          delivered_9m_poles: number | null
-          delivered_telecom_poles: number | null
+          delivery_note_id: string | null
           id: string
           notes: string | null
-          treated_10m_poles: number | null
-          treated_11m_poles: number | null
-          treated_12m_poles: number | null
-          treated_14m_poles: number | null
-          treated_16m_poles: number | null
-          treated_9m_poles: number | null
-          treated_telecom_poles: number | null
-          untreated_10m_poles: number | null
-          untreated_11m_poles: number | null
-          untreated_12m_poles: number | null
-          untreated_14m_poles: number | null
-          untreated_16m_poles: number | null
-          untreated_9m_poles: number | null
-          untreated_telecom_poles: number | null
-          updated_at: string | null
+          price_per_unit: number | null
+          quantity: number
+          status: string | null
+          total_price: number | null
+          treated_stock_id: string | null
         }
         Insert: {
-          client_id: string
+          allocation_date?: string | null
+          client_id?: string | null
           created_at?: string | null
-          delivered_10m_poles?: number | null
-          delivered_11m_poles?: number | null
-          delivered_12m_poles?: number | null
-          delivered_14m_poles?: number | null
-          delivered_16m_poles?: number | null
-          delivered_9m_poles?: number | null
-          delivered_telecom_poles?: number | null
+          delivery_note_id?: string | null
           id?: string
           notes?: string | null
-          treated_10m_poles?: number | null
-          treated_11m_poles?: number | null
-          treated_12m_poles?: number | null
-          treated_14m_poles?: number | null
-          treated_16m_poles?: number | null
-          treated_9m_poles?: number | null
-          treated_telecom_poles?: number | null
-          untreated_10m_poles?: number | null
-          untreated_11m_poles?: number | null
-          untreated_12m_poles?: number | null
-          untreated_14m_poles?: number | null
-          untreated_16m_poles?: number | null
-          untreated_9m_poles?: number | null
-          untreated_telecom_poles?: number | null
-          updated_at?: string | null
+          price_per_unit?: number | null
+          quantity: number
+          status?: string | null
+          total_price?: number | null
+          treated_stock_id?: string | null
         }
         Update: {
-          client_id?: string
+          allocation_date?: string | null
+          client_id?: string | null
           created_at?: string | null
-          delivered_10m_poles?: number | null
-          delivered_11m_poles?: number | null
-          delivered_12m_poles?: number | null
-          delivered_14m_poles?: number | null
-          delivered_16m_poles?: number | null
-          delivered_9m_poles?: number | null
-          delivered_telecom_poles?: number | null
+          delivery_note_id?: string | null
           id?: string
           notes?: string | null
-          treated_10m_poles?: number | null
-          treated_11m_poles?: number | null
-          treated_12m_poles?: number | null
-          treated_14m_poles?: number | null
-          treated_16m_poles?: number | null
-          treated_9m_poles?: number | null
-          treated_telecom_poles?: number | null
-          untreated_10m_poles?: number | null
-          untreated_11m_poles?: number | null
-          untreated_12m_poles?: number | null
-          untreated_14m_poles?: number | null
-          untreated_16m_poles?: number | null
-          untreated_9m_poles?: number | null
-          untreated_telecom_poles?: number | null
-          updated_at?: string | null
+          price_per_unit?: number | null
+          quantity?: number
+          status?: string | null
+          total_price?: number | null
+          treated_stock_id?: string | null
         }
         Relationships: [
           {
@@ -164,6 +119,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_stock_delivery_note_id_fkey"
+            columns: ["delivery_note_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_stock_treated_stock_id_fkey"
+            columns: ["treated_stock_id"]
+            isOneToOne: false
+            referencedRelation: "treated_stock"
             referencedColumns: ["id"]
           },
         ]
@@ -597,24 +566,24 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string | null
-          email: string
+          email: string | null
           full_name: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"]
+          role: string | null
         }
         Insert: {
           created_at?: string | null
-          email: string
+          email?: string | null
           full_name?: string | null
           id: string
-          role: Database["public"]["Enums"]["user_role"]
+          role?: string | null
         }
         Update: {
           created_at?: string | null
-          email?: string
+          email?: string | null
           full_name?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: string | null
         }
         Relationships: []
       }
@@ -861,6 +830,62 @@ export type Database = {
           },
         ]
       }
+      treated_stock: {
+        Row: {
+          category: string
+          chemical_strength: string | null
+          created_at: string | null
+          diameter_mm: number | null
+          id: string
+          length_unit: string | null
+          length_value: number
+          notes: string | null
+          quantity: number
+          source_sorted_stock_id: string | null
+          status: string | null
+          treatment_chemical: string | null
+          treatment_date: string | null
+        }
+        Insert: {
+          category: string
+          chemical_strength?: string | null
+          created_at?: string | null
+          diameter_mm?: number | null
+          id?: string
+          length_unit?: string | null
+          length_value: number
+          notes?: string | null
+          quantity: number
+          source_sorted_stock_id?: string | null
+          status?: string | null
+          treatment_chemical?: string | null
+          treatment_date?: string | null
+        }
+        Update: {
+          category?: string
+          chemical_strength?: string | null
+          created_at?: string | null
+          diameter_mm?: number | null
+          id?: string
+          length_unit?: string | null
+          length_value?: number
+          notes?: string | null
+          quantity?: number
+          source_sorted_stock_id?: string | null
+          status?: string | null
+          treatment_chemical?: string | null
+          treatment_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treated_stock_source_sorted_stock_id_fkey"
+            columns: ["source_sorted_stock_id"]
+            isOneToOne: false
+            referencedRelation: "sorted_stock"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatment_costs: {
         Row: {
           amount: number
@@ -1050,73 +1075,8 @@ export type Database = {
           },
         ]
       }
-      users: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          email: string
-          id: string
-          last_login: string | null
-          name: string | null
-          password: string | null
-          updated_at: string
-          user_role: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          email: string
-          id: string
-          last_login?: string | null
-          name?: string | null
-          password?: string | null
-          updated_at?: string
-          user_role?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string
-          id?: string
-          last_login?: string | null
-          name?: string | null
-          password?: string | null
-          updated_at?: string
-          user_role?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
-      client_stock_summary: {
-        Row: {
-          client_name: string | null
-          delivered_10m_poles: number | null
-          delivered_11m_poles: number | null
-          delivered_12m_poles: number | null
-          delivered_14m_poles: number | null
-          delivered_16m_poles: number | null
-          delivered_9m_poles: number | null
-          delivered_telecom_poles: number | null
-          id: string | null
-          treated_10m_poles: number | null
-          treated_11m_poles: number | null
-          treated_12m_poles: number | null
-          treated_14m_poles: number | null
-          treated_16m_poles: number | null
-          treated_9m_poles: number | null
-          treated_telecom_poles: number | null
-          untreated_10m_poles: number | null
-          untreated_11m_poles: number | null
-          untreated_12m_poles: number | null
-          untreated_14m_poles: number | null
-          untreated_16m_poles: number | null
-          untreated_9m_poles: number | null
-          untreated_telecom_poles: number | null
-          updated_at: string | null
-        }
-        Relationships: []
-      }
       employee_payments: {
         Row: {
           amount: number | null
