@@ -20,7 +20,7 @@ const Login: React.FC = () => {
     if (!profile) return "/dashboards/financial";
 
     // Custom domain redirection based on role
-    const baseDomain = "kdl.kenkomdistribuorsltd.com/";
+    const baseDomain = "kdl.kenkomdistributorsltd.com/";
     
     switch (profile.role) {
       case "accountant":
