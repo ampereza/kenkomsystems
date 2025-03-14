@@ -24,18 +24,18 @@ const Login: React.FC = () => {
     
     switch (profile.role) {
       case "accountant":
-        return `/finance`;
+        return `finance`;
       case "stock_manager":
-        return `/stock-manager`;
+        return `stock-manager`;
       case "production_manager":
-        return `/production-manager`;
+        return `production-manager`;
       case "general_manager":
-        return `/general-manager`;
+        return `general-manager`;
       case "managing_director":
-        return `/managing-director`;
+        return `managing-director`;
 
       case "developer":
-        return `$/maindashboard`; // ✅ Correct
+        return `maindashboard`; // ✅ Correct
             default:
         return `/default`;
     }
