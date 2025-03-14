@@ -36,11 +36,11 @@ export const ROLE_BASED_ROUTES = {
 
 // External domain mapping for roles
 export const ROLE_EXTERNAL_DOMAINS = {
-  accountant: 'kdl.kenkomdistribuorsltd.com/userrolepages/accountant',
-  stock_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/stock-manager',
-  production_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/production-manager',
-  general_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/general-manager',
-  managing_director: 'kdl.kenkomdistribuorsltd.com/userrolepages/managing-director',
+  accountant: 'kdl.kenkomdistribuorsltd.com/accountant',
+  stock_manager: 'kdl.kenkomdistribuorsltd.com/stock-manager',
+  production_manager: 'kdl.kenkomdistribuorsltd.com/production-manager',
+  general_manager: 'kdl.kenkomdistribuorsltd.com/general-manager',
+  managing_director: 'kdl.kenkomdistribuorsltd.com/managing-director',
 } as const;
 
 // ------------------ Provider -------------------
