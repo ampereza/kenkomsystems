@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Client } from "./types";
@@ -69,7 +68,7 @@ const InsertClientStock = () => {
     
     // First check if a client_stock entry already exists
     const { data: existingStock, error: queryError } = await supabase
-      .from("client_stock")
+      .from("client_poles_stock")
       .select("*")
       .eq("client_id", selectedClientId)
       .single();
@@ -89,7 +88,7 @@ const InsertClientStock = () => {
     if (existingStock) {
       // Update existing stock
       result = await supabase
-        .from("client_stock")
+        .from("client_poles_stock")
         .update({
           untreated_telecom_poles: untreatedTelecomPoles,
           untreated_9m_poles: untreated9mPoles,
@@ -103,7 +102,7 @@ const InsertClientStock = () => {
     } else {
       // Insert new stock
       result = await supabase
-        .from("client_stock")
+        .from("client_poles_stock")
         .insert({
           client_id: selectedClientId,
           untreated_telecom_poles: untreatedTelecomPoles,
@@ -111,7 +110,8 @@ const InsertClientStock = () => {
           untreated_10m_poles: untreated10mPoles,
           untreated_11m_poles: untreated11mPoles,
           untreated_12m_poles: untreated12mPoles,
-          notes
+          notes,
+          quantity: 1
         });
     }
 

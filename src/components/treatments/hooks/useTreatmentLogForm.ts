@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
@@ -186,7 +187,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           
           // First check if the client already has a stock record
           const { data: existingStock, error: stockCheckError } = await supabase
-            .from("client_stock")
+            .from("client_poles_stock") // Updated to use the correct table name
             .select("id")
             .eq("client_id", values.clientId)
             .maybeSingle();
@@ -199,9 +200,10 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
           // If client doesn't have a stock record yet, create one
           if (!existingStock) {
             const { error: createStockError } = await supabase
-              .from("client_stock")
+              .from("client_poles_stock") // Updated to use the correct table name
               .insert({
                 client_id: values.clientId,
+                quantity: 1, // Required field
                 treated_telecom_poles: values.telecomPoles || 0,
                 treated_9m_poles: 0,
                 treated_10m_poles: 0,
@@ -221,8 +223,8 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
             // For client-owned poles, update treated pole quantities directly
             // Get current values first, then increment
             const { data: currentStock, error: getCurrentError } = await supabase
-              .from("client_stock")
-              .select("treated_telecom_poles")
+              .from("client_poles_stock") // Updated to use the correct table name
+              .select("*")
               .eq("id", existingStock.id)
               .single();
               
@@ -236,7 +238,7 @@ export const useTreatmentLogForm = (onSubmitSuccess: () => void) => {
             
             // Update with new values
             const { error: updateStockError } = await supabase
-              .from("client_stock")
+              .from("client_poles_stock") // Updated to use the correct table name
               .update({
                 treated_telecom_poles: newTelecomPoles
                 // Other pole types would be updated similarly if needed

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,12 +10,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, ArrowLeft, Trash2, Search, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { UserRole } from "@/lib/auth";
 
 interface User {
   id: string;
   email: string;
   name?: string;
-  user_role: string;
+  user_role: UserRole;
 }
 
 const RemoveUser: React.FC = () => {
@@ -29,14 +31,32 @@ const RemoveUser: React.FC = () => {
 
   useEffect(() => {
     // Check if user is authenticated with admin role
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    const userRole = localStorage.getItem("userRole");
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate("/login");
+        return;
+      }
+      
+      // Check user role from profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (profileError || !profileData) {
+        navigate("/login");
+        return;
+      }
+      
+      if (profileData.role !== "managing_director" && profileData.role !== "general_manager") {
+        navigate("/unauthorized");
+      }
+    };
     
-    if (isAuthenticated !== "true") {
-      navigate("/login");
-    } else if (userRole !== "admin" && userRole !== "managing_director") {
-      navigate("/unauthorized");
-    }
+    checkAuth();
   }, [navigate]);
 
   const handleSearch = async (event?: React.FormEvent) => {
@@ -47,8 +67,9 @@ const RemoveUser: React.FC = () => {
     setConfirmDelete(false);
 
     try {
+      // Search for the user in the profiles table
       const { data: user, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("*")
         .eq("email", email)
         .single();
@@ -58,7 +79,12 @@ const RemoveUser: React.FC = () => {
         return;
       }
 
-      setFoundUser(user as User);
+      setFoundUser({
+        id: user.id,
+        email: user.email || "",
+        name: user.full_name,
+        user_role: user.role as UserRole
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -74,13 +100,14 @@ const RemoveUser: React.FC = () => {
     setSuccess(null);
 
     try {
-      const { error } = await supabase
-        .from("users")
-        .delete()
-        .eq("id", foundUser.id);
+      // Call the Supabase Admin API to delete the user
+      // This will cascade delete the profile due to RLS
+      const { error } = await supabase.auth.admin.deleteUser(
+        foundUser.id
+      );
 
       if (error) {
-        throw new Error("Failed to remove user");
+        throw new Error("Failed to remove user: " + error.message);
       }
 
       setSuccess(`User ${foundUser.email} removed successfully.`);
