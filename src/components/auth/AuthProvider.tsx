@@ -182,12 +182,12 @@ const fetchProfile = async (userId: string) => {
   // Example function to get external URLs based on role
   const getExternalUrlForRole = (role: UserRole): string => {
     const roleUrls: Record<UserRole, string> = {
-      managing_director: 'https://kdl.kenkomdistributorsltd.com/maindashboard',
-      general_manager: 'https://kdl.kenkomdistributorsltd.com/gm',
+      managing_director: 'https://kdl.kenkomdistributorsltd.com/dashboards/md',
+      general_manager: 'https://kdl.kenkomdistributorsltd.com/dashboards/gm',
       production_manager: 'https://kdl.kenkomdistributorsltd.com/pm',
       stock_manager: 'https://kdl.kenkomdistributorsltd.com/sm',
       accountant: 'https://kdl.kenkomdistributorsltd.com/finance',
-      developer: 'https://kdl.kenkomdistributorsltd.com/maindashboard',
+      developer: '/maindashboard',
     };
     return roleUrls[role];
   };

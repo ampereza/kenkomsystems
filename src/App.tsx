@@ -136,6 +136,26 @@ const adminRoutes: RouteConfig[] = [
 
 const financeRoutes: RouteConfig[] = [
   {
+    path: "/finance/financialreport",
+    component: FinancialReport,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+
+  }
+
+  {
+    path: "reports/employeereport",
+    component: EmployeeReport,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+
+  }
+
+
+  {
+    path: "/finance/generalledger",
+    component: GeneralLedger,
+    roles: ["accountant"]
+  }
+  {
     path: "/finance/receipts",
     component: Receipts,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
@@ -257,6 +277,10 @@ const App = () => (
               }
             />
           ))}
+
+          
+
+
 
           {/* Add other route categories as needed */}
         </Routes>
