@@ -26,7 +26,6 @@ import StockDashboard from "./pages/dashboards/StockDashboard";
 import TreatmentDashboardWrapper from "./pages/dashboards/TreatmentDashboardWrapper";
 
 // Finance
-import Transactions from "./pages/finance/Transactions";
 import Receipts from "./pages/finance/Receipts";
 import Expenses from "./pages/finance/Expenses";
 import Employees from "./pages/finance/Employees";
@@ -81,7 +80,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
 
           <Route
-          path="/dashboard/main"
+          path="/maindashboard"
           element={
             <ProtectedRoute allowedRoles={["developer", "general_manager", "managing_director"]}>
               <MainDashboard />
