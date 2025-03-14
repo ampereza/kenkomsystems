@@ -58,8 +58,8 @@ import TreatmentReport from "./pages/treatments/treatment_report";
 
 // Reports
 import EmployeeReport from "./pages/reports/EmployeeReport";
-import GeneralLedger from "./pages/reports/GeneralLedger";
-import FinancialReport from "./pages/reports/FinancialReport";
+import GeneralLedger from "./pages/finance/GeneralLedger";
+import FinancialReport from "./pages/finance/FinancialReport";
 
 // Lazy loaded components
 const Transactions = lazy(() => import("./pages/finance/Transactions"));
