@@ -32,16 +32,29 @@ export interface AuthContextType {
 
 // Example ProtectedRoute component
 
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+export const ProtectedRoute = ({ 
+  children, 
+  allowedRoles 
+}: { 
+  children: React.ReactNode,
+  allowedRoles: UserRole[]
+}) => {
+  const { isAuthenticated, isLoading, hasPermission } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-};
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
+  if (!hasPermission(allowedRoles)) {
+    return <Navigate to="/unauthorized" />;
+  }
+
+  return <>{children}</>;
+};
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -67,23 +80,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch profile data for authenticated user
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+// Assuming your UserRole type is defined something like:
+// export type UserRole = 'managing_director' | 'general_manager' | ... ;
 
-      if (error) throw error;
+const fetchProfile = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-      setProfile(data);
-    } catch (err: any) {
-      setError(err);
+    if (error) throw error;
+
+    // Type validation before setting the profile
+    if (data) {
+      // Type guard function to check if a string is a valid UserRole
+      const isValidUserRole = (role: string): role is UserRole => {
+        const validRoles = [
+          'managing_director', 
+          'general_manager', 
+          'production_manager', 
+          'stock_manager', 
+          'accountant', 
+          'developer'
+        ];
+        return validRoles.includes(role);
+      };
+      
+      if (data.role && isValidUserRole(data.role)) {
+        // Now TypeScript knows data.role is UserRole
+        setProfile({
+          id: data.id,
+          email: data.email,
+          full_name: data.full_name,
+          role: data.role  // No casting needed now
+        });
+      } else {
+        throw new Error(`Invalid role: ${data.role}`);
+      }
     }
-  };
-
+  } catch (err: any) {
+    setError(err);
+  }
+};
   // Handle auth state change
   useEffect(() => {
     const initializeAuth = async () => {

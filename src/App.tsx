@@ -3,8 +3,6 @@ import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { lazy, Suspense } from 'react';
-import React from 'react';
-
 
 // Pages
 import WelcomePage from "./pages/welcome/index";
@@ -12,7 +10,7 @@ import Login from "./pages/authentication/login";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
-import MainDashboard from "./pages/MainDashboard"
+import MainDashboard from "./pages/MainDashboard";
 
 // Auth
 import AddUser from "./pages/authentication/adduser";
@@ -63,15 +61,122 @@ import EmployeeReport from "./pages/reports/EmployeeReport";
 import GeneralLedger from "./pages/reports/GeneralLedger";
 import FinancialReport from "./pages/reports/FinancialReport";
 
-const queryClient = new QueryClient();
+// Lazy loaded components
 const Transactions = lazy(() => import("./pages/finance/Transactions"));
 
+// Type definitions
+import { UserRole } from "./components/auth/AuthProvider";
 
+// Route configurations
+interface RouteConfig {
+  path: string;
+  component: React.ComponentType<any>;
+  roles: UserRole[];
+}
+
+// Define route configurations
+const dashboardRoutes: RouteConfig[] = [
+  {
+    path: "/dashboards/financial",
+    component: FinancialDashboard,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/dashboards/general-manager",
+    component: GeneralManagerDashboard,
+    roles: ["general_manager", "managing_director", "developer"]
+  },
+  {
+    path: "/dashboards/md",
+    component: MDDashboard,
+    roles: ["managing_director", "developer"]
+  },
+  {
+    path: "/dashboards/stock",
+    component: StockDashboard,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/dashboards/treatment",
+    component: TreatmentDashboardWrapper,
+    roles: ["production_manager", "managing_director", "general_manager", "developer"]
+  }
+];
+
+const customerRoutes: RouteConfig[] = [
+  {
+    path: "/customers/list",
+    component: Customers,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/customers/add",
+    component: AddCustomer,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/customers/edit",
+    component: EditCustomer,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  }
+];
+
+const adminRoutes: RouteConfig[] = [
+  {
+    path: "/admin/add-user",
+    component: AddUser,
+    roles: ["managing_director", "developer"]
+  },
+  {
+    path: "/admin/remove-user",
+    component: RemoveUser,
+    roles: ["managing_director", "developer"]
+  }
+];
+
+const financeRoutes: RouteConfig[] = [
+  {
+    path: "/finance/receipts",
+    component: Receipts,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/expenses",
+    component: Expenses,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/employees",
+    component: Employees,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/payment-vouchers",
+    component: PaymentVouchers,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/balance-sheet",
+    component: BalanceSheetPage,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/income-statement",
+    component: IncomeStatementPage,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  }
+];
+
+// Initialize QueryClient
+const queryClient = new QueryClient();
+
+// Main App component
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<WelcomePage />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<Login />} />
@@ -79,90 +184,86 @@ const App = () => (
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
 
+          {/* Protected routes */}
           <Route
-          path="/maindashboard"
-          element={
-            <ProtectedRoute allowedRoles={["developer", "general_manager", "managing_director"]}>
-              <MainDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboards/financialdashboard"
-          element={
-            <ProtectedRoute allowedRoles={["developer", "general_manager", "managing_director", "accountant"]}>
-              <FinancialDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-
-
-          <Route path="/finance/transactions" element={
-          <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
-            <Suspense fallback={<div>Loading...</div>}>
-              <Transactions />
-            </Suspense>
-          </ProtectedRoute>
-        } />
-
-          {/** Dashboards */}
-          {['financial', 'general-manager', 'md', 'stock', 'treatment'].map((path, i) => (
-            <Route key={i} path={`/dashboards/${path}`} element={
-              <ProtectedRoute allowedRoles={getRolesForDashboard(path)}>
-                {React.createElement(require(`./pages/dashboards/${capitalize(path)}Dashboard`).default)}
+            path="/maindashboard"
+            element={
+              <ProtectedRoute allowedRoles={["developer", "general_manager", "managing_director"]}>
+                <MainDashboard />
               </ProtectedRoute>
-            } />
+            }
+          />
+
+          {/* Lazy loaded routes */}
+          <Route 
+            path="/finance/transactions" 
+            element={
+              <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager", "developer"]}>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <Transactions />
+                </Suspense>
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Dynamic dashboard routes */}
+          {dashboardRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
           ))}
 
-          {/** Customers */}
-          {['list', 'add', 'edit'].map((path, i) => (
-            <Route key={i} path={`/customers/${path}`} element={
-              <ProtectedRoute allowedRoles={["accountant", "managing_director", "general_manager"]}>
-                {React.createElement(require(`./pages/customers/${mapCustomerPath(path)}`).default)}
-              </ProtectedRoute>
-            } />
+          {/* Customer routes */}
+          {customerRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
           ))}
 
-          {/** Admin */}
-          {['add-user', 'remove-user'].map((path, i) => (
-            <Route key={i} path={`/admin/${path}`} element={
-              <ProtectedRoute allowedRoles={["managing_director"]}>
-                {React.createElement(require(`./pages/authentication/${mapAdminPath(path)}`).default)}
-              </ProtectedRoute>
-            } />
+          {/* Admin routes */}
+          {adminRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
           ))}
 
+          {/* Finance routes */}
+          {financeRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
+
+          {/* Add other route categories as needed */}
         </Routes>
         <Toaster />
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const mapCustomerPath = (path: string) => path === 'list' ? 'customers' : `${path}_customer`;
-const mapAdminPath = (path: string) => path.replace('-', '');
-const getRolesForDashboard = (path: string) => {
-  const roles: Record<string, string[]> = {
-    financial: ["accountant", "managing_director", "general_manager"],
-    "general-manager": ["general_manager", "managing_director"],
-    md: ["managing_director"],
-    stock: ["stock_manager", "managing_director", "general_manager"],
-    treatment: ["production_manager", "managing_director", "general_manager"]
-  };
-  return roles[path] || [];
-};
-
-export default function App() {
-  console.log("App component rendered!"); // Debug
-
-  return (
-    <div>
-      <h1>Hello from App!</h1> {/* Test if this shows up */}
-    </div>
-  );
-}
-
 
 export default App;
