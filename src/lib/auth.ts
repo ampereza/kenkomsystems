@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 // This should match the UserRole type in AuthProvider.tsx
-export type UserRole = 'managing_director' | 'general_manager' | 'accountant' | 'stock_manager' | 'production_manager';
+export type UserRole = 'managing_director' | 'general_manager' | 'accountant' | 'stock_manager' | 'production_manager' | 'developer';
 
 export interface UserProfile {
   id: string;

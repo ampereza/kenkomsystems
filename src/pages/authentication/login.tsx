@@ -33,6 +33,9 @@ const Login: React.FC = () => {
         return `${baseDomain}/general-manager`;
       case "managing_director":
         return `${baseDomain}/managing-director`;
+
+      case "developer":
+        return '${baseDomain}/maindashboard';
       default:
         return `${baseDomain}/default`;
     }
