@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Navigate, useLocation } from 'react-router-dom';
@@ -67,10 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (insertError) throw new Error(`Failed to create profile: ${insertError.message}`);
 
-        setProfile(newProfile);
+        // Type assertion to ensure role is treated as UserRole
+        setProfile({
+          ...newProfile,
+          role: newProfile.role as UserRole
+        });
         toast({ title: "Welcome!", description: "Your account has been created successfully." });
       } else {
-        setProfile(profileData);
+        // Type assertion to ensure role is treated as UserRole
+        setProfile({
+          ...profileData,
+          role: profileData.role as UserRole
+        });
       }
 
       setIsAuthenticated(true);

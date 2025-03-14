@@ -3,13 +3,15 @@ import { createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
-export type UserRole = 'general_manager' | 'managing_director' | 'accountant' | 'stock_manager' | 'production_manager';
+// This should match the UserRole type in AuthProvider.tsx
+export type UserRole = 'managing_director' | 'general_manager' | 'accountant' | 'stock_manager' | 'production_manager';
 
 export interface UserProfile {
   id: string;
   email: string;
   full_name: string | null;
   role: UserRole;
+  created_at?: string;
 }
 
 export interface AuthState {
@@ -32,7 +34,7 @@ export const useAuth = () => {
   return context;
 };
 
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -40,5 +42,10 @@ export async function getUserProfile(userId: string) {
     .single();
 
   if (error) throw error;
-  return data as UserProfile;
+  
+  // Ensure role is of the correct type
+  return {
+    ...data,
+    role: data.role as UserRole
+  } as UserProfile;
 }

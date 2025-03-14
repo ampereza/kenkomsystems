@@ -1,22 +1,25 @@
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   FileText, 
   Users, 
   Package, 
-  ChevronRight, 
   Menu, 
   X, 
   Activity,
   CircleDollarSign,
   FileBarChart,
   TestTube2,
-  ClipboardList 
+  ClipboardList,
+  LogOut,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 type SidebarLink = {
   icon: React.ReactNode;
@@ -31,7 +34,24 @@ type SidebarGroup = {
 
 export function DashboardSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { profile, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  const getInitials = (name: string | null) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   const sidebarGroups: SidebarGroup[] = [
     {
@@ -163,20 +183,27 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-4 border-t mt-auto">
-          <Link 
-            to="/profile" 
-            className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setMobileMenuOpen(false)}
+          {profile && (
+            <div className="flex items-center gap-3 mb-3 p-2">
+              <Avatar>
+                <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{profile.full_name || profile.email}</span>
+                <span className="text-xs text-muted-foreground capitalize">{profile.role}</span>
+              </div>
+            </div>
+          )}
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
+            onClick={handleSignOut}
           >
-            Profile
-          </Link>
-          <Link 
-            to="/help" 
-            className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors mt-2"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Help
-          </Link>
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </Button>
         </div>
       </div>
 
