@@ -35,10 +35,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col">
       <DashboardSidebar />
       <div className="flex-1 md:ml-64">
-        <main className="min-h-screen p-4">
+        <main className="p-4 min-h-screen">
           {children}
         </main>
       </div>

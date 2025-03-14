@@ -1,13 +1,13 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DollarSign, Package, Users, TestTube2 } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function GeneralManagerDashboard() {
   return (
-    <>
-      <Navbar />
+    <DashboardLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">General Manager Dashboard</h1>
 
@@ -77,6 +77,6 @@ export default function GeneralManagerDashboard() {
           </Card>
         </div>
       </div>
-    </>
+    </DashboardLayout>
   );
 }

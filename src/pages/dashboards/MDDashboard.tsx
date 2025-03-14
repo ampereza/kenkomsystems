@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FinancialMetrics } from "@/components/reports/FinancialMetrics";
 import { CircleDollarSign, TrendingUp, FileBarChart, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function MDDashboard() {
   const { data: financialSummary } = useQuery({
@@ -80,8 +80,7 @@ export default function MDDashboard() {
   );
 
   return (
-    <>
-      <Navbar />
+    <DashboardLayout>
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Managing Director's Dashboard</h1>
 
@@ -163,6 +162,6 @@ export default function MDDashboard() {
           </div>
         </div>
       </div>
-    </>
+    </DashboardLayout>
   );
 }
