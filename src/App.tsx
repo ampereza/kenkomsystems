@@ -87,6 +87,15 @@ const App = () => (
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/dashboards/financialdashboard"
+          element={
+            <ProtectedRoute allowedRoles={["developer", "general_manager", "managing_director", "accountant"]}>
+              <FinancialDashboard />
+            </ProtectedRoute>
+          }
+        />
+
 
 
           <Route path="/finance/transactions" element={
