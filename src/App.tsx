@@ -154,4 +154,15 @@ const getRolesForDashboard = (path: string) => {
   return roles[path] || [];
 };
 
+export default function App() {
+  console.log("App component rendered!"); // Debug
+
+  return (
+    <div>
+      <h1>Hello from App!</h1> {/* Test if this shows up */}
+    </div>
+  );
+}
+
+
 export default App;

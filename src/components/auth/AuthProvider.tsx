@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
+import { Navigate } from 'react-router-dom';
+
+
+const isAuthenticated = true; // TEMP: Force true to test rendering
+
 
 // Define user roles
 export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant' | 'developer';
@@ -24,6 +29,18 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   getExternalUrlForRole: (role: UserRole) => string;
 }
+
+// Example ProtectedRoute component
+
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
 
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
