@@ -1226,7 +1226,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      gen_random_uuid: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       pole_category:

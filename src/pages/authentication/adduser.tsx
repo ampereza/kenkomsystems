@@ -83,7 +83,7 @@ const AddUser = () => {
       }
 
       // Generate a new UUID for the user
-      const { data: uuid, error: uuidError } = await supabase.rpc('gen_random_uuid');
+      const { data, error: uuidError } = await supabase.rpc('gen_random_uuid');
       
       if (uuidError) throw uuidError;
       
@@ -91,7 +91,7 @@ const AddUser = () => {
       const { error } = await supabase
         .from("profiles")
         .insert({
-          id: uuid,
+          id: data,
           email,
           full_name: fullName,
           user_role: role
