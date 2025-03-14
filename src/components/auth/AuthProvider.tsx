@@ -21,6 +21,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   hasPermission: (allowedRoles: UserRole[]) => boolean;
   signOut: () => Promise<void>;
+  getExternalUrlForRole: (role: UserRole) => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +32,15 @@ export const ROLE_BASED_ROUTES = {
   production_manager: ['/treatment', '/reports/treatment'],
   managing_director: ['*'], // All routes
   general_manager: ['*'],  // All routes
+} as const;
+
+// External domain mapping for roles
+export const ROLE_EXTERNAL_DOMAINS = {
+  accountant: 'kdl.kenkomdistribuorsltd.com/userrolepages/accountant',
+  stock_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/stock-manager',
+  production_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/production-manager',
+  general_manager: 'kdl.kenkomdistribuorsltd.com/userrolepages/general-manager',
+  managing_director: 'kdl.kenkomdistribuorsltd.com/userrolepages/managing-director',
 } as const;
 
 // ------------------ Provider -------------------
@@ -160,9 +170,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return profile.role === 'managing_director' || profile.role === 'general_manager' || allowedRoles.includes(profile.role);
   };
 
+  // ---------- Get External URL for Role ----------
+  const getExternalUrlForRole = (role: UserRole): string => {
+    return `https://${ROLE_EXTERNAL_DOMAINS[role]}`;
+  };
+
   // ---------- Return Provider ----------
   return (
-    <AuthContext.Provider value={{ profile, isLoading, error, isAuthenticated, hasPermission, signOut }}>
+    <AuthContext.Provider value={{ 
+      profile, 
+      isLoading, 
+      error, 
+      isAuthenticated, 
+      hasPermission, 
+      signOut,
+      getExternalUrlForRole
+    }}>
       {children}
     </AuthContext.Provider>
   );

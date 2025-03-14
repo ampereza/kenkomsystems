@@ -19,19 +19,22 @@ const Login: React.FC = () => {
   function getDashboardByRole() {
     if (!profile) return "/dashboards/financial";
 
+    // Custom domain redirection based on role
+    const baseDomain = "kdl.kenkomdistribuorsltd.com/userrolepages";
+    
     switch (profile.role) {
       case "accountant":
-        return "/dashboards/financial";
+        return `${baseDomain}/accountant`;
       case "stock_manager":
-        return "/dashboards/stock";
+        return `${baseDomain}/stock-manager`;
       case "production_manager":
-        return "/dashboards/treatment";
+        return `${baseDomain}/production-manager`;
       case "general_manager":
-        return "/dashboards/general-manager";
+        return `${baseDomain}/general-manager`;
       case "managing_director":
-        return "/dashboards/md";
+        return `${baseDomain}/managing-director`;
       default:
-        return "/dashboards/financial";
+        return `${baseDomain}/default`;
     }
   }
 
@@ -40,7 +43,13 @@ const Login: React.FC = () => {
     if (!isLoading && isAuthenticated && profile) {
       const dashboardPath = getDashboardByRole();
       console.log("Redirecting to dashboard:", dashboardPath);
-      navigate(dashboardPath, { replace: true });
+      
+      // Check if it's an external URL
+      if (dashboardPath.startsWith("kdl.")) {
+        window.location.href = `https://${dashboardPath}`;
+      } else {
+        navigate(dashboardPath, { replace: true });
+      }
     }
   }, [isLoading, isAuthenticated, profile, navigate]);
 
