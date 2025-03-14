@@ -20,7 +20,7 @@ const Login: React.FC = () => {
     if (!profile) return "/dashboards/financial";
 
     // Custom domain redirection based on role
-    const baseDomain = "kdl.kenkomdistributorsltd.com/";
+    const baseDomain = "kdl.kenkomdistributorsltd.com"; // ✅
     
     switch (profile.role) {
       case "accountant":
@@ -35,28 +35,28 @@ const Login: React.FC = () => {
         return `${baseDomain}/managing-director`;
 
       case "developer":
-        return '${baseDomain}/maindashboard';
-      default:
+        return `${baseDomain}/maindashboard`; // ✅ Correct
+            default:
         return `${baseDomain}/default`;
     }
   }
 
   // Redirect if already authenticated
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && profile) {
-      const dashboardPath = getDashboardByRole();
-      console.log("Redirecting to dashboard:", dashboardPath);
-      
-      // Check if it's an external URL
-      if (dashboardPath.startsWith("kdl.")) {
-        window.location.href = `https://${dashboardPath}`;
-      } else {
-        navigate(dashboardPath, { replace: true });
+    useEffect(() => {
+      if (!isLoading && isAuthenticated && profile) {
+        const dashboardPath = getDashboardByRole();
+        console.log("Redirecting to dashboard:", dashboardPath);
+    
+        if (dashboardPath.startsWith("http")) {
+          window.location.href = dashboardPath; // ✅ Clean way for external
+        } else {
+          navigate(dashboardPath, { replace: true });
+        }
       }
-    }
-  }, [isLoading, isAuthenticated, profile, navigate]);
+    }, [isLoading, isAuthenticated, profile, navigate]);
 
-  const handleGoogleLogin = async () => {
+
+    const handleGoogleLogin = async () => {
     setLoading(true);
     setError(null);
 
