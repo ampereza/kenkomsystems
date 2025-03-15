@@ -47,19 +47,59 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       let error;
       
       if (documentType === "payment-vouchers") {
+        // Ensure required fields for payment vouchers
+        if (!formattedData.voucher_number || !formattedData.paid_to) {
+          throw new Error("Voucher number and paid to are required");
+        }
+        
         const { error: err } = await supabase
           .from("payment_vouchers")
-          .insert(formattedData);
+          .insert({
+            date: formattedData.date,
+            voucher_number: formattedData.voucher_number,
+            paid_to: formattedData.paid_to,
+            total_amount: formattedData.total_amount || 0,
+            supplier_id: formattedData.supplier_id,
+            amount_in_words: formattedData.amount_in_words,
+            payment_approved_by: formattedData.payment_approved_by,
+            received_by: formattedData.received_by
+          });
         error = err;
       } else if (documentType === "receipts") {
+        // Ensure required fields for receipts
+        if (!formattedData.receipt_number) {
+          throw new Error("Receipt number is required");
+        }
+        
         const { error: err } = await supabase
           .from("receipts")
-          .insert(formattedData);
+          .insert({
+            date: formattedData.date,
+            receipt_number: formattedData.receipt_number,
+            received_from: formattedData.received_from,
+            amount: formattedData.amount || 0,
+            for_payment: formattedData.for_payment,
+            payment_method: formattedData.payment_method
+          });
         error = err;
       } else if (documentType === "expense-authorizations") {
+        // Ensure required fields for expense authorizations
+        if (!formattedData.authorization_number) {
+          throw new Error("Authorization number is required");
+        }
+        
         const { error: err } = await supabase
           .from("expense_authorizations")
-          .insert(formattedData);
+          .insert({
+            date: formattedData.date,
+            authorization_number: formattedData.authorization_number,
+            sum_of_shillings: formattedData.sum_of_shillings || 0,
+            received_from: formattedData.received_from,
+            being_payment_of: formattedData.being_payment_of,
+            cash_cheque_no: formattedData.cash_cheque_no,
+            balance: formattedData.balance || 0,
+            signature: formattedData.signature
+          });
         error = err;
       }
       
@@ -69,7 +109,7 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       
       toast({
         title: "Success",
-        description: `${documentType.replace('-', ' ')} created successfully`,
+        description: `${documentType.replace(/-/g, ' ')} created successfully`,
       });
       
       form.reset();

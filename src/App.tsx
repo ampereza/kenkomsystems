@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -182,10 +181,14 @@ const financeRoutes: RouteConfig[] = [
     path: "/finance/income-statement",
     component: IncomeStatementPage,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/expense-authorizations",
+    component: Expenses,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
   }
 ];
 
-// Stock routes
 const stockRoutes: RouteConfig[] = [
   {
     path: "/stock/receive",
@@ -201,10 +204,37 @@ const stockRoutes: RouteConfig[] = [
     path: "/stock/report",
     component: StockReport,
     roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/reports/stock",
+    component: StockReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
   }
 ];
 
-// Treatment routes
+const supplierRoutes: RouteConfig[] = [
+  {
+    path: "/suppliers/view-suppliers",
+    component: ViewSuppliers,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/add",
+    component: AddSuppliers,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/rejected-poles",
+    component: RejectedPoles,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/supplier-report",
+    component: SupplierReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  }
+];
+
 const treatmentRoutes: RouteConfig[] = [
   {
     path: "/treatment/log",
@@ -311,6 +341,19 @@ const App = () => (
 
           {/* Stock routes */}
           {stockRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
+
+          {/* Supplier routes */}
+          {supplierRoutes.map((route) => (
             <Route
               key={route.path}
               path={route.path}

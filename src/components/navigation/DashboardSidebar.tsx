@@ -88,6 +88,11 @@ export function DashboardSidebar() {
           href: "/reports/stock"
         },
         {
+          icon: <FileBarChart className="h-5 w-5" />,
+          label: "Supplier Report",
+          href: "/suppliers/supplier-report"
+        },
+        {
           icon: <Users className="h-5 w-5" />,
           label: "Employee Report",
           href: "/reports/employees"
@@ -111,6 +116,21 @@ export function DashboardSidebar() {
           icon: <Activity className="h-5 w-5" />,
           label: "Stock Management",
           href: "/stock/sort"
+        },
+        {
+          icon: <Users className="h-5 w-5" />,
+          label: "Customers",
+          href: "/customers/list"
+        },
+        {
+          icon: <Users className="h-5 w-5" />,
+          label: "Clients",
+          href: "/clients"
+        },
+        {
+          icon: <Users className="h-5 w-5" />,
+          label: "Suppliers",
+          href: "/suppliers/view-suppliers"
         },
         {
           icon: <Users className="h-5 w-5" />,
