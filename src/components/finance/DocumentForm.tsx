@@ -17,13 +17,6 @@ interface DocumentFormProps {
   onSuccess: () => void;
 }
 
-// Define a map of document types to their corresponding table names
-const TABLE_NAMES: Record<DocumentType, string> = {
-  "payment-vouchers": "payment_vouchers",
-  "receipts": "receipts",
-  "expense-authorizations": "expense_authorizations"
-};
-
 export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   const { toast } = useToast();
   
@@ -44,13 +37,31 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   // Submit handler
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      // Get the table name from our mapping
-      const tableName = TABLE_NAMES[documentType];
+      // Convert Date objects to ISO strings for Supabase
+      const formattedData = {
+        ...data,
+        date: data.date instanceof Date ? data.date.toISOString().split('T')[0] : data.date,
+      };
       
-      // Insert data
-      const { error } = await supabase
-        .from(tableName)
-        .insert(data);
+      // Insert data based on document type
+      let error;
+      
+      if (documentType === "payment-vouchers") {
+        const { error: err } = await supabase
+          .from("payment_vouchers")
+          .insert(formattedData);
+        error = err;
+      } else if (documentType === "receipts") {
+        const { error: err } = await supabase
+          .from("receipts")
+          .insert(formattedData);
+        error = err;
+      } else if (documentType === "expense-authorizations") {
+        const { error: err } = await supabase
+          .from("expense_authorizations")
+          .insert(formattedData);
+        error = err;
+      }
       
       if (error) {
         throw error;
