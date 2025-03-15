@@ -49,9 +49,6 @@ export default function Receipts() {
           <h1 className="text-2xl font-bold">Receipts</h1>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" /> Create Receipt
-              </Button>
             </DialogTrigger>
             <AddDocumentDialog
               documentType="receipts"
