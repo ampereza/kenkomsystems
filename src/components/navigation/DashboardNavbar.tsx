@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 type NavItem = {
   href: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 type NavbarProps = {
@@ -48,12 +49,13 @@ export function DashboardNavbar({ title, items }: NavbarProps) {
                 key={item.href}
                 to={item.href} 
                 className={cn(
-                  "px-2.5 py-1.5 text-xs sm:text-sm rounded-md whitespace-nowrap transition-colors",
+                  "px-2.5 py-1.5 text-xs sm:text-sm rounded-md whitespace-nowrap transition-colors flex items-center gap-1.5",
                   location.pathname === item.href 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
+                {item.icon}
                 {item.label}
               </Link>
             ))}
@@ -68,13 +70,14 @@ export function DashboardNavbar({ title, items }: NavbarProps) {
                     key={item.href}
                     to={item.href} 
                     className={cn(
-                      "px-3 py-2 text-sm rounded-md transition-colors",
+                      "px-3 py-2 text-sm rounded-md transition-colors flex items-center gap-1.5",
                       location.pathname === item.href 
                         ? "bg-primary/10 text-primary font-medium" 
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
+                    {item.icon}
                     {item.label}
                   </Link>
                 ))}

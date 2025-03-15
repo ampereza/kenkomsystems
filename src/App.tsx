@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -139,22 +140,17 @@ const financeRoutes: RouteConfig[] = [
     path: "/finance/financialreport",
     component: FinancialReport,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
-
-  }
-
+  },
   {
-    path: "reports/employeereport",
+    path: "/reports/employeereport",
     component: EmployeeReport,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
-
-  }
-
-
+  },
   {
     path: "/finance/generalledger",
     component: GeneralLedger,
-    roles: ["accountant"]
-  }
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
   {
     path: "/finance/receipts",
     component: Receipts,
@@ -184,6 +180,39 @@ const financeRoutes: RouteConfig[] = [
     path: "/finance/income-statement",
     component: IncomeStatementPage,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
+  }
+];
+
+// Stock routes
+const stockRoutes: RouteConfig[] = [
+  {
+    path: "/stock/receive",
+    component: ReceiveStock,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/stock/sort",
+    component: SortStock,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/stock/report",
+    component: StockReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  }
+];
+
+// Treatment routes
+const treatmentRoutes: RouteConfig[] = [
+  {
+    path: "/treatment/log",
+    component: TreatmentLog,
+    roles: ["production_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/treatment/report",
+    component: TreatmentReport,
+    roles: ["production_manager", "managing_director", "general_manager", "developer"]
   }
 ];
 
@@ -278,11 +307,31 @@ const App = () => (
             />
           ))}
 
-          
+          {/* Stock routes */}
+          {stockRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
 
-
-
-          {/* Add other route categories as needed */}
+          {/* Treatment routes */}
+          {treatmentRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
         </Routes>
         <Toaster />
       </AuthProvider>
