@@ -43,6 +43,11 @@ export function TreatmentNavbar() {
       label: "Client Stock", 
       icon: <Package className="h-4 w-4" /> 
     },
+    {
+      href: "/finance/expense-authorizations",
+      label: "Expenses",
+      icon: <FileText className="h-4 w-4" />
+    },
   ];
 
   return <DashboardNavbar title="Treatment Management" items={navItems} />;
