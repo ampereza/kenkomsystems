@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -37,10 +37,12 @@ import AddCustomer from "./pages/customers/add_customer";
 import EditCustomer from "./pages/customers/edit_cutomers";
 
 // Clients
-import Clients from "./pages/clients/clients";
-import AddClientStock from "./pages/clients/add_clients_stock";
+import ClientsList from "./pages/clients/clients";
+import AddClient from "./pages/clients/clients";
 import EditClient from "./pages/clients/edit_client";
+import ClientStock from "./pages/clients/clients";
 import ViewClientStock from "./pages/clients/view_clients_stock";
+import AddClientStock from "./pages/clients/add_clients_stock";
 import InsertClientStock from "./pages/clients/insertclientsstock";
 
 // Stock
@@ -139,22 +141,17 @@ const financeRoutes: RouteConfig[] = [
     path: "/finance/financialreport",
     component: FinancialReport,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
-
-  }
-
+  },
   {
-    path: "reports/employeereport",
+    path: "/reports/employeereport",
     component: EmployeeReport,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
-
-  }
-
-
+  },
   {
     path: "/finance/generalledger",
     component: GeneralLedger,
-    roles: ["accountant"]
-  }
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
   {
     path: "/finance/receipts",
     component: Receipts,
@@ -184,6 +181,70 @@ const financeRoutes: RouteConfig[] = [
     path: "/finance/income-statement",
     component: IncomeStatementPage,
     roles: ["accountant", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/finance/expense-authorizations",
+    component: Expenses,
+    roles: ["accountant", "managing_director", "general_manager", "developer"]
+  }
+];
+
+const stockRoutes: RouteConfig[] = [
+  {
+    path: "/stock/receive",
+    component: ReceiveStock,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/stock/sort",
+    component: SortStock,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/stock/report",
+    component: StockReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/reports/stock",
+    component: StockReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  }
+];
+
+const supplierRoutes: RouteConfig[] = [
+  {
+    path: "/suppliers/view-suppliers",
+    component: ViewSuppliers,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/add",
+    component: AddSuppliers,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/rejected-poles",
+    component: RejectedPoles,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/suppliers/supplier-report",
+    component: SupplierReport,
+    roles: ["stock_manager", "managing_director", "general_manager", "developer"]
+  }
+];
+
+const treatmentRoutes: RouteConfig[] = [
+  {
+    path: "/treatment/log",
+    component: TreatmentLog,
+    roles: ["production_manager", "managing_director", "general_manager", "developer"]
+  },
+  {
+    path: "/treatment/report",
+    component: TreatmentReport,
+    roles: ["production_manager", "managing_director", "general_manager", "developer"]
   }
 ];
 
@@ -278,11 +339,74 @@ const App = () => (
             />
           ))}
 
-          
+          {/* Stock routes */}
+          {stockRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
 
+          {/* Supplier routes */}
+          {supplierRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
 
+          {/* Treatment routes */}
+          {treatmentRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={
+                <ProtectedRoute allowedRoles={route.roles}>
+                  <route.component />
+                </ProtectedRoute>
+              }
+            />
+          ))}
 
-          {/* Add other route categories as needed */}
+          {/* Clients routes */}
+          <Route
+            path="/clients"
+            element={<Navigate to="/clients/list" replace />}
+          />
+          <Route
+            path="/clients/list"
+            element={<ClientsList />}
+          />
+          <Route
+            path="/clients/add"
+            element={<AddClient />}
+          />
+          <Route
+            path="/clients/edit/:id"
+            element={<EditClient />}
+          />
+          <Route
+            path="/clients/stock"
+            element={<ClientStock />}
+          />
+          <Route
+            path="/clients/add-stock"
+            element={<AddClientStock />}
+          />
+          <Route
+            path="/clients/view-stock/:id"
+            element={<ViewClientStock />}
+          />
         </Routes>
         <Toaster />
       </AuthProvider>

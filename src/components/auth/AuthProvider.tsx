@@ -4,9 +4,6 @@ import { Session, User } from '@supabase/supabase-js';
 import { Navigate } from 'react-router-dom';
 
 
-const isAuthenticated = true; // TEMP: Force true to test rendering
-
-
 // Define user roles
 export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant' | 'developer';
 
@@ -55,6 +52,7 @@ export const ProtectedRoute = ({
 
   return <>{children}</>;
 };
+
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -80,51 +78,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-// Assuming your UserRole type is defined something like:
-// export type UserRole = 'managing_director' | 'general_manager' | ... ;
+  // TEMP: Force authentication for development/testing
+  const isAuthenticated = true; 
 
-const fetchProfile = async (userId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-    if (error) throw error;
+      if (error) throw error;
 
-    // Type validation before setting the profile
-    if (data) {
-      // Type guard function to check if a string is a valid UserRole
-      const isValidUserRole = (role: string): role is UserRole => {
-        const validRoles = [
-          'managing_director', 
-          'general_manager', 
-          'production_manager', 
-          'stock_manager', 
-          'accountant', 
-          'developer'
-        ];
-        return validRoles.includes(role);
-      };
-      
-      if (data.role && isValidUserRole(data.role)) {
-        // Now TypeScript knows data.role is UserRole
-        setProfile({
-          id: data.id,
-          email: data.email,
-          full_name: data.full_name,
-          role: data.role  // No casting needed now
-        });
-      } else {
-        throw new Error(`Invalid role: ${data.role}`);
+      if (data) {
+        const isValidUserRole = (role: string): role is UserRole => {
+          const validRoles = [
+            'managing_director', 
+            'general_manager', 
+            'production_manager', 
+            'stock_manager', 
+            'accountant', 
+            'developer'
+          ];
+          return validRoles.includes(role);
+        };
+        
+        if (data.role && isValidUserRole(data.role)) {
+          setProfile({
+            id: data.id,
+            email: data.email,
+            full_name: data.full_name,
+            role: data.role
+          });
+        } else {
+          throw new Error(`Invalid role: ${data.role}`);
+        }
       }
+    } catch (err: any) {
+      setError(err);
     }
-  } catch (err: any) {
-    setError(err);
-  }
-};
-  // Handle auth state change
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -148,7 +143,6 @@ const fetchProfile = async (userId: string) => {
 
     initializeAuth();
 
-    // Listen to auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       const currentUser = session?.user ?? null;
@@ -166,7 +160,6 @@ const fetchProfile = async (userId: string) => {
     };
   }, []);
 
-  // Sign out function
   const signOut = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -174,12 +167,10 @@ const fetchProfile = async (userId: string) => {
     setProfile(null);
   };
 
-  // Role-based permission check
   const hasPermission = (allowedRoles: UserRole[]): boolean => {
     return allowedRoles.includes(profile?.role as UserRole);
   };
 
-  // Example function to get external URLs based on role
   const getExternalUrlForRole = (role: UserRole): string => {
     const roleUrls: Record<UserRole, string> = {
       managing_director: 'https://kdl.kenkomdistributorsltd.com/dashboards/md',
@@ -191,8 +182,6 @@ const fetchProfile = async (userId: string) => {
     };
     return roleUrls[role];
   };
-
-  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider

@@ -3,10 +3,10 @@ import { useState } from "react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { PaymentVouchersTable } from "@/components/finance/documents/PaymentVouchersTable";
 import { ViewDocumentDialog } from "@/components/finance/documents/ViewDocumentDialog";
-import { AddDocumentDialog } from "@/components/finance/documents/AddDocumentDialog";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { DocumentForm } from "@/components/finance/DocumentForm";
 
 export default function PaymentVouchers() {
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
@@ -36,10 +36,15 @@ export default function PaymentVouchers() {
                 <Plus className="h-4 w-4 mr-2" /> Add Payment Voucher
               </Button>
             </DialogTrigger>
-            <AddDocumentDialog 
-              documentType="payment-vouchers" 
-              onSuccess={handleSuccess} 
-            />
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Add New Payment Voucher</DialogTitle>
+              </DialogHeader>
+              <DocumentForm 
+                documentType="payment-vouchers" 
+                onSuccess={handleSuccess} 
+              />
+            </DialogContent>
           </Dialog>
         </div>
         <PaymentVouchersTable onViewDocument={handleViewDocument} />

@@ -6,9 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { ReceiptsTable } from "@/components/finance/documents/ReceiptsTable";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
-import { AddDocumentDialog } from "@/components/finance/documents/AddDocumentDialog";
+import { DocumentForm } from "@/components/finance/DocumentForm";
 
 export default function Receipts() {
   const { toast } = useToast();
@@ -50,10 +50,15 @@ export default function Receipts() {
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
             </DialogTrigger>
-            <AddDocumentDialog
-              documentType="receipts"
-              onSuccess={handleSuccess}
-            />
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Add New Receipt</DialogTitle>
+              </DialogHeader>
+              <DocumentForm
+                documentType="receipts"
+                onSuccess={handleSuccess}
+              />
+            </DialogContent>
           </Dialog>
         </div>
 
@@ -79,10 +84,15 @@ export default function Receipts() {
                   <Plus className="h-4 w-4 mr-2" /> Create Receipt
                 </Button>
               </DialogTrigger>
-              <AddDocumentDialog
-                documentType="receipts"
-                onSuccess={handleSuccess}
-              />
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Add New Receipt</DialogTitle>
+                </DialogHeader>
+                <DocumentForm
+                  documentType="receipts"
+                  onSuccess={handleSuccess}
+                />
+              </DialogContent>
             </Dialog>
           </div>
         )}

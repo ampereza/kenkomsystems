@@ -5,7 +5,10 @@ import {
   Activity, 
   Users, 
   Package, 
-  ClipboardList 
+  ClipboardList, 
+  TestTube2,
+  BarChart3,
+  FileText
 } from "lucide-react";
 
 export function TreatmentNavbar() {
@@ -24,6 +27,26 @@ export function TreatmentNavbar() {
       href: "/treatment/log", 
       label: "Treatment Log", 
       icon: <ClipboardList className="h-4 w-4" /> 
+    },
+    { 
+      href: "/treatment/report", 
+      label: "Treatment Report", 
+      icon: <BarChart3 className="h-4 w-4" /> 
+    },
+    { 
+      href: "/clients", 
+      label: "Clients", 
+      icon: <Users className="h-4 w-4" /> 
+    },
+    { 
+      href: "/clients/stock", 
+      label: "Client Stock", 
+      icon: <Package className="h-4 w-4" /> 
+    },
+    {
+      href: "/finance/expense-authorizations",
+      label: "Expenses",
+      icon: <FileText className="h-4 w-4" />
     },
   ];
 

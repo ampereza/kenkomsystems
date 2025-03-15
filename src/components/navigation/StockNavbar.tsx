@@ -6,7 +6,9 @@ import {
   ArrowUpToLine, 
   PackageCheck, 
   Store, 
-  BarChart3 
+  BarChart3,
+  Truck,
+  Users
 } from "lucide-react";
 
 export function StockNavbar() {
@@ -35,6 +37,16 @@ export function StockNavbar() {
       href: "/stock/report", 
       label: "Stock Report", 
       icon: <BarChart3 className="h-4 w-4" /> 
+    },
+    {
+      href: "/suppliers/view", 
+      label: "Suppliers", 
+      icon: <Truck className="h-4 w-4" /> 
+    },
+    {
+      href: "/suppliers/report", 
+      label: "Supplier Report", 
+      icon: <Users className="h-4 w-4" /> 
     },
   ];
 
