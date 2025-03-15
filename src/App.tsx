@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -38,7 +37,7 @@ import AddCustomer from "./pages/customers/add_customer";
 import EditCustomer from "./pages/customers/edit_cutomers";
 
 // Clients
-import Clients from "./pages/clients/clients";
+import clients from "./pages/clients/clients";
 import AddClientStock from "./pages/clients/add_clients_stock";
 import EditClient from "./pages/clients/edit_client";
 import ViewClientStock from "./pages/clients/view_clients_stock";
@@ -332,6 +331,36 @@ const App = () => (
               }
             />
           ))}
+
+          {/* Clients routes */}
+          <Route
+            path="/clients"
+            element={<Navigate to="/clients/list" replace />}
+          />
+          <Route
+            path="/clients/list"
+            element={<clients.ClientsList />}
+          />
+          <Route
+            path="/clients/add"
+            element={<clients.AddClient />}
+          />
+          <Route
+            path="/clients/edit/:id"
+            element={<clients.EditClient />}
+          />
+          <Route
+            path="/clients/stock"
+            element={<clients.ClientStock />}
+          />
+          <Route
+            path="/clients/add-stock"
+            element={<clients.AddClientStock />}
+          />
+          <Route
+            path="/clients/view-stock/:id"
+            element={<clients.ViewClientStock />}
+          />
         </Routes>
         <Toaster />
       </AuthProvider>

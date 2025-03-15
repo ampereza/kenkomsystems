@@ -34,7 +34,7 @@ export function TreatmentNavbar() {
       icon: <BarChart3 className="h-4 w-4" /> 
     },
     { 
-      href: "/clients/list", 
+      href: "/clients", 
       label: "Clients", 
       icon: <Users className="h-4 w-4" /> 
     },

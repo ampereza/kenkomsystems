@@ -5,9 +5,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DocumentForm } from "@/components/finance/DocumentForm";
+import { useState } from "react";
 
 export default function Expenses() {
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: expenses, isLoading } = useQuery({
     queryKey: ["expenses"],
@@ -60,16 +64,30 @@ export default function Expenses() {
     },
   });
 
+  const handleSuccess = () => {
+    setDialogOpen(false);
+  };
+
   return (
     <div>
       <FinancialNavbar />
       <main className="container py-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Expenses</h1>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Expense
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New Expense
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>Add New Expense</DialogTitle>
+              </DialogHeader>
+              <DocumentForm documentType="expense-authorizations" onSuccess={handleSuccess} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         {isLoading ? (

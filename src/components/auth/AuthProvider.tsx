@@ -4,9 +4,6 @@ import { Session, User } from '@supabase/supabase-js';
 import { Navigate } from 'react-router-dom';
 
 
-const isAuthenticated = true; // TEMP: Force true to test rendering
-
-
 // Define user roles
 export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant' | 'developer';
 
@@ -80,6 +77,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // TEMP: Force authentication for development/testing
+  const isAuthenticated = true; 
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -182,8 +182,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
     return roleUrls[role];
   };
-
-  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider
