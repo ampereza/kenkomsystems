@@ -8,6 +8,7 @@ import { ExpenseAuthorizationForm, expenseAuthSchema } from "./document-forms/Ex
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 type DocumentType = "payment-vouchers" | "receipts" | "expense-authorizations";
 
@@ -15,6 +16,13 @@ interface DocumentFormProps {
   documentType: DocumentType;
   onSuccess: () => void;
 }
+
+// Define a map of document types to their corresponding table names
+const TABLE_NAMES: Record<DocumentType, string> = {
+  "payment-vouchers": "payment_vouchers",
+  "receipts": "receipts",
+  "expense-authorizations": "expense_authorizations"
+};
 
 export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   const { toast } = useToast();
@@ -25,8 +33,8 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
     documentType === "receipts" ? receiptSchema :
     expenseAuthSchema;
   
-  // Create form with appropriate resolver
-  const form = useForm({
+  // Create form with appropriate resolver and type
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date(),
@@ -34,21 +42,15 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
   });
 
   // Submit handler
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      let tableName = "";
-      
-      // Determine table name based on document type
-      if (documentType === "payment-vouchers") {
-        tableName = "payment_vouchers";
-      } else if (documentType === "receipts") {
-        tableName = "receipts";
-      } else if (documentType === "expense-authorizations") {
-        tableName = "expense_authorizations";
-      }
+      // Get the table name from our mapping
+      const tableName = TABLE_NAMES[documentType];
       
       // Insert data
-      const { error } = await supabase.from(tableName).insert(data);
+      const { error } = await supabase
+        .from(tableName)
+        .insert(data);
       
       if (error) {
         throw error;
