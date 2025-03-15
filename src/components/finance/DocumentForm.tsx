@@ -47,58 +47,67 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       let error;
       
       if (documentType === "payment-vouchers") {
+        // Use type assertion to access payment voucher specific fields
+        const paymentVoucherData = formattedData as z.infer<typeof paymentVoucherSchema>;
+        
         // Ensure required fields for payment vouchers
-        if (!formattedData.voucher_number || !formattedData.paid_to) {
+        if (!paymentVoucherData.voucher_number || !paymentVoucherData.paid_to) {
           throw new Error("Voucher number and paid to are required");
         }
         
         const { error: err } = await supabase
           .from("payment_vouchers")
           .insert({
-            date: formattedData.date,
-            voucher_number: formattedData.voucher_number,
-            paid_to: formattedData.paid_to,
-            total_amount: formattedData.total_amount || 0,
-            supplier_id: formattedData.supplier_id,
-            amount_in_words: formattedData.amount_in_words,
-            payment_approved_by: formattedData.payment_approved_by,
-            received_by: formattedData.received_by
+            date: paymentVoucherData.date,
+            voucher_number: paymentVoucherData.voucher_number,
+            paid_to: paymentVoucherData.paid_to,
+            total_amount: paymentVoucherData.total_amount || 0,
+            supplier_id: paymentVoucherData.supplier_id,
+            amount_in_words: paymentVoucherData.amount_in_words,
+            payment_approved_by: paymentVoucherData.payment_approved_by,
+            received_by: paymentVoucherData.received_by
           });
         error = err;
       } else if (documentType === "receipts") {
+        // Use type assertion to access receipt specific fields
+        const receiptData = formattedData as z.infer<typeof receiptSchema>;
+        
         // Ensure required fields for receipts
-        if (!formattedData.receipt_number) {
+        if (!receiptData.receipt_number) {
           throw new Error("Receipt number is required");
         }
         
         const { error: err } = await supabase
           .from("receipts")
           .insert({
-            date: formattedData.date,
-            receipt_number: formattedData.receipt_number,
-            received_from: formattedData.received_from,
-            amount: formattedData.amount || 0,
-            for_payment: formattedData.for_payment,
-            payment_method: formattedData.payment_method
+            date: receiptData.date,
+            receipt_number: receiptData.receipt_number,
+            received_from: receiptData.received_from,
+            amount: receiptData.amount || 0,
+            for_payment: receiptData.for_payment,
+            payment_method: receiptData.payment_method
           });
         error = err;
       } else if (documentType === "expense-authorizations") {
+        // Use type assertion to access expense authorization specific fields
+        const expenseAuthData = formattedData as z.infer<typeof expenseAuthSchema>;
+        
         // Ensure required fields for expense authorizations
-        if (!formattedData.authorization_number) {
+        if (!expenseAuthData.authorization_number) {
           throw new Error("Authorization number is required");
         }
         
         const { error: err } = await supabase
           .from("expense_authorizations")
           .insert({
-            date: formattedData.date,
-            authorization_number: formattedData.authorization_number,
-            sum_of_shillings: formattedData.sum_of_shillings || 0,
-            received_from: formattedData.received_from,
-            being_payment_of: formattedData.being_payment_of,
-            cash_cheque_no: formattedData.cash_cheque_no,
-            balance: formattedData.balance || 0,
-            signature: formattedData.signature
+            date: expenseAuthData.date,
+            authorization_number: expenseAuthData.authorization_number,
+            sum_of_shillings: expenseAuthData.sum_of_shillings || 0,
+            received_from: expenseAuthData.received_from,
+            being_payment_of: expenseAuthData.being_payment_of,
+            cash_cheque_no: expenseAuthData.cash_cheque_no,
+            balance: expenseAuthData.balance || 0,
+            signature: expenseAuthData.signature
           });
         error = err;
       }
