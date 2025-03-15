@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, UserRole } from '@/components/auth/AuthProvider';
+import { useAuth, UserRole } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -27,13 +27,13 @@ const userFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
   full_name: z.string().optional(),
-  role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant']),
+  role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant', 'developer']),
 });
 
 // Form schema for user editing (no password)
 const editUserFormSchema = z.object({
   full_name: z.string().optional(),
-  role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant']),
+  role: z.enum(['managing_director', 'general_manager', 'production_manager', 'stock_manager', 'accountant', 'developer']),
 });
 
 export default function UserManagement() {
@@ -294,6 +294,7 @@ export default function UserManagement() {
                           <SelectItem value="production_manager">Production Manager</SelectItem>
                           <SelectItem value="stock_manager">Stock Manager</SelectItem>
                           <SelectItem value="accountant">Accountant</SelectItem>
+                          <SelectItem value="developer">Developer</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -411,6 +412,7 @@ export default function UserManagement() {
                         <SelectItem value="production_manager">Production Manager</SelectItem>
                         <SelectItem value="stock_manager">Stock Manager</SelectItem>
                         <SelectItem value="accountant">Accountant</SelectItem>
+                        <SelectItem value="developer">Developer</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
