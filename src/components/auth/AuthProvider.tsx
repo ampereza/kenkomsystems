@@ -1,8 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../../integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
-import { Navigate } from 'react-router-dom';
 
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Define user roles
 export type UserRole = 'managing_director' | 'general_manager' | 'production_manager' | 'stock_manager' | 'accountant' | 'developer';
@@ -18,7 +15,7 @@ export interface Profile {
 // Auth context type
 export interface AuthContextType {
   profile: Profile | null;
-  user: User | null;
+  user: any | null;
   isLoading: boolean;
   error: Error | null;
   isAuthenticated: boolean;
@@ -28,7 +25,6 @@ export interface AuthContextType {
 }
 
 // Example ProtectedRoute component
-
 export const ProtectedRoute = ({ 
   children, 
   allowedRoles 
@@ -36,18 +32,11 @@ export const ProtectedRoute = ({
   children: React.ReactNode,
   allowedRoles: UserRole[]
 }) => {
-  const { isAuthenticated, isLoading, hasPermission } = useAuth();
+  const { hasPermission } = useAuth();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-
+  // Check if user has permission
   if (!hasPermission(allowedRoles)) {
-    return <Navigate to="/unauthorized" />;
+    return <div>Unauthorized - You don't have permission to access this page</div>;
   }
 
   return <>{children}</>;
@@ -72,112 +61,38 @@ interface AuthProviderProps {
 
 // AuthProvider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // TEMP: Force authentication for development/testing
-  const isAuthenticated = true; 
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const isValidUserRole = (role: string): role is UserRole => {
-          const validRoles = [
-            'managing_director', 
-            'general_manager', 
-            'production_manager', 
-            'stock_manager', 
-            'accountant', 
-            'developer'
-          ];
-          return validRoles.includes(role);
-        };
-        
-        if (data.role && isValidUserRole(data.role)) {
-          setProfile({
-            id: data.id,
-            email: data.email,
-            full_name: data.full_name,
-            role: data.role
-          });
-        } else {
-          throw new Error(`Invalid role: ${data.role}`);
-        }
-      }
-    } catch (err: any) {
-      setError(err);
-    }
+  // Default profile with general_manager role
+  const defaultProfile: Profile = {
+    id: 'default-user-id',
+    email: 'admin@example.com',
+    full_name: 'Admin User',
+    role: 'managing_director'
   };
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (error) {
-        setError(error);
-        setIsLoading(false);
-        return;
-      }
-
-      setSession(data.session);
-      const currentUser = data.session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
-      }
-
-      setIsLoading(false);
-    };
-
-    initializeAuth();
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        fetchProfile(currentUser.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => {
-      listener?.subscription.unsubscribe();
-    };
-  }, []);
+  // Authentication is always true
+  const isAuthenticated = true;
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setProfile(null);
+    // Do nothing since authentication is disabled
+    console.log('Sign out attempted, but authentication is disabled');
+    return Promise.resolve();
   };
 
   const hasPermission = (allowedRoles: UserRole[]): boolean => {
-    return allowedRoles.includes(profile?.role as UserRole);
+    // Always return true since we're using the default admin profile
+    return allowedRoles.includes(defaultProfile.role);
   };
 
   const getExternalUrlForRole = (role: UserRole): string => {
     const roleUrls: Record<UserRole, string> = {
-      managing_director: 'https://kdl.kenkomdistributorsltd.com/dashboards/md',
-      general_manager: 'https://kdl.kenkomdistributorsltd.com/dashboards/gm',
-      production_manager: 'https://kdl.kenkomdistributorsltd.com/pm',
-      stock_manager: 'https://kdl.kenkomdistributorsltd.com/sm',
-      accountant: 'https://kdl.kenkomdistributorsltd.com/finance',
+      managing_director: '/dashboards/md',
+      general_manager: '/dashboards/gm',
+      production_manager: '/pm',
+      stock_manager: '/sm',
+      accountant: '/finance',
       developer: '/maindashboard',
     };
     return roleUrls[role];
@@ -186,8 +101,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
-        profile,
-        user,
+        profile: defaultProfile,
+        user: null,
         isLoading,
         error,
         isAuthenticated,

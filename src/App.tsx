@@ -6,11 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { lazy, Suspense } from 'react';
 
 // Pages
-import WelcomePage from "./pages/welcome/index";
-import Login from "./pages/authentication/login";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
-import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
 
 // Dashboards
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
@@ -28,11 +25,8 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/email-confirmation" element={<EmailConfirmationHandler />} />
+          {/* Set default route to MD dashboard */}
+          <Route path="/" element={<Navigate to="/dashboards/md" replace />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
 
