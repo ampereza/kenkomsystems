@@ -25,11 +25,11 @@ import TreatmentDashboardWrapper from "./pages/dashboards/TreatmentDashboardWrap
 
 // Finance
 import Receipts from "./pages/finance/Receipts";
-import Expenses from "./pages/finance/Expenses";
-import Employees from "./pages/finance/Employees";
+import Expenses from "./pages/dashboards/Expenses";
+import Employees from "./pages/dashboards/Employees";
 import PaymentVouchers from "./pages/finance/PaymentVouchers";
-import BalanceSheetPage from "./pages/finance/balancesheet";
-import IncomeStatementPage from "./pages/finance/incomestatement";
+import BalanceSheetPage from "./pages/dashboards/balancesheet";
+import IncomeStatementPage from "./pages/dashboards/incomestatement";
 
 // Customers
 import Customers from "./pages/customers/customers";
@@ -48,10 +48,10 @@ import InsertClientStock from "./pages/clients/insertclientsstock";
 // Stock
 import ReceiveStock from "./pages/stock/ReceiveStock";
 import SortStock from "./pages/stock/SortStock";
-import StockReport from "./pages/stock/StockReport";
+import StockReport from "./pages/dashboards/StockReport";
 import SupplierReport from "./pages/suppliers/SupplierReport";
-import ViewSuppliers from "./pages/suppliers/view_suppliers";
-import AddSuppliers from "./pages/suppliers/add_suppliers";
+import ViewSuppliers from "./pages/dashboards/view_suppliers";
+import AddSuppliers from "./pages/dashboards/add_suppliers";
 import RejectedPoles from "./pages/suppliers/rejected_poles";
 
 // Treatments
@@ -59,12 +59,12 @@ import TreatmentLog from "./pages/treatments/TreatmentLogWrapper";
 import TreatmentReport from "./pages/treatments/treatment_report";
 
 // Reports
-import EmployeeReport from "./pages/reports/EmployeeReport";
+import EmployeeReport from "./pages/dashboards/EmployeeReport";
 import GeneralLedger from "./pages/finance/GeneralLedger";
-import FinancialReport from "./pages/finance/FinancialReport";
+import FinancialReport from "./pages/dashboards/FinancialReport";
 
 // Lazy loaded components
-const Transactions = lazy(() => import("./pages/finance/Transactions"));
+const Transactions = lazy(() => import("./pages/dashboards/Transactions"));
 
 // Type definitions
 import { UserRole } from "./components/auth/AuthProvider";
