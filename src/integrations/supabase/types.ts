@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chart_of_accounts: {
+        Row: {
+          account_category: string
+          account_name: string
+          account_number: string
+          account_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          parent_account_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_category: string
+          account_name: string
+          account_number: string
+          account_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          parent_account_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_category?: string
+          account_name?: string
+          account_number?: string
+          account_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          parent_account_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chart_of_accounts_parent_account_id_fkey"
+            columns: ["parent_account_id"]
+            isOneToOne: false
+            referencedRelation: "chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_deliveries: {
         Row: {
           client_id: string | null
@@ -69,6 +116,47 @@ export type Database = {
             columns: ["treatment_id"]
             isOneToOne: false
             referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_ledgers: {
+        Row: {
+          client_id: string
+          created_at: string
+          current_balance: number | null
+          id: string
+          is_active: boolean | null
+          last_transaction_date: string | null
+          opening_balance: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          current_balance?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_transaction_date?: string | null
+          opening_balance?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          current_balance?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_transaction_date?: string | null
+          opening_balance?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_ledgers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
@@ -146,70 +234,6 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      client_stock: {
-        Row: {
-          allocation_date: string | null
-          client_id: string | null
-          created_at: string | null
-          delivery_note_id: string | null
-          id: string
-          notes: string | null
-          price_per_unit: number | null
-          quantity: number
-          status: string | null
-          total_price: number | null
-          treated_stock_id: string | null
-        }
-        Insert: {
-          allocation_date?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          delivery_note_id?: string | null
-          id?: string
-          notes?: string | null
-          price_per_unit?: number | null
-          quantity: number
-          status?: string | null
-          total_price?: number | null
-          treated_stock_id?: string | null
-        }
-        Update: {
-          allocation_date?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          delivery_note_id?: string | null
-          id?: string
-          notes?: string | null
-          price_per_unit?: number | null
-          quantity?: number
-          status?: string | null
-          total_price?: number | null
-          treated_stock_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_stock_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_stock_delivery_note_id_fkey"
-            columns: ["delivery_note_id"]
-            isOneToOne: false
-            referencedRelation: "delivery_notes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_stock_treated_stock_id_fkey"
-            columns: ["treated_stock_id"]
-            isOneToOne: false
-            referencedRelation: "treated_stock"
             referencedColumns: ["id"]
           },
         ]
@@ -432,6 +456,53 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          payment_method: string | null
+          reference_number: string | null
+          supplier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          payment_method?: string | null
+          reference_number?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          payment_method?: string | null
+          reference_number?: string | null
+          supplier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_goals: {
         Row: {
           created_at: string | null
@@ -461,6 +532,133 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      financial_periods: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          is_closed: boolean | null
+          period_name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          is_closed?: boolean | null
+          period_name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_closed?: boolean | null
+          period_name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoice_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          tax_rate: number | null
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          quantity: number
+          tax_rate?: number | null
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          tax_rate?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          paid_amount: number | null
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date: string
+          notes?: string | null
+          paid_amount?: number | null
+          status?: string
+          subtotal: number
+          tax_amount?: number | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          paid_amount?: number | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       journal_entries: {
         Row: {
@@ -560,6 +758,57 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      ledger_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          entry_date: string
+          entry_type: string
+          id: string
+          ledger_id: string
+          running_balance: number
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          entry_date?: string
+          entry_type: string
+          id?: string
+          ledger_id: string
+          running_balance: number
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          ledger_id?: string
+          running_balance?: number
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_ledger_id_fkey"
+            columns: ["ledger_id"]
+            isOneToOne: false
+            referencedRelation: "client_ledgers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_voucher_items: {
         Row: {
@@ -856,6 +1105,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_rates: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          rate: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          rate: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -1028,6 +1304,83 @@ export type Database = {
           notes?: string | null
         }
         Relationships: []
+      }
+      treatment_log: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          cylinder_number: string
+          date: string
+          id: string
+          kegs_added: number
+          kegs_remaining: number
+          liters_added: string
+          poles_10m: number | null
+          poles_11m: number | null
+          poles_12m: number | null
+          poles_14m: number | null
+          poles_16m: number | null
+          poles_9m: number | null
+          rafters: number | null
+          strength_percentage: number
+          telecom_poles: number | null
+          timber: number | null
+          total_poles: number
+          treatment_purpose: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          cylinder_number: string
+          date?: string
+          id?: string
+          kegs_added?: number
+          kegs_remaining?: number
+          liters_added: string
+          poles_10m?: number | null
+          poles_11m?: number | null
+          poles_12m?: number | null
+          poles_14m?: number | null
+          poles_16m?: number | null
+          poles_9m?: number | null
+          rafters?: number | null
+          strength_percentage: number
+          telecom_poles?: number | null
+          timber?: number | null
+          total_poles: number
+          treatment_purpose: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          cylinder_number?: string
+          date?: string
+          id?: string
+          kegs_added?: number
+          kegs_remaining?: number
+          liters_added?: string
+          poles_10m?: number | null
+          poles_11m?: number | null
+          poles_12m?: number | null
+          poles_14m?: number | null
+          poles_16m?: number | null
+          poles_9m?: number | null
+          rafters?: number | null
+          strength_percentage?: number
+          telecom_poles?: number | null
+          timber?: number | null
+          total_poles?: number
+          treatment_purpose?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatments: {
         Row: {
@@ -1239,6 +1592,16 @@ export type Database = {
         | "high_voltage"
         | "rejected"
       pole_size: "small" | "medium" | "stout"
+      pole_type:
+        | "telecom"
+        | "timber"
+        | "rafters"
+        | "9m"
+        | "10m"
+        | "11m"
+        | "12m"
+        | "14m"
+        | "16m"
       processing_status: "pending" | "completed" | "cancelled"
       transaction_type:
         | "purchase"
@@ -1246,6 +1609,7 @@ export type Database = {
         | "expense"
         | "salary"
         | "treatment_income"
+      treatment_purpose: "KDL" | "Client"
       treatment_status: "pending" | "in_progress" | "completed" | "cancelled"
       user_role:
         | "general_manager"
