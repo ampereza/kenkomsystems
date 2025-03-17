@@ -60,8 +60,7 @@ export function PricingManager() {
         .from("pricing_config")
         .update(updates)
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
       return data;

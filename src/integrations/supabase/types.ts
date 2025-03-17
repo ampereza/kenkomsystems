@@ -395,7 +395,9 @@ export type Database = {
           hire_date: string
           id: string
           name: string
+          payment_type: string | null
           position: string
+          salary: number | null
         }
         Insert: {
           contact_number?: string | null
@@ -404,7 +406,9 @@ export type Database = {
           hire_date: string
           id?: string
           name: string
+          payment_type?: string | null
           position: string
+          salary?: number | null
         }
         Update: {
           contact_number?: string | null
@@ -413,7 +417,9 @@ export type Database = {
           hire_date?: string
           id?: string
           name?: string
+          payment_type?: string | null
           position?: string
+          salary?: number | null
         }
         Relationships: []
       }
@@ -888,6 +894,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_config: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          purchase_price: number
+          sale_price: number
+          treatment_price: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          purchase_price?: number
+          sale_price?: number
+          treatment_price?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          purchase_price?: number
+          sale_price?: number
+          treatment_price?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
