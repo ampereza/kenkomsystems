@@ -31,24 +31,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { SelectSupplierField } from "../finance/form-fields/SelectSupplierField";
 
-// Define the allowed transaction types
+// Define a narrower set of transaction types that matches the database
 const TransactionType = z.enum([
   "purchase",
   "sale",
   "expense",
   "salary",
   "treatment_income",
-  "office_expense",
-  "wages",
-  "maintenance", // Corrected
 ]);
 
 const transactionFormSchema = z.object({
   type: TransactionType,
   amount: z.coerce.number().positive(),
-
   description: z.string().optional(),
   reference_number: z.string().optional(),
   notes: z.string().optional(),
@@ -106,6 +101,7 @@ export function TransactionDialog() {
 
   const mutation = useMutation({
     mutationFn: async (values: TransactionFormValues) => {
+      // Ensure we're only using transaction types allowed by the database
       const { data, error } = await supabase.from("transactions").insert({
         type: values.type,
         amount: values.amount,
@@ -179,10 +175,6 @@ export function TransactionDialog() {
                       <SelectItem value="treatment_income">
                         Treatment Income
                       </SelectItem>
-                      <SelectItem value="office_expense">Office Expense</SelectItem>
-                      <SelectItem value="salary">Salary</SelectItem>
-                      <SelectItem value="wages">Wages</SelectItem>
-                      <SelectItem value="maintenance">Maintenance</SelectItem> {/* ✅ Fixed typo */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -206,33 +198,6 @@ export function TransactionDialog() {
                         {suppliers?.map((supplier) => (
                           <SelectItem key={supplier.id} value={supplier.id}>
                             {supplier.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-
-                )}
-              />
-            )}
-            {selectedType === "sale" && (
-              <FormField
-                control={form.control}
-                name="sorted_stock_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock Item</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select stock item" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {sortedStock?.map((stock) => (
-                          <SelectItem key={stock.id} value={stock.id}>
-                            {stock.category} - {stock.size}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -326,13 +291,6 @@ export function TransactionDialog() {
                 </FormItem>
               )}
             />
-            <SelectContent>
-              {TransactionType.options.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                </SelectItem>
-              ))}
-            </SelectContent>
 
             <Button type="submit" className="w-full">
               Create Transaction

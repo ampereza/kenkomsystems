@@ -1,262 +1,144 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Package, Users, TestTube2, CircleDollarSign } from "lucide-react";
+import { FinancialTrends } from "@/components/reports/FinancialTrends";
+import { DetailedTransactions } from "@/components/reports/DetailedTransactions";
+import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { EmployeeManager } from "@/components/management/EmployeeManager";
+import { DollarSign, Package, TrendingUp, Users } from "lucide-react";
 
 export default function GeneralManagerDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
+    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    end: new Date(),
+  });
 
-  // Fetch financial summary for the dashboard
-  const { data: financialSummary, isLoading: isFinancialLoading } = useQuery({
-    queryKey: ["gm-financial-summary"],
+  // Fetch financial summary data
+  const { data: financialData } = useQuery({
+    queryKey: ["financial-summary", dateRange],
     queryFn: async () => {
+      // Format dates for Supabase query
+      const startDate = dateRange.start.toISOString();
+      const endDate = dateRange.end.toISOString();
+
+      // Instead of using group, use our view that already has aggregated data
       const { data, error } = await supabase
         .from("financial_summary")
         .select("*")
-        .order("date", { ascending: false })
-        .limit(7);
+        .gte("date", startDate)
+        .lte("date", endDate);
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  // Fetch stock summary
-  const { data: stockSummary, isLoading: isStockLoading } = useQuery({
-    queryKey: ["stock-summary"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sorted_stock")
-        .select("category, SUM(quantity) as total_quantity")
-        .gt("quantity", 0)
-        .group("category");
+  // Calculate totals from the financial data
+  const totalRevenue = financialData
+    ? financialData
+        .filter((item) => item.type === "sale" || item.type === "treatment_income")
+        .reduce((sum, item) => sum + Number(item.total_amount || 0), 0)
+    : 0;
 
-      if (error) throw error;
-      return data;
-    },
-  });
+  const totalExpenses = financialData
+    ? financialData
+        .filter((item) => 
+          item.type === "purchase" || 
+          item.type === "expense" || 
+          item.type === "salary")
+        .reduce((sum, item) => sum + Number(item.total_amount || 0), 0)
+    : 0;
 
-  // Calculate total stock
-  const totalStock = stockSummary?.reduce((sum, item) => sum + parseInt(item.total_quantity), 0) || 0;
-
-  // Fetch treatment summary
-  const { data: treatmentSummary, isLoading: isTreatmentLoading } = useQuery({
-    queryKey: ["treatment-summary"],
-    queryFn: async () => {
-      const today = new Date();
-      const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-      const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-      
-      const { data, error } = await supabase
-        .from("treatment_log")
-        .select("*")
-        .gte("date", startOfDay)
-        .lte("date", endOfDay);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Fetch client count
-  const { data: clientCount } = useQuery({
-    queryKey: ["client-count"],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("clients")
-        .select("*", { count: "exact", head: true });
-
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
-  // Calculate today's revenue
-  const todayRevenue = financialSummary
-    ?.filter(item => 
-      item.type === "sale" || 
-      item.type === "treatment_income"
-    )
-    .reduce((sum, item) => sum + Number(item.total_amount), 0) || 0;
+  const profit = totalRevenue - totalExpenses;
+  const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto p-6">
+      <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">General Manager Dashboard</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        
+        <DateRangeSelector 
+          dateRange={dateRange} 
+          onDateRangeChange={setDateRange} 
+        />
+        
+        <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue Today</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Revenue
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                ${isFinancialLoading ? "..." : todayRevenue.toFixed(2)}
-              </div>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                For the selected period
+              </p>
             </CardContent>
           </Card>
-
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Stock Items</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Expenses
+              </CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isStockLoading ? "..." : totalStock}
-              </div>
+              <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                For the selected period
+              </p>
             </CardContent>
           </Card>
-
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Clients</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Profit</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${profit.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">
+                For the selected period
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Profit Margin
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{clientCount}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Treatments Today</CardTitle>
-              <TestTube2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isTreatmentLoading ? "..." : treatmentSummary?.length || 0}
-              </div>
+              <div className="text-2xl font-bold">{profitMargin.toFixed(2)}%</div>
+              <p className="text-xs text-muted-foreground">
+                For the selected period
+              </p>
             </CardContent>
           </Card>
         </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:w-[500px]">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="employees">Employees</TabsTrigger>
-            <TabsTrigger value="stock">Stock</TabsTrigger>
-            <TabsTrigger value="clients">Clients</TabsTrigger>
-            <TabsTrigger value="treatment">Treatment</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Operations Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">Total Stock</span>
-                        <span className="text-xl font-bold">{totalStock} items</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">Daily Treatments</span>
-                        <span className="text-xl font-bold">{treatmentSummary?.length || 0}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">Active Clients</span>
-                        <span className="text-xl font-bold">{clientCount}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-muted-foreground">Revenue Stream</span>
-                        <span className="text-xl font-bold">Stable</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Snapshot</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <CircleDollarSign className="h-5 w-5 text-green-500 mr-2" />
-                        <span>Today's Revenue</span>
-                      </div>
-                      <span className="font-bold">${todayRevenue.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <CircleDollarSign className="h-5 w-5 text-amber-500 mr-2" />
-                        <span>Pending Payments</span>
-                      </div>
-                      <span className="font-bold">$5,250.00</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <CircleDollarSign className="h-5 w-5 text-red-500 mr-2" />
-                        <span>Outstanding Costs</span>
-                      </div>
-                      <span className="font-bold">$3,450.00</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Employees Tab */}
-          <TabsContent value="employees">
-            <EmployeeManager />
-          </TabsContent>
-
-          {/* Stock Tab */}
-          <TabsContent value="stock">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stock Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p>Stock management content will be implemented here.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Clients Tab */}
-          <TabsContent value="clients">
-            <Card>
-              <CardHeader>
-                <CardTitle>Client Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p>Client management content will be implemented here.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Treatment Tab */}
-          <TabsContent value="treatment">
-            <Card>
-              <CardHeader>
-                <CardTitle>Treatment Operations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p>Treatment operations content will be implemented here.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        
+        <div className="grid gap-6 mt-6 md:grid-cols-2">
+          <Card className="col-span-2 md:col-span-1">
+            <CardHeader>
+              <CardTitle>Financial Trends</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FinancialTrends dateRange={dateRange} />
+            </CardContent>
+          </Card>
+          <Card className="col-span-2 md:col-span-1">
+            <CardHeader>
+              <CardTitle>Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DetailedTransactions dateRange={dateRange} limit={5} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );

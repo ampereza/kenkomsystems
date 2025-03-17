@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -93,9 +92,17 @@ export function SupplierManager() {
 
   const addSupplierMutation = useMutation({
     mutationFn: async (values: SupplierFormValues) => {
+      // Ensure name is not optional and is a required field
       const { data, error } = await supabase
         .from("suppliers")
-        .insert([values])
+        .insert([{
+          name: values.name, // Required field
+          contact_person: values.contact_person,
+          email: values.email || null,
+          phone: values.phone,
+          address: values.address,
+          notes: values.notes
+        }])
         .select();
 
       if (error) throw error;

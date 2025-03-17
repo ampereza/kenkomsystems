@@ -47,8 +47,17 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
       let error;
       
       if (documentType === "payment-vouchers") {
-        // Use type assertion to access payment voucher specific fields
-        const paymentVoucherData = formattedData as z.infer<typeof paymentVoucherSchema>;
+        // Type casting to ensure correct types
+        const paymentVoucherData = formattedData as unknown as {
+          date: string;
+          voucher_number: string;
+          paid_to: string;
+          total_amount: number;
+          supplier_id?: string;
+          amount_in_words?: string;
+          payment_approved_by?: string;
+          received_by?: string;
+        };
         
         // Ensure required fields for payment vouchers
         if (!paymentVoucherData.voucher_number || !paymentVoucherData.paid_to) {
@@ -69,8 +78,15 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
           });
         error = err;
       } else if (documentType === "receipts") {
-        // Use type assertion to access receipt specific fields
-        const receiptData = formattedData as z.infer<typeof receiptSchema>;
+        // Type casting to ensure correct types
+        const receiptData = formattedData as unknown as {
+          date: string;
+          receipt_number: string;
+          received_from?: string;
+          amount?: number;
+          for_payment?: string;
+          payment_method?: string;
+        };
         
         // Ensure required fields for receipts
         if (!receiptData.receipt_number) {
@@ -89,8 +105,17 @@ export function DocumentForm({ documentType, onSuccess }: DocumentFormProps) {
           });
         error = err;
       } else if (documentType === "expense-authorizations") {
-        // Use type assertion to access expense authorization specific fields
-        const expenseAuthData = formattedData as z.infer<typeof expenseAuthSchema>;
+        // Type casting to ensure correct types
+        const expenseAuthData = formattedData as unknown as {
+          date: string;
+          authorization_number: string;
+          sum_of_shillings?: number;
+          received_from?: string;
+          being_payment_of?: string;
+          cash_cheque_no?: string;
+          balance?: number;
+          signature?: string;
+        };
         
         // Ensure required fields for expense authorizations
         if (!expenseAuthData.authorization_number) {

@@ -1,162 +1,259 @@
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Client } from "./types";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
-const AddClientStock = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
-  const [stockType, setStockType] = useState("untreated");
-  const [quantity, setQuantity] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+// Form schema
+const formSchema = z.object({
+  client_id: z.string().min(1, "Client is required"),
+  stock_type: z.string().min(1, "Stock type is required"),
+  quantity: z.coerce.number().positive("Quantity must be a positive number"),
+  description: z.string().optional(),
+});
 
-  useEffect(() => {
-    const fetchClients = async () => {
+export default function AddClientsStock() {
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch clients for dropdown
+  const { data: clients } = useQuery({
+    queryKey: ["clients"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("clients")
-        .select("*")
+        .select("id, name")
         .order("name");
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching clients",
-          description: error.message
-        });
-      } else {
-        setClients(data || []);
+  // Form setup
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      stock_type: "",
+      quantity: 0,
+      description: "",
+    },
+  });
+
+  // Use client_poles_stock table instead of client_stock
+  const addStockMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      setIsSubmitting(true);
+      
+      // First check if client already has a stock record
+      const { data: existingStock, error: fetchError } = await supabase
+        .from("client_poles_stock")
+        .select("id")
+        .eq("client_id", values.client_id)
+        .single();
+      
+      if (fetchError && fetchError.code !== "PGRST116") {
+        throw fetchError;
       }
-    };
-
-    fetchClients();
-  }, [toast]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedClientId) {
+      
+      let result;
+      
+      if (existingStock) {
+        // Update existing record
+        const { data, error } = await supabase
+          .from("client_poles_stock")
+          .update({
+            // Add to untreated based on stock_type
+            untreated_telecom_poles: values.stock_type === "telecom" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_9m_poles: values.stock_type === "9m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_10m_poles: values.stock_type === "10m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_11m_poles: values.stock_type === "11m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_12m_poles: values.stock_type === "12m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_14m_poles: values.stock_type === "14m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            untreated_16m_poles: values.stock_type === "16m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
+            notes: values.description
+          })
+          .eq("id", existingStock.id)
+          .select();
+        
+        if (error) throw error;
+        result = data;
+      } else {
+        // Create new record
+        const stockData: any = {
+          client_id: values.client_id,
+          untreated_telecom_poles: 0,
+          untreated_9m_poles: 0,
+          untreated_10m_poles: 0,
+          untreated_11m_poles: 0,
+          untreated_12m_poles: 0,
+          untreated_14m_poles: 0,
+          untreated_16m_poles: 0,
+          notes: values.description
+        };
+        
+        // Set quantity for specific pole type
+        if (values.stock_type === "telecom") {
+          stockData.untreated_telecom_poles = values.quantity;
+        } else if (values.stock_type === "9m") {
+          stockData.untreated_9m_poles = values.quantity;
+        } else if (values.stock_type === "10m") {
+          stockData.untreated_10m_poles = values.quantity;
+        } else if (values.stock_type === "11m") {
+          stockData.untreated_11m_poles = values.quantity;
+        } else if (values.stock_type === "12m") {
+          stockData.untreated_12m_poles = values.quantity;
+        } else if (values.stock_type === "14m") {
+          stockData.untreated_14m_poles = values.quantity;
+        } else if (values.stock_type === "16m") {
+          stockData.untreated_16m_poles = values.quantity;
+        }
+        
+        const { data, error } = await supabase
+          .from("client_poles_stock")
+          .insert(stockData)
+          .select();
+        
+        if (error) throw error;
+        result = data;
+      }
+      
+      setIsSubmitting(false);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["client-stock"] });
+      toast({
+        title: "Stock Added",
+        description: "Client stock has been successfully updated.",
+      });
+      form.reset();
+    },
+    onError: (error) => {
+      setIsSubmitting(false);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please select a client"
+        description: `Failed to add stock: ${error.message}`,
       });
-      return;
-    }
+    },
+  });
 
-    setLoading(true);
-    const { error } = await supabase
-      .from("client_stock")
-      .insert({
-        client_id: selectedClientId,
-        stock_type: stockType,
-        quantity: parseInt(quantity),
-        description
-      });
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error adding stock",
-        description: error.message
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Client stock added successfully"
-      });
-      navigate("/clients/clients");
-    }
-    setLoading(false);
-  };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    addStockMutation.mutate(values);
+  }
 
   return (
-    <>
-      <FinancialNavbar />
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Add Client Stock</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="client" className="text-sm font-medium">Client</label>
-                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger id="client">
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="stockType" className="text-sm font-medium">Stock Type</label>
-                <Select value={stockType} onValueChange={setStockType}>
-                  <SelectTrigger id="stockType">
-                    <SelectValue placeholder="Select stock type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="untreated">Untreated</SelectItem>
-                    <SelectItem value="treated">Treated</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="quantity" className="text-sm font-medium">Quantity</label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="description" className="text-sm font-medium">Description</label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-
-              <div className="flex space-x-2">
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Adding..." : "Add Stock"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/clients/clients")}
-                >
-                  Cancel
-                </Button>
-              </div>
+    <DashboardLayout>
+      <div className="container py-8">
+        <h1 className="text-2xl font-bold mb-6">Add Client Stock</h1>
+        
+        <div className="max-w-2xl mx-auto">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="client_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Client</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select client" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {clients?.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="stock_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select stock type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="telecom">Telecom Poles</SelectItem>
+                        <SelectItem value="9m">9m Poles</SelectItem>
+                        <SelectItem value="10m">10m Poles</SelectItem>
+                        <SelectItem value="11m">11m Poles</SelectItem>
+                        <SelectItem value="12m">12m Poles</SelectItem>
+                        <SelectItem value="14m">14m Poles</SelectItem>
+                        <SelectItem value="16m">16m Poles</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Add Stock"}
+              </Button>
             </form>
-          </CardContent>
-        </Card>
+          </Form>
+        </div>
       </div>
-    </>
+    </DashboardLayout>
   );
-};
-
-export default AddClientStock;
+}
