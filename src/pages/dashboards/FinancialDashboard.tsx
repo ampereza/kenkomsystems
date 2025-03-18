@@ -174,7 +174,7 @@ export default function FinancialDashboard() {
             </Card>
           </Link>
           
-          <Link to="/stock/suppliers">
+          <Link to="/suppliers/view-suppliers">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Suppliers</CardTitle>
@@ -186,7 +186,7 @@ export default function FinancialDashboard() {
             </Card>
           </Link>
           
-          <Link to="/treatments/clients">
+          <Link to="/clients">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Clients</CardTitle>
@@ -198,7 +198,7 @@ export default function FinancialDashboard() {
             </Card>
           </Link>
           
-          <Link to="/reports/ledger">
+          <Link to="/reports/general-ledger">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">General Ledger</CardTitle>
@@ -226,7 +226,7 @@ export default function FinancialDashboard() {
             </Card>
           </Link>
           
-          <Link to="/reports/suppliers">
+          <Link to="/suppliers/supplier-report">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer h-full">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Supplier Report</CardTitle>

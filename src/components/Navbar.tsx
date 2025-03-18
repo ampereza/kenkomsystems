@@ -22,7 +22,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 md:gap-8">
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold whitespace-nowrap text-primary hover:opacity-90 transition-opacity">
+            <Link to="/dashboard" className="flex items-center gap-2 text-xl font-bold whitespace-nowrap text-primary hover:opacity-90 transition-opacity">
               <LayoutDashboard className="h-5 w-5" />
               <span>KDL MANAGEMENT</span>
             </Link>

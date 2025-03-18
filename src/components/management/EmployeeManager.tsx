@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -304,7 +305,7 @@ export function EmployeeManager() {
       hire_date: employee.hire_date.split("T")[0], // Format date for input
       email: employee.email || "",
       contact_number: employee.contact_number || "",
-      payment_type: employee.payment_type as PaymentType,
+      payment_type: (employee.payment_type || "salary") as PaymentType,
       salary: employee.salary || 0,
     });
     setShowEditDialog(true);

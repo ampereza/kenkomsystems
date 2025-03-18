@@ -15,7 +15,7 @@ const MainDashboard: React.FC = () => {
       icon: <FileBarChart className="h-5 w-5 text-primary" />,
       items: [
         { name: "Financial Dashboard", path: "/dashboards/financial" },
-        { name: "General Manager Dashboard", path: "/dashboards/general-manager" },
+        { name: "General Manager Dashboard", path: "/dashboards/gm" },
         { name: "Managing Director Dashboard", path: "/dashboards/md" },
         { name: "Stock Dashboard", path: "/dashboards/stock" },
         { name: "Treatment Dashboard", path: "/dashboards/treatment" },
@@ -27,7 +27,7 @@ const MainDashboard: React.FC = () => {
       items: [
         { name: "Transactions", path: "/finance/transactions" },
         { name: "Receipts", path: "/finance/receipts" },
-        { name: "Expenses", path: "/finance/expense-authorizations" },
+        { name: "Expenses", path: "/finance/expenses" },
         { name: "Employees", path: "/finance/employees" },
         { name: "Payment Vouchers", path: "/finance/payment-vouchers" },
         { name: "Balance Sheet", path: "/finance/balance-sheet" },
@@ -40,9 +40,9 @@ const MainDashboard: React.FC = () => {
       items: [
         { name: "Customers", path: "/customers/list" },
         { name: "Add Customer", path: "/customers/add" },
-        { name: "Clients", path: "/clients/list" },
-        { name: "Add Client", path: "/clients/add" },
+        { name: "Clients", path: "/clients" },
         { name: "Client Stock", path: "/clients/stock" },
+        { name: "Add Client Stock", path: "/clients/stock/add" },
       ]
     },
     {
@@ -64,9 +64,9 @@ const MainDashboard: React.FC = () => {
       items: [
         { name: "Treatment Log", path: "/treatment/log" },
         { name: "Treatment Report", path: "/treatment/report" },
-        { name: "Employee Report", path: "/reports/employee-report" },
+        { name: "Employee Report", path: "/reports/employees" },
         { name: "General Ledger", path: "/reports/general-ledger" },
-        { name: "Financial Report", path: "/reports/financial-report" },
+        { name: "Financial Report", path: "/reports/financial" },
       ]
     },
     {

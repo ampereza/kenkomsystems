@@ -8,7 +8,11 @@ import { Toaster } from "@/components/ui/toaster";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 
+// Main Dashboard
+import MainDashboard from "./pages/MainDashboard";
+
 // Dashboards
+import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
 import MDDashboard from "./pages/dashboards/MDDashboard";
 import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
@@ -25,6 +29,13 @@ import AddSuppliers from "./pages/dashboards/add_suppliers";
 // Customer pages
 import Customers from "./pages/customers/customers";
 import EditCustomer from "./pages/customers/edit_cutomers";
+import AddCustomer from "./pages/customers/add_customer";
+
+// Client pages
+import Clients from "./pages/clients/clients";
+import EditClient from "./pages/clients/edit_client";
+import AddClientsStock from "./pages/clients/add_clients_stock";
+import ViewClientsStock from "./pages/clients/view_clients_stock";
 
 // Reports
 import EmployeeReport from "./pages/dashboards/EmployeeReport";
@@ -49,8 +60,19 @@ const App = () => (
           <Route path="/" element={<Navigate to="/dashboards/md" replace />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
+          
+          {/* Main Dashboard */}
+          <Route path="/dashboard" element={<MainDashboard />} />
 
           {/* Dashboard routes */}
+          <Route
+            path="/dashboards/financial"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                <FinancialDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboards/gm"
             element={
@@ -122,6 +144,40 @@ const App = () => (
             }
           />
 
+          {/* Client Routes */}
+          <Route
+            path="/clients"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                <Clients />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clients/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                <EditClient />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clients/stock"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
+                <ViewClientsStock />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clients/stock/add"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
+                <AddClientsStock />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Finance Routes */}
           <Route
             path="/finance/expenses"
@@ -174,10 +230,18 @@ const App = () => (
             }
           />
           <Route
-            path="/customers/edit"
+            path="/customers/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
                 <EditCustomer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customers/add"
+            element={
+              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                <AddCustomer />
               </ProtectedRoute>
             }
           />
