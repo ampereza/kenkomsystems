@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
@@ -7,8 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 
 // Pages
-import Unauthorized from "./pages/Unauthorized"
+import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/authentication/login";
 
 // Dashboards
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
@@ -47,6 +46,9 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Authentication routes */}
+          <Route path="/login" element={<Login />} />
+          
           {/* Set default route to MD dashboard */}
           <Route path="/" element={<Navigate to="/dashboards/md" replace />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
@@ -201,4 +203,3 @@ const App = () => (
 );
 
 export default App;
->>>>>>> 1e0e6f5a435e53a47f69b0f6ace39cdb0bf8c7c5
