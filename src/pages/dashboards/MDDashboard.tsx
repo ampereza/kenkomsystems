@@ -87,47 +87,6 @@ export default function MDDashboard() {
     },
   });
 
-  // calulate the total clients from the clients table
-  const { data: clients } = useQuery({
-    queryKey: ["clients"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("*");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Calculate the total number of employees
-  const { data: employees } = useQuery({
-    queryKey: ["employees"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("employees")
-        .select("*");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Calculate the total customers
-  const { data: customers } = useQuery({
-    queryKey: ["customers"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("customers")
-        .select("*");
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-
-
   // Calculate totals for the dashboard cards
   const totals = financialSummary?.reduce(
     (acc, curr) => {
@@ -140,38 +99,6 @@ export default function MDDashboard() {
     },
     { income: 0, expenses: 0 }
   );
-
-  
-export default function SortedStock() {
-  const { data: sortedStock, isLoading, error } = useQuery({
-    queryKey: ["sortedStock"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("sorted_stock")
-        .select(`
-          id,
-          unsorted_stock_id,
-          category,
-          size,
-          length_value,
-          length_unit,
-          diameter_mm,
-          quantity,
-          sorting_date,
-          notes,
-          created_at
-        `)
-        .order("sorting_date", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (isLoading) return <div>Loading sorted stock...</div>;
-  if (error) return <div>Error fetching data: {error.message}</div>
-
-  
 
   return (
     <DashboardLayout>
@@ -276,32 +203,29 @@ export default function SortedStock() {
                   <CardTitle>Business Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-
-                  // calculate the total number of employees
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center">
                         <Users className="h-5 w-5 text-primary mr-2" />
                         <span className="text-sm font-medium">Employees</span>
                       </div>
-                      <p className="text-2xl font-bold">{employees?.length || 0}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <Users className="h-5 w-5 text-primary mr-2" />
-                        <span className="text-sm font-medium">Customers</span>
-                      </div>
-                      <p className="text-2xl font-bold">{customers?.length || 0}</p>
+                      <p className="text-2xl font-bold">12</p>
                     </div>
                     
-
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <Package className="h-5 w-5 text-primary mr-2" />
+                        <span className="text-sm font-medium">Stock Items</span>
+                      </div>
+                      <p className="text-2xl font-bold">324</p>
+                    </div>
+                    
                     <div className="space-y-2">
                       <div className="flex items-center">
                         <Users className="h-5 w-5 text-primary mr-2" />
                         <span className="text-sm font-medium">Clients</span>
                       </div>
-                      <p className="text-2xl font-bold">{clients?.length || 0}</p>
+                      <p className="text-2xl font-bold">28</p>
                     </div>
                     
                     <div className="space-y-2">
@@ -352,35 +276,7 @@ export default function SortedStock() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                  <div>
-                    <h1 className="text-2xl font-bold">Sorted Stock</h1>
-                    <table className="table-auto w-full border-collapse border border-gray-300 mt-4">
-                      <thead>
-                        <tr>
-                          <th className="border border-gray-300 px-4 py-2">ID</th>
-                          <th className="border border-gray-300 px-4 py-2">Category</th>
-                          <th className="border border-gray-300 px-4 py-2">Size</th>
-                          <th className="border border-gray-300 px-4 py-2">Length</th>
-                          <th className="border border-gray-300 px-4 py-2">Quantity</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedStock.map((stock) => (
-                          <tr key={stock.id}>
-                            <td className="border border-gray-300 px-4 py-2">{stock.id}</td>
-                            <td className="border border-gray-300 px-4 py-2">{stock.category}</td>
-                            <td className="border border-gray-300 px-4 py-2">{stock.size}</td>
-                            <td className="border border-gray-300 px-4 py-2">
-                              {stock.length_value} {stock.length_unit}
-                            </td>
-                            <td className="border border-gray-300 px-4 py-2">{stock.quantity}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-  
-
+                    <p>Stock management content will be displayed here.</p>
                   </div>
                 </CardContent>
               </Card>
