@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -38,11 +37,10 @@ export function DashboardSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { profile, signOut } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
+  const handleSignOut = () => {
+    navigate('/');
   };
 
   const getInitials = (name: string | null) => {
@@ -149,7 +147,6 @@ export function DashboardSidebar() {
 
   return (
     <>
-      {/* Mobile menu toggle button */}
       <div className="fixed top-4 left-4 z-50 md:hidden">
         <Button 
           variant="outline" 
@@ -161,7 +158,6 @@ export function DashboardSidebar() {
         </Button>
       </div>
 
-      {/* Sidebar - desktop always visible, mobile as overlay */}
       <div 
         className={cn(
           "fixed inset-y-0 left-0 w-64 bg-background border-r shadow-sm z-40 flex flex-col transition-transform duration-300 ease-in-out",
@@ -205,17 +201,15 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-4 border-t mt-auto">
-          {profile && (
-            <div className="flex items-center gap-3 mb-3 p-2">
-              <Avatar>
-                <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{profile.full_name || profile.email}</span>
-                <span className="text-xs text-muted-foreground capitalize">{profile.role}</span>
-              </div>
+          <div className="flex items-center gap-3 mb-3 p-2">
+            <Avatar>
+              <AvatarFallback>KD</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">User</span>
+              <span className="text-xs text-muted-foreground capitalize">Administrator</span>
             </div>
-          )}
+          </div>
           
           <Button 
             variant="outline" 
@@ -229,7 +223,6 @@ export function DashboardSidebar() {
         </div>
       </div>
 
-      {/* Overlay for mobile menu */}
       {mobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"

@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateRangeProps } from './DateRangeSelector';
 
-export interface DetailedTransactionsProps {
-  from: Date;
-  to: Date;
+export interface DetailedTransactionsProps extends DateRangeProps {
   limit?: number;
 }
 

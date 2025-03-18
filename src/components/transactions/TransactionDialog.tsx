@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TransactionType } from '@/types/FinancialSummary';
 
-interface TransactionDialogProps {
+export interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -37,11 +37,8 @@ export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOp
     e.preventDefault();
     
     try {
-      // Cast the transaction type to ensure it's one of the allowed types
-      const safeType = type as TransactionType;
-      
       // Only proceed if it's a valid type
-      if (!allowedTransactionTypes.includes(safeType)) {
+      if (!allowedTransactionTypes.includes(type)) {
         toast({
           variant: "destructive",
           title: "Invalid transaction type",
@@ -53,13 +50,13 @@ export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOp
       const { error } = await supabase
         .from('transactions')
         .insert({
-          type: safeType,
+          type,
           amount,
           description,
           reference_number,
-          transaction_date: date ? format(date, 'yyyy-MM-dd') : '',
-          supplier_id,
-          notes
+          transaction_date: date ? format(date, 'yyyy-MM-dd') : null,
+          supplier_id: supplier_id || null,
+          notes: notes || null
         });
 
       if (error) throw error;
@@ -87,8 +84,6 @@ export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOp
           <DialogTitle>Add New Transaction</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Form fields go here */}
-          
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="type">Transaction Type</Label>

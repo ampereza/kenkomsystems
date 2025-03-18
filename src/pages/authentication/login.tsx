@@ -1,85 +1,27 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { profile, isLoading, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
 
-  function getDashboardByRole() {
-    if (!profile) return "/dashboards/financial";
-
-    // Custom domain redirection based on role
-    const baseDomain = "kdl.kenkomdistributorsltd.com"; // ✅
-    
-    switch (profile.role) {
-      case "accountant":
-        return `finance`;
-      case "stock_manager":
-        return `stock-manager`;
-      case "production_manager":
-        return `production-manager`;
-      case "general_manager":
-        return `general-manager`;
-      case "managing_director":
-        return `managing-director`;
-
-      case "developer":
-        return `maindashboard`; // ✅ Correct
-            default:
-        return `/default`;
-    }
-  }
-
-  // Redirect if already authenticated
-    useEffect(() => {
-      if (!isLoading && isAuthenticated && profile) {
-        const dashboardPath = getDashboardByRole();
-        console.log("Redirecting to dashboard:", dashboardPath);
-    
-        if (dashboardPath.startsWith("http")) {
-          window.location.href = dashboardPath; // ✅ Clean way for external
-        } else {
-          navigate(dashboardPath, { replace: true });
-        }
-      }
-    }, [isLoading, isAuthenticated, profile, navigate]);
-
-
-    const handleGoogleLogin = async () => {
+  const handleLogin = async () => {
     setLoading(true);
-    setError(null);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/login`
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-    } catch (err: any) {
-      setError(err.message);
+    // Simulate login
+    setTimeout(() => {
+      navigate('/dashboards/financial');
       setLoading(false);
-    }
+    }, 1000);
   };
 
-
-  // If already authenticated, we'll redirect in the useEffect
-  if (isAuthenticated && profile) {
+  if (isAuthenticated) {
     return <div className="min-h-screen flex items-center justify-center">Redirecting to dashboard...</div>;
   }
 
@@ -100,24 +42,17 @@ const Login: React.FC = () => {
             </div>
             <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
-              Sign in with Google to access the system
+              Sign in to access the system
             </CardDescription>
           </CardHeader>
 
           <CardContent className="pt-6">
             <div className="space-y-4">
-              {error && (
-                <Alert variant="destructive" className="animate-fade-in">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
               <Button
                 type="button"
                 className="w-full flex items-center justify-center gap-2 transition-all"
                 disabled={loading}
-                onClick={handleGoogleLogin}
+                onClick={handleLogin}
               >
                 {loading ? (
                   <>
@@ -146,7 +81,7 @@ const Login: React.FC = () => {
                 ) : (
                   <>
                     <LogIn className="h-5 w-5 mr-2" />
-                    Sign in with Google
+                    Sign in
                   </>
                 )}
               </Button>

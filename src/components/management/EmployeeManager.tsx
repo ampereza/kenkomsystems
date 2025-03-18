@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,19 +40,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Plus, Trash, DollarSign, Calendar } from "lucide-react";
+import { Edit, Plus, Trash, DollarSign } from "lucide-react";
 import { format } from "date-fns";
-
-interface Employee {
-  id: string;
-  name: string;
-  position: string;
-  hire_date: string;
-  email: string;
-  contact_number: string;
-  payment_type: "salary" | "daily" | "weekly" | "monthly";
-  salary: number;
-}
+import { Employee, PaymentType } from "@/types/Employee";
 
 export function EmployeeManager() {
   const { toast } = useToast();
@@ -69,7 +58,7 @@ export function EmployeeManager() {
     hire_date: format(new Date(), "yyyy-MM-dd"),
     email: "",
     contact_number: "",
-    payment_type: "salary",
+    payment_type: "salary" as PaymentType,
     salary: 0,
   });
   const [paymentData, setPaymentData] = useState({
@@ -101,7 +90,7 @@ export function EmployeeManager() {
   });
 
   const addEmployeeMutation = useMutation({
-    mutationFn: async (data: Omit<Employee, "id">) => {
+    mutationFn: async (data: Omit<Employee, "id" | "created_at">) => {
       const { data: result, error } = await supabase
         .from("employees")
         .insert(data)
@@ -228,7 +217,7 @@ export function EmployeeManager() {
       hire_date: format(new Date(), "yyyy-MM-dd"),
       email: "",
       contact_number: "",
-      payment_type: "salary",
+      payment_type: "salary" as PaymentType,
       salary: 0,
     });
   };
@@ -242,10 +231,17 @@ export function EmployeeManager() {
   };
 
   const handleSelectChange = (value: string, name: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "payment_type") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value as PaymentType,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handlePaymentFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,7 +260,7 @@ export function EmployeeManager() {
       hire_date: formData.hire_date,
       email: formData.email,
       contact_number: formData.contact_number,
-      payment_type: formData.payment_type as "salary" | "daily" | "weekly" | "monthly",
+      payment_type: formData.payment_type,
       salary: Number(formData.salary),
     });
   };
@@ -281,7 +277,7 @@ export function EmployeeManager() {
         hire_date: formData.hire_date,
         email: formData.email,
         contact_number: formData.contact_number,
-        payment_type: formData.payment_type as "salary" | "daily" | "weekly" | "monthly",
+        payment_type: formData.payment_type,
         salary: Number(formData.salary),
       },
     });
@@ -308,7 +304,7 @@ export function EmployeeManager() {
       hire_date: employee.hire_date.split("T")[0], // Format date for input
       email: employee.email || "",
       contact_number: employee.contact_number || "",
-      payment_type: employee.payment_type || "salary",
+      payment_type: employee.payment_type as PaymentType,
       salary: employee.salary || 0,
     });
     setShowEditDialog(true);
@@ -523,92 +519,90 @@ export function EmployeeManager() {
         )}
       </CardContent>
 
-      {/* Edit Employee Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Employee</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateEmployee} className="space-y-4">
-            {/* Same form fields as add employee, just different submit handler */}
             <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-position">Position</Label>
-                <Input
-                  id="edit-position"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-hire_date">Hire Date</Label>
-                <Input
-                  id="edit-hire_date"
-                  name="hire_date"
-                  type="date"
-                  value={formData.hire_date}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-email">Email</Label>
-                <Input
-                  id="edit-email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleFormChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-contact_number">Contact Number</Label>
-                <Input
-                  id="edit-contact_number"
-                  name="contact_number"
-                  value={formData.contact_number}
-                  onChange={handleFormChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-payment_type">Payment Type</Label>
-                <Select
-                  value={formData.payment_type}
-                  onValueChange={(value) => handleSelectChange(value, "payment_type")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select payment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="salary">Salary</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-salary">Salary/Rate</Label>
-                <Input
-                  id="edit-salary"
-                  name="salary"
-                  type="number"
-                  value={formData.salary}
-                  onChange={handleFormChange}
-                  required
-                />
-              </div>
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                name="name"
+                value={formData.name}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-position">Position</Label>
+              <Input
+                id="edit-position"
+                name="position"
+                value={formData.position}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-hire_date">Hire Date</Label>
+              <Input
+                id="edit-hire_date"
+                name="hire_date"
+                type="date"
+                value={formData.hire_date}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleFormChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-contact_number">Contact Number</Label>
+              <Input
+                id="edit-contact_number"
+                name="contact_number"
+                value={formData.contact_number}
+                onChange={handleFormChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-payment_type">Payment Type</Label>
+              <Select
+                value={formData.payment_type}
+                onValueChange={(value) => handleSelectChange(value, "payment_type")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="salary">Salary</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-salary">Salary/Rate</Label>
+              <Input
+                id="edit-salary"
+                name="salary"
+                type="number"
+                value={formData.salary}
+                onChange={handleFormChange}
+                required
+              />
+            </div>
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">
@@ -621,7 +615,6 @@ export function EmployeeManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Record Payment Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -688,7 +681,6 @@ export function EmployeeManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>

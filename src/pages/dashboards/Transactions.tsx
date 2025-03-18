@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { TransactionDialog } from "@/components/transactions/TransactionDialog";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,6 +9,7 @@ import { DollarSign } from "lucide-react";
 
 export default function Transactions() {
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ["transactions"],
@@ -46,7 +48,7 @@ export default function Transactions() {
       <main className="container py-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Transactions</h1>
-          <TransactionDialog />
+          <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} />
         </div>
 
         {isLoading ? (

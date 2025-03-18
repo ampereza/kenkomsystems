@@ -1,12 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { DateRangeProps } from './DateRangeSelector';
 
-export interface FinancialTrendsProps {
-  from: Date;
-  to: Date;
+export interface FinancialTrendsProps extends DateRangeProps {
+  // You can add additional props here if needed
 }
 
 export const FinancialTrends: React.FC<FinancialTrendsProps> = ({ from, to }) => {
