@@ -87,6 +87,47 @@ export default function MDDashboard() {
     },
   });
 
+  // calulate the total clients from the clients table
+  const { data: clients } = useQuery({
+    queryKey: ["clients"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Calculate the total number of employees
+  const { data: employees } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("*");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Calculate the total customers
+  const { data: customers } = useQuery({
+    queryKey: ["customers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*");
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+
+
   // Calculate totals for the dashboard cards
   const totals = financialSummary?.reduce(
     (acc, curr) => {
@@ -203,29 +244,32 @@ export default function MDDashboard() {
                   <CardTitle>Business Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+
+                  // calculate the total number of employees
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center">
                         <Users className="h-5 w-5 text-primary mr-2" />
                         <span className="text-sm font-medium">Employees</span>
                       </div>
-                      <p className="text-2xl font-bold">12</p>
+                      <p className="text-2xl font-bold">{employees?.length || 0}</p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center">
-                        <Package className="h-5 w-5 text-primary mr-2" />
-                        <span className="text-sm font-medium">Stock Items</span>
+                        <Users className="h-5 w-5 text-primary mr-2" />
+                        <span className="text-sm font-medium">Customers</span>
                       </div>
-                      <p className="text-2xl font-bold">324</p>
+                      <p className="text-2xl font-bold">{customers?.length || 0}</p>
                     </div>
                     
+
                     <div className="space-y-2">
                       <div className="flex items-center">
                         <Users className="h-5 w-5 text-primary mr-2" />
                         <span className="text-sm font-medium">Clients</span>
                       </div>
-                      <p className="text-2xl font-bold">28</p>
+                      <p className="text-2xl font-bold">{clients?.length || 0}</p>
                     </div>
                     
                     <div className="space-y-2">
