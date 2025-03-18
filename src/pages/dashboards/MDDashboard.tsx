@@ -141,6 +141,38 @@ export default function MDDashboard() {
     { income: 0, expenses: 0 }
   );
 
+  
+export default function SortedStock() {
+  const { data: sortedStock, isLoading, error } = useQuery({
+    queryKey: ["sortedStock"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sorted_stock")
+        .select(`
+          id,
+          unsorted_stock_id,
+          category,
+          size,
+          length_value,
+          length_unit,
+          diameter_mm,
+          quantity,
+          sorting_date,
+          notes,
+          created_at
+        `)
+        .order("sorting_date", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) return <div>Loading sorted stock...</div>;
+  if (error) return <div>Error fetching data: {error.message}</div>
+
+  
+
   return (
     <DashboardLayout>
       <div className="container mx-auto p-6">
@@ -320,7 +352,35 @@ export default function MDDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p>Stock management content will be displayed here.</p>
+                  <div>
+                    <h1 className="text-2xl font-bold">Sorted Stock</h1>
+                    <table className="table-auto w-full border-collapse border border-gray-300 mt-4">
+                      <thead>
+                        <tr>
+                          <th className="border border-gray-300 px-4 py-2">ID</th>
+                          <th className="border border-gray-300 px-4 py-2">Category</th>
+                          <th className="border border-gray-300 px-4 py-2">Size</th>
+                          <th className="border border-gray-300 px-4 py-2">Length</th>
+                          <th className="border border-gray-300 px-4 py-2">Quantity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedStock.map((stock) => (
+                          <tr key={stock.id}>
+                            <td className="border border-gray-300 px-4 py-2">{stock.id}</td>
+                            <td className="border border-gray-300 px-4 py-2">{stock.category}</td>
+                            <td className="border border-gray-300 px-4 py-2">{stock.size}</td>
+                            <td className="border border-gray-300 px-4 py-2">
+                              {stock.length_value} {stock.length_unit}
+                            </td>
+                            <td className="border border-gray-300 px-4 py-2">{stock.quantity}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+  
+
                   </div>
                 </CardContent>
               </Card>
