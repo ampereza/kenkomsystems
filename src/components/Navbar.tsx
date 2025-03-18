@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FileText, Users, ChevronRight, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, Users, ChevronRight, Menu, X, Building2, Store, Package } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -57,10 +57,64 @@ export function Navbar() {
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+                  <Package className="h-4 w-4" />
                   Stock
                 </span>
                 {isActive("/dashboards/stock") && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                )}
+              </Link>
+
+              <Link 
+                to="/clients" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group",
+                  isActive("/clients") 
+                    ? "text-primary bg-primary/5" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Clients
+                </span>
+                {isActive("/clients") && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                )}
+              </Link>
+
+              <Link 
+                to="/customers/list" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group",
+                  isActive("/customers/list") 
+                    ? "text-primary bg-primary/5" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  Customers
+                </span>
+                {isActive("/customers/list") && (
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                )}
+              </Link>
+
+              <Link 
+                to="/suppliers/view-suppliers" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group",
+                  isActive("/suppliers/view-suppliers") 
+                    ? "text-primary bg-primary/5" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Suppliers
+                </span>
+                {isActive("/suppliers/view-suppliers") && (
                   <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
                 )}
               </Link>
@@ -156,8 +210,56 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <span className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+                  <Package className="h-4 w-4" />
                   Stock
+                </span>
+              </Link>
+
+              <Link 
+                to="/clients" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive("/clients") 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Clients
+                </span>
+              </Link>
+
+              <Link 
+                to="/customers/list" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive("/customers/list") 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="flex items-center gap-2">
+                  <Store className="h-4 w-4" />
+                  Customers
+                </span>
+              </Link>
+
+              <Link 
+                to="/suppliers/view-suppliers" 
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive("/suppliers/view-suppliers") 
+                    ? "bg-primary/10 text-primary" 
+                    : "text-foreground/70 hover:text-primary hover:bg-primary/5"
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Suppliers
                 </span>
               </Link>
               
