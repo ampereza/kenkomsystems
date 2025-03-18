@@ -15,24 +15,19 @@ import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
 import StockDashboard from "./pages/dashboards/StockDashboard";
 import TreatmentLog from "./pages/dashboards/TreatmentLog";
 
+// Finance pages
+import Receipts from "./pages/dashboards/Receipts";
+import Expenses from "./pages/dashboards/Expenses";
+import Transactions from "./pages/dashboards/Transactions";
+import Employees from "./pages/dashboards/Employees";
+import IncomeStatement from "./pages/dashboards/incomestatement";
+
 // Stock pages
-import ReceiveStock from "./pages/stock/ReceiveStock";
-import SortStock from "./pages/stock/SortStock";
 import StockReport from "./pages/dashboards/StockReport";
 
 // Supplier pages
 import ViewSuppliers from "./pages/dashboards/view_suppliers";
 import AddSuppliers from "./pages/dashboards/add_suppliers";
-import RejectedPoles from "./pages/suppliers/rejected_poles";
-
-// Finance pages
-import GeneralLedger from "./pages/finance/GeneralLedger";
-import PaymentVouchers from "./pages/finance/PaymentVouchers";
-import Expenses from "./pages/dashboards/Expenses";
-import Transactions from "./pages/dashboards/Transactions";
-import Employees from "./pages/dashboards/Employees";
-import Receipts from "./pages/finance/Receipts";
-import IncomeStatement from "./pages/finance/incomestatement";
 
 // Customer pages
 import Customers from "./pages/customers/customers";
@@ -101,22 +96,6 @@ const App = () => (
 
           {/* Stock Routes */}
           <Route
-            path="/stock/receive"
-            element={
-              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
-                <ReceiveStock />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/stock/sort"
-            element={
-              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
-                <SortStock />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/stock/report"
             element={
               <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
@@ -142,32 +121,8 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/suppliers/rejected-poles"
-            element={
-              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
-                <RejectedPoles />
-              </ProtectedRoute>
-            }
-          />
 
           {/* Finance Routes */}
-          <Route
-            path="/finance/general-ledger"
-            element={
-              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
-                <GeneralLedger />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/finance/payment-vouchers"
-            element={
-              <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
-                <PaymentVouchers />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/finance/expenses"
             element={
