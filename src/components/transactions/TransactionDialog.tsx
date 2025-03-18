@@ -1,231 +1,203 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
-import { Plus } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { TransactionType } from '@/types/FinancialSummary';
 
-// Define transaction types
-type TransactionType = "purchase" | "sale" | "expense" | "salary" | "treatment_income" | "office_expense" | "wages" | "maintenance";
+interface TransactionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
-export function TransactionDialog() {
-  const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const allowedTransactionTypes: TransactionType[] = [
+  "purchase", "sale", "expense", "salary", "treatment_income"
+];
+
+export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOpenChange }) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const [formData, setFormData] = useState({
-    type: "expense" as TransactionType,
-    amount: "",
-    description: "",
-    reference_number: "",
-    transaction_date: new Date().toISOString().split("T")[0],
-    supplier_id: "",
-    notes: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const [type, setType] = useState<TransactionType>("purchase");
+  const [amount, setAmount] = useState<number>(0);
+  const [description, setDescription] = useState<string>("");
+  const [reference_number, setReferenceNumber] = useState<string>("");
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [supplier_id, setSupplierId] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
+    
     try {
-      // Insert the transaction - but directly insert the object instead of in an array
-      const { error } = await supabase.from("transactions").insert({
-        type: formData.type,
-        amount: parseFloat(formData.amount),
-        description: formData.description,
-        reference_number: formData.reference_number,
-        transaction_date: formData.transaction_date,
-        supplier_id: formData.supplier_id || null,
-        notes: formData.notes,
-      });
+      // Cast the transaction type to ensure it's one of the allowed types
+      const safeType = type as TransactionType;
+      
+      // Only proceed if it's a valid type
+      if (!allowedTransactionTypes.includes(safeType)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid transaction type",
+          description: "The selected transaction type is not valid.",
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          type: safeType,
+          amount,
+          description,
+          reference_number,
+          transaction_date: date ? format(date, 'yyyy-MM-dd') : '',
+          supplier_id,
+          notes
+        });
 
       if (error) throw error;
 
       toast({
         title: "Transaction added",
-        description: `${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} transaction has been added successfully.`,
+        description: "The transaction has been added successfully.",
       });
 
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      setFormData({
-        type: "expense",
-        amount: "",
-        description: "",
-        reference_number: "",
-        transaction_date: new Date().toISOString().split("T")[0],
-        supplier_id: "",
-        notes: "",
-      });
-      setOpen(false);
+      // Reset form
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Failed to add transaction",
-        description: error.message || "There was a problem adding the transaction.",
+        title: "Error",
+        description: error.message,
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Transaction
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add New Transaction</DialogTitle>
-          <DialogDescription>
-            Enter the transaction details below. Click save when you're done.
-          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Form fields go here */}
+          
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                Type
-              </Label>
-              <div className="col-span-3">
-                <Select
-                  onValueChange={(value) => handleSelectChange("type", value)}
-                  defaultValue={formData.type}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="expense">Expense</SelectItem>
-                    <SelectItem value="purchase">Purchase</SelectItem>
-                    <SelectItem value="sale">Sale</SelectItem>
-                    <SelectItem value="salary">Salary</SelectItem>
-                    <SelectItem value="treatment_income">Treatment Income</SelectItem>
-                    <SelectItem value="office_expense">Office Expense</SelectItem>
-                    <SelectItem value="wages">Wages</SelectItem>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="type">Transaction Type</Label>
+              <Select
+                value={type}
+                onValueChange={(value) => setType(value as TransactionType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select transaction type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allowedTransactionTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="amount" className="text-right">
-                Amount
-              </Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
               <Input
                 id="amount"
-                name="amount"
                 type="number"
-                step="0.01"
-                value={formData.amount}
-                onChange={handleChange}
-                className="col-span-3"
-                required
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
               <Input
                 id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="col-span-3"
-                required
+                type="text"
+                placeholder="Enter description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="reference_number" className="text-right">
-                Reference #
-              </Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="reference_number">Reference Number</Label>
               <Input
                 id="reference_number"
-                name="reference_number"
-                value={formData.reference_number}
-                onChange={handleChange}
-                className="col-span-3"
+                type="text"
+                placeholder="Enter reference number"
+                value={reference_number}
+                onChange={(e) => setReferenceNumber(e.target.value)}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="transaction_date" className="text-right">
-                Date
-              </Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="date">Transaction Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("2020-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="supplier_id">Supplier ID</Label>
               <Input
-                id="transaction_date"
-                name="transaction_date"
-                type="date"
-                value={formData.transaction_date}
-                onChange={handleChange}
-                className="col-span-3"
-                required
+                id="supplier_id"
+                type="text"
+                placeholder="Enter supplier ID"
+                value={supplier_id}
+                onChange={(e) => setSupplierId(e.target.value)}
               />
             </div>
-            {(formData.type === "purchase" || formData.type === "expense") && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="supplier_id" className="text-right">
-                  Supplier ID
-                </Label>
-                <Input
-                  id="supplier_id"
-                  name="supplier_id"
-                  value={formData.supplier_id}
-                  onChange={handleChange}
-                  className="col-span-3"
-                />
-              </div>
-            )}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
-                Notes
-              </Label>
-              <Input
+            
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
                 id="notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                className="col-span-3"
+                placeholder="Enter notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Transaction"}
-            </Button>
-          </DialogFooter>
+          
+          <div className="flex justify-end">
+            <Button type="submit">Save Transaction</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+};

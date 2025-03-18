@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 // Pages
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/authentication/login";
 
 // Dashboards
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
@@ -15,13 +14,6 @@ import MDDashboard from "./pages/dashboards/MDDashboard";
 import TreatmentDashboard from "./pages/dashboards/TreatmentDashboard";
 import StockDashboard from "./pages/dashboards/StockDashboard";
 import TreatmentLog from "./pages/dashboards/TreatmentLog";
-
-// Finance pages
-import Receipts from "./pages/dashboards/Receipts";
-import Expenses from "./pages/dashboards/Expenses";
-import Transactions from "./pages/dashboards/Transactions";
-import Employees from "./pages/dashboards/Employees";
-import IncomeStatement from "./pages/dashboards/incomestatement";
 
 // Stock pages
 import StockReport from "./pages/dashboards/StockReport";
@@ -37,6 +29,13 @@ import EditCustomer from "./pages/customers/edit_cutomers";
 // Reports
 import EmployeeReport from "./pages/dashboards/EmployeeReport";
 
+// Finance pages
+import Expenses from "./pages/dashboards/Expenses";
+import Transactions from "./pages/dashboards/Transactions";
+import Employees from "./pages/dashboards/Employees";
+import Receipts from "./pages/dashboards/Receipts";
+import IncomeStatement from "./pages/dashboards/incomestatement";
+
 // Initialize QueryClient
 const queryClient = new QueryClient();
 
@@ -46,9 +45,6 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Authentication routes */}
-          <Route path="/login" element={<Login />} />
-          
           {/* Set default route to MD dashboard */}
           <Route path="/" element={<Navigate to="/dashboards/md" replace />} />
           <Route path="/unauthorized" element={<Unauthorized />} />

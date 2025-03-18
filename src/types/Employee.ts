@@ -8,17 +8,7 @@ export interface Employee {
   email: string;
   contact_number: string;
   hire_date: string;
-  salary: number;
   payment_type: PaymentType;
+  salary: number;
   created_at: string;
-}
-
-export interface EmployeeFormValues {
-  name: string;
-  position: string;
-  email: string;
-  contact_number: string;
-  hire_date: string;
-  salary: number;
-  payment_type: PaymentType;
 }
