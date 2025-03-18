@@ -19,13 +19,16 @@ export interface TransactionDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const allowedTransactionTypes: TransactionType[] = [
+// Define a more specific type that matches what the database accepts
+type AllowedTransactionType = "purchase" | "sale" | "expense" | "salary" | "treatment_income";
+
+const allowedTransactionTypes: AllowedTransactionType[] = [
   "purchase", "sale", "expense", "salary", "treatment_income"
 ];
 
 export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOpenChange }) => {
   const { toast } = useToast();
-  const [type, setType] = useState<TransactionType>("purchase");
+  const [type, setType] = useState<AllowedTransactionType>("purchase");
   const [amount, setAmount] = useState<number>(0);
   const [description, setDescription] = useState<string>("");
   const [reference_number, setReferenceNumber] = useState<string>("");
@@ -37,16 +40,6 @@ export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOp
     e.preventDefault();
     
     try {
-      // Only proceed if it's a valid type
-      if (!allowedTransactionTypes.includes(type)) {
-        toast({
-          variant: "destructive",
-          title: "Invalid transaction type",
-          description: "The selected transaction type is not valid.",
-        });
-        return;
-      }
-      
       const { error } = await supabase
         .from('transactions')
         .insert({
@@ -89,7 +82,7 @@ export const TransactionDialog: React.FC<TransactionDialogProps> = ({ open, onOp
               <Label htmlFor="type">Transaction Type</Label>
               <Select
                 value={type}
-                onValueChange={(value) => setType(value as TransactionType)}
+                onValueChange={(value) => setType(value as AllowedTransactionType)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select transaction type" />
