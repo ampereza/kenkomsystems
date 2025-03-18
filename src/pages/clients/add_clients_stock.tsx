@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
+import { ClientPolesStock } from "@/types/ClientStock";
 
-// Form schema
 const formSchema = z.object({
   client_id: z.string().min(1, "Client is required"),
   stock_type: z.string().min(1, "Stock type is required"),
@@ -32,7 +31,6 @@ export default function AddClientsStock() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch clients for dropdown
   const { data: clients } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
@@ -46,7 +44,6 @@ export default function AddClientsStock() {
     },
   });
 
-  // Form setup
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,12 +53,10 @@ export default function AddClientsStock() {
     },
   });
 
-  // Use client_poles_stock table instead of client_stock
   const addStockMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       setIsSubmitting(true);
       
-      // First check if client already has a stock record
       const { data: existingStock, error: fetchError } = await supabase
         .from("client_poles_stock")
         .select("id")
@@ -75,26 +70,25 @@ export default function AddClientsStock() {
       let result;
       
       if (existingStock) {
-        // Update existing record with direct values, not using RPC
+        const stockData = existingStock as ClientPolesStock;
         const updateData: Record<string, any> = {
           notes: values.description
         };
         
-        // Set quantity based on pole type
         if (values.stock_type === "telecom") {
-          updateData.untreated_telecom_poles = existingStock.untreated_telecom_poles + values.quantity;
+          updateData.untreated_telecom_poles = stockData.untreated_telecom_poles + values.quantity;
         } else if (values.stock_type === "9m") {
-          updateData.untreated_9m_poles = existingStock.untreated_9m_poles + values.quantity;
+          updateData.untreated_9m_poles = stockData.untreated_9m_poles + values.quantity;
         } else if (values.stock_type === "10m") {
-          updateData.untreated_10m_poles = existingStock.untreated_10m_poles + values.quantity;
+          updateData.untreated_10m_poles = stockData.untreated_10m_poles + values.quantity;
         } else if (values.stock_type === "11m") {
-          updateData.untreated_11m_poles = existingStock.untreated_11m_poles + values.quantity;
+          updateData.untreated_11m_poles = stockData.untreated_11m_poles + values.quantity;
         } else if (values.stock_type === "12m") {
-          updateData.untreated_12m_poles = existingStock.untreated_12m_poles + values.quantity;
+          updateData.untreated_12m_poles = stockData.untreated_12m_poles + values.quantity;
         } else if (values.stock_type === "14m") {
-          updateData.untreated_14m_poles = existingStock.untreated_14m_poles + values.quantity;
+          updateData.untreated_14m_poles = stockData.untreated_14m_poles + values.quantity;
         } else if (values.stock_type === "16m") {
-          updateData.untreated_16m_poles = existingStock.untreated_16m_poles + values.quantity;
+          updateData.untreated_16m_poles = stockData.untreated_16m_poles + values.quantity;
         }
         
         const { data, error } = await supabase
@@ -106,7 +100,6 @@ export default function AddClientsStock() {
         if (error) throw error;
         result = data;
       } else {
-        // Create new record
         const stockData: any = {
           client_id: values.client_id,
           untreated_telecom_poles: 0,
@@ -119,7 +112,6 @@ export default function AddClientsStock() {
           notes: values.description
         };
         
-        // Set quantity for specific pole type
         if (values.stock_type === "telecom") {
           stockData.untreated_telecom_poles = values.quantity;
         } else if (values.stock_type === "9m") {

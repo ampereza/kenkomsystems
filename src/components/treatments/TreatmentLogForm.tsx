@@ -23,10 +23,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const formSchema = z.object({
   date: z.string().min(1, "Date is required"),
-  chemical_type: z.string().min(1, "Chemical type is required"),
-  concentration: z.coerce.number().min(0, "Concentration must be positive").max(100, "Concentration must not exceed 100"),
-  operator_name: z.string().min(1, "Operator name is required"),
-  poles_treated: z.coerce.number().min(1, "Number of poles must be at least 1"),
+  cylinder_number: z.string().min(1, "Cylinder number is required"),
+  liters_added: z.string().min(1, "Liters added is required"),
+  kegs_added: z.coerce.number().min(0, "Kegs added must be positive"),
+  kegs_remaining: z.coerce.number().min(0, "Kegs remaining must be positive"),
+  strength_percentage: z.coerce.number().min(0, "Strength percentage must be positive").max(100, "Strength percentage must not exceed 100"),
+  total_poles: z.coerce.number().min(1, "Number of poles must be at least 1"),
+  treatment_purpose: z.string().min(1, "Treatment purpose is required"),
   notes: z.string().optional(),
 });
 
@@ -46,10 +49,13 @@ export function TreatmentLogForm({ onSubmitSuccess, onCancel }: TreatmentLogForm
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
-      chemical_type: "",
-      concentration: 0,
-      operator_name: "",
-      poles_treated: 0,
+      cylinder_number: "",
+      liters_added: "",
+      kegs_added: 0,
+      kegs_remaining: 0,
+      strength_percentage: 0,
+      total_poles: 0,
+      treatment_purpose: "KDL",
       notes: "",
     },
   });
@@ -57,16 +63,17 @@ export function TreatmentLogForm({ onSubmitSuccess, onCancel }: TreatmentLogForm
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("treatment_log").insert([
-        {
-          date: data.date,
-          chemical_type: data.chemical_type,
-          concentration: data.concentration,
-          operator_name: data.operator_name,
-          poles_treated: data.poles_treated,
-          notes: data.notes,
-        },
-      ]);
+      const { error } = await supabase.from("treatment_log").insert({
+        date: data.date,
+        cylinder_number: data.cylinder_number,
+        liters_added: data.liters_added,
+        kegs_added: data.kegs_added,
+        kegs_remaining: data.kegs_remaining,
+        strength_percentage: data.strength_percentage,
+        total_poles: data.total_poles,
+        treatment_purpose: data.treatment_purpose,
+        notes: data.notes,
+      });
 
       if (error) throw error;
 
@@ -112,49 +119,10 @@ export function TreatmentLogForm({ onSubmitSuccess, onCancel }: TreatmentLogForm
               />
               <FormField
                 control={form.control}
-                name="chemical_type"
+                name="cylinder_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Chemical Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select chemical type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="CCA">CCA</SelectItem>
-                        <SelectItem value="Creosote">Creosote</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="concentration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Concentration (%)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} min="0" max="100" step="0.1" />
-                    </FormControl>
-                    <FormDescription>Enter a value between 0 and 100</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="operator_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Operator Name</FormLabel>
+                    <FormLabel>Cylinder Number</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -164,15 +132,96 @@ export function TreatmentLogForm({ onSubmitSuccess, onCancel }: TreatmentLogForm
               />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="liters_added"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Liters Added</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="strength_percentage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Strength Percentage (%)</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} min="0" max="100" step="0.1" />
+                    </FormControl>
+                    <FormDescription>Enter a value between 0 and 100</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="kegs_added"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kegs Added</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} min="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="kegs_remaining"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kegs Remaining</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} min="0" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="poles_treated"
+              name="total_poles"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Number of Poles Treated</FormLabel>
+                  <FormLabel>Total Poles Treated</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} min="1" />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="treatment_purpose"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Treatment Purpose</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select purpose" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="KDL">KDL</SelectItem>
+                      <SelectItem value="Client">Client</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

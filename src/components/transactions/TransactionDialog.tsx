@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,18 +56,16 @@ export function TransactionDialog() {
     setIsSubmitting(true);
 
     try {
-      // Insert the transaction with type casting to ensure it matches the expected TransactionType
-      const { error } = await supabase.from("transactions").insert([
-        {
-          type: formData.type as TransactionType,
-          amount: parseFloat(formData.amount),
-          description: formData.description,
-          reference_number: formData.reference_number,
-          transaction_date: formData.transaction_date,
-          supplier_id: formData.supplier_id || null,
-          notes: formData.notes,
-        },
-      ]);
+      // Insert the transaction - but directly insert the object instead of in an array
+      const { error } = await supabase.from("transactions").insert({
+        type: formData.type,
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        reference_number: formData.reference_number,
+        transaction_date: formData.transaction_date,
+        supplier_id: formData.supplier_id || null,
+        notes: formData.notes,
+      });
 
       if (error) throw error;
 

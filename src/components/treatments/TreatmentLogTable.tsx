@@ -49,10 +49,10 @@ export function TreatmentLogTable() {
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
-            <TableHead>Chemical Type</TableHead>
-            <TableHead>Concentration</TableHead>
-            <TableHead>Operator</TableHead>
+            <TableHead>Cylinder</TableHead>
+            <TableHead>Strength %</TableHead>
             <TableHead>Poles Treated</TableHead>
+            <TableHead>Purpose</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -62,10 +62,10 @@ export function TreatmentLogTable() {
               <TableCell>
                 {new Date(treatment.date).toLocaleDateString()}
               </TableCell>
-              <TableCell>{treatment.chemical_type}</TableCell>
-              <TableCell>{treatment.concentration}%</TableCell>
-              <TableCell>{treatment.operator_name}</TableCell>
-              <TableCell>{treatment.poles_treated}</TableCell>
+              <TableCell>{treatment.cylinder_number}</TableCell>
+              <TableCell>{treatment.strength_percentage}%</TableCell>
+              <TableCell>{treatment.total_poles}</TableCell>
+              <TableCell>{treatment.treatment_purpose}</TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   <Button variant="outline" size="sm">

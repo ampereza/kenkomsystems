@@ -14,11 +14,15 @@ export interface DateRangeProps {
 interface DateRangeSelectorProps {
   dateRange: DateRangeProps;
   onDateRangeChange: (range: DateRangeProps) => void;
+  selectedRange?: string;
+  onRangeSelect?: (range: "day" | "week" | "month" | "year") => void;
 }
 
 export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   dateRange,
   onDateRangeChange,
+  selectedRange,
+  onRangeSelect,
 }) => {
   const handleFromChange = (date: Date | undefined) => {
     if (date) {
@@ -72,6 +76,38 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
           </PopoverContent>
         </Popover>
       </div>
+      {onRangeSelect && (
+        <div className="flex space-x-2 items-end">
+          <Button 
+            variant={selectedRange === "day" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => onRangeSelect("day")}
+          >
+            Day
+          </Button>
+          <Button 
+            variant={selectedRange === "week" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => onRangeSelect("week")}
+          >
+            Week
+          </Button>
+          <Button 
+            variant={selectedRange === "month" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => onRangeSelect("month")}
+          >
+            Month
+          </Button>
+          <Button 
+            variant={selectedRange === "year" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => onRangeSelect("year")}
+          >
+            Year
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
