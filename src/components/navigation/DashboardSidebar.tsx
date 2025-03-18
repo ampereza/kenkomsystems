@@ -15,7 +15,9 @@ import {
   TestTube2,
   ClipboardList,
   LogOut,
-  User
+  User,
+  Store,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -118,17 +120,17 @@ export function DashboardSidebar() {
           href: "/stock/sort"
         },
         {
-          icon: <Users className="h-5 w-5" />,
+          icon: <Store className="h-5 w-5" />,
           label: "Customers",
           href: "/customers/list"
         },
         {
-          icon: <Users className="h-5 w-5" />,
+          icon: <Building2 className="h-5 w-5" />,
           label: "Clients",
           href: "/clients"
         },
         {
-          icon: <Users className="h-5 w-5" />,
+          icon: <Package className="h-5 w-5" />,
           label: "Suppliers",
           href: "/suppliers/view-suppliers"
         },

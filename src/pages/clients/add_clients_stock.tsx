@@ -75,20 +75,31 @@ export default function AddClientsStock() {
       let result;
       
       if (existingStock) {
-        // Update existing record
+        // Update existing record with direct values, not using RPC
+        const updateData: Record<string, any> = {
+          notes: values.description
+        };
+        
+        // Set quantity based on pole type
+        if (values.stock_type === "telecom") {
+          updateData.untreated_telecom_poles = existingStock.untreated_telecom_poles + values.quantity;
+        } else if (values.stock_type === "9m") {
+          updateData.untreated_9m_poles = existingStock.untreated_9m_poles + values.quantity;
+        } else if (values.stock_type === "10m") {
+          updateData.untreated_10m_poles = existingStock.untreated_10m_poles + values.quantity;
+        } else if (values.stock_type === "11m") {
+          updateData.untreated_11m_poles = existingStock.untreated_11m_poles + values.quantity;
+        } else if (values.stock_type === "12m") {
+          updateData.untreated_12m_poles = existingStock.untreated_12m_poles + values.quantity;
+        } else if (values.stock_type === "14m") {
+          updateData.untreated_14m_poles = existingStock.untreated_14m_poles + values.quantity;
+        } else if (values.stock_type === "16m") {
+          updateData.untreated_16m_poles = existingStock.untreated_16m_poles + values.quantity;
+        }
+        
         const { data, error } = await supabase
           .from("client_poles_stock")
-          .update({
-            // Add to untreated based on stock_type
-            untreated_telecom_poles: values.stock_type === "telecom" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_9m_poles: values.stock_type === "9m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_10m_poles: values.stock_type === "10m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_11m_poles: values.stock_type === "11m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_12m_poles: values.stock_type === "12m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_14m_poles: values.stock_type === "14m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            untreated_16m_poles: values.stock_type === "16m" ? supabase.rpc('increment', { x: values.quantity }) : undefined,
-            notes: values.description
-          })
+          .update(updateData)
           .eq("id", existingStock.id)
           .select();
         

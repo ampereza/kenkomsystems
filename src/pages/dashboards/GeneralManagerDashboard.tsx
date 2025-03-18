@@ -1,145 +1,116 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, DollarSign, Users, LineChart } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FinancialTrends } from "@/components/reports/FinancialTrends";
-import { DetailedTransactions } from "@/components/reports/DetailedTransactions";
-import { DateRangeSelector } from "@/components/reports/DateRangeSelector";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { DollarSign, Package, TrendingUp, Users } from "lucide-react";
+import DateRangeSelector, { DateRangeProps } from "@/components/reports/DateRangeSelector";
+import FinancialTrends from "@/components/reports/FinancialTrends";
+import DetailedTransactions from "@/components/reports/DetailedTransactions";
+
+// Function to get current month range
+const getCurrentMonthRange = () => {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return { from: firstDay, to: lastDay };
+};
 
 export default function GeneralManagerDashboard() {
-  const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
-    start: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    end: new Date(),
-  });
+  // State for date range
+  const [dateRange, setDateRange] = useState<DateRangeProps>(getCurrentMonthRange());
 
-  // Fetch financial summary data
-  const { data: financialData } = useQuery({
-    queryKey: ["financial-summary", dateRange],
+  // Handle date range change
+  const handleDateRangeChange = (newRange: DateRangeProps) => {
+    setDateRange(newRange);
+  };
+
+  // Fetch financial summary
+  const { data: financialSummary, isLoading: isLoadingFinancial } = useQuery({
+    queryKey: ["financial-summary", dateRange.from, dateRange.to],
     queryFn: async () => {
-      // Format dates for Supabase query
-      const startDate = dateRange.start.toISOString();
-      const endDate = dateRange.end.toISOString();
-
-      // Instead of using group, use our view that already has aggregated data
       const { data, error } = await supabase
         .from("financial_summary")
         .select("*")
-        .gte("date", startDate)
-        .lte("date", endDate);
+        .single();
 
       if (error) throw error;
-      return data || [];
+      return data || { 
+        total_revenue: 0, 
+        total_expenses: 0, 
+        profit: 0, 
+        customer_count: 0 
+      };
     },
   });
 
-  // Calculate totals from the financial data
-  const totalRevenue = financialData
-    ? financialData
-        .filter((item) => item.type === "sale" || item.type === "treatment_income")
-        .reduce((sum, item) => sum + Number(item.total_amount || 0), 0)
-    : 0;
-
-  const totalExpenses = financialData
-    ? financialData
-        .filter((item) => 
-          item.type === "purchase" || 
-          item.type === "expense" || 
-          item.type === "salary")
-        .reduce((sum, item) => sum + Number(item.total_amount || 0), 0)
-    : 0;
-
-  const profit = totalRevenue - totalExpenses;
-  const profitMargin = totalRevenue > 0 ? (profit / totalRevenue) * 100 : 0;
+  // Fallback values when loading
+  const revenue = isLoadingFinancial ? 0 : financialSummary?.total_revenue || 0;
+  const expenses = isLoadingFinancial ? 0 : financialSummary?.total_expenses || 0;
+  const profit = isLoadingFinancial ? 0 : financialSummary?.profit || 0;
+  const customers = isLoadingFinancial ? 0 : financialSummary?.customer_count || 0;
 
   return (
-    <DashboardLayout>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-6">General Manager Dashboard</h1>
-        
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">General Manager Dashboard</h1>
+
+      <div className="mb-6">
         <DateRangeSelector 
           dateRange={dateRange} 
-          onDateRangeChange={setDateRange} 
+          onDateRangeChange={handleDateRangeChange} 
         />
-        
-        <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                For the selected period
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Expenses
-              </CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                For the selected period
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Profit</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">${profit.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                For the selected period
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Profit Margin
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{profitMargin.toFixed(2)}%</div>
-              <p className="text-xs text-muted-foreground">
-                For the selected period
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="grid gap-6 mt-6 md:grid-cols-2">
-          <Card className="col-span-2 md:col-span-1">
-            <CardHeader>
-              <CardTitle>Financial Trends</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FinancialTrends dateRange={dateRange} />
-            </CardContent>
-          </Card>
-          <Card className="col-span-2 md:col-span-1">
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DetailedTransactions dateRange={dateRange} limit={5} />
-            </CardContent>
-          </Card>
-        </div>
       </div>
-    </DashboardLayout>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${revenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">For current period</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Expenses</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${expenses.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">For current period</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Profit</CardTitle>
+            <LineChart className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${profit.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">For current period</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Customers</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{customers}</div>
+            <p className="text-xs text-muted-foreground">Total active customers</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <FinancialTrends from={dateRange.from} to={dateRange.to} />
+        <DetailedTransactions from={dateRange.from} to={dateRange.to} limit={5} />
+      </div>
+    </div>
   );
 }
