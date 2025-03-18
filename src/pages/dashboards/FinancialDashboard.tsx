@@ -83,7 +83,6 @@ export default function FinancialDashboard() {
 
   return (
     <DashboardLayout>
-    <>
       
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Financial Management Dashboard</h1>
@@ -257,7 +256,6 @@ export default function FinancialDashboard() {
           <IncomeStatement />
         </div>
       </div>
-    </>
     
   </DashboardLayout>
   );
