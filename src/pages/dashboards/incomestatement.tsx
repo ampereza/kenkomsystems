@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -135,7 +134,7 @@ const IncomeStatementPage = () => {
 
   return (
     <>
-      <FinancialNavbar />
+      
       <div className="container mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Income Statement</h1>
         

@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +64,7 @@ export default function AddCustomer() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <FinancialNavbar />
+      
       <main className="container py-6 flex-1">
         <div className="flex items-center mb-6">
           <Button 

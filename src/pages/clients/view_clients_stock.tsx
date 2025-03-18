@@ -1,5 +1,4 @@
 
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { useClients } from "@/hooks/useClients";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -8,7 +7,7 @@ export default function ViewClientStock() {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <FinancialNavbar />
+      
       <main className="container py-6 flex-1">
         <h1 className="text-3xl font-bold mb-6">Client Stock</h1>
         

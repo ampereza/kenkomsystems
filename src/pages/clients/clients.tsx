@@ -1,5 +1,4 @@
 
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +42,7 @@ export default function Clients() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <FinancialNavbar />
+      
       <main className="container py-6 flex-1">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl md:text-3xl font-bold">Clients</h1>

@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -129,7 +128,7 @@ export default function EditCustomer() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <FinancialNavbar />
+        
         <main className="container py-6 flex-1 flex items-center justify-center">
           <p>Loading customer data...</p>
         </main>
@@ -139,7 +138,7 @@ export default function EditCustomer() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <FinancialNavbar />
+      
       <main className="container py-6 flex-1">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Edit Customer</h1>

@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { TransactionDialog } from "@/components/transactions/TransactionDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +43,7 @@ export default function Transactions() {
 
   return (
     <div>
-      <FinancialNavbar />
+      
       <main className="container py-6">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Transactions</h1>

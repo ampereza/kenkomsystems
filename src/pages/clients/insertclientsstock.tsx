@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Client } from "./types";
-import { FinancialNavbar } from "@/components/navigation/FinancialNavbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,7 +133,7 @@ const InsertClientStock = () => {
 
   return (
     <>
-      <FinancialNavbar />
+      
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
