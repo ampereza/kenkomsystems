@@ -46,7 +46,7 @@ export default function AddSuppliers() {
         description: `${formData.name} has been added successfully.`,
       });
 
-      navigate("/stock/suppliers");
+      navigate("/suppliers/view-suppliers");
     } catch (error) {
       console.error("Error adding supplier:", error);
       toast({
@@ -139,7 +139,7 @@ export default function AddSuppliers() {
               <Button 
                 type="button" 
                 variant="outline"
-                onClick={() => navigate("/stock/suppliers")}
+                onClick={() => navigate("/suppliers/view-suppliers")}
               >
                 Cancel
               </Button>

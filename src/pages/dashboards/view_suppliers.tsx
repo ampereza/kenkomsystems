@@ -29,7 +29,7 @@ export default function ViewSuppliers() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Suppliers</h1>
           <Button asChild>
-            <Link to="/stock/suppliers/add">
+            <Link to="/suppliers/add">
               <Plus className="mr-2 h-4 w-4" />
               Add Supplier
             </Link>
@@ -45,7 +45,7 @@ export default function ViewSuppliers() {
             <CardContent>
               <p className="text-muted-foreground mb-4">No suppliers found</p>
               <Button asChild>
-                <Link to="/stock/suppliers/add">Add Your First Supplier</Link>
+                <Link to="/suppliers/add">Add Your First Supplier</Link>
               </Button>
             </CardContent>
           </Card>
@@ -64,8 +64,10 @@ export default function ViewSuppliers() {
                     Phone: {supplier.phone || "N/A"}
                   </p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4 mr-1" /> Edit
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to={`/suppliers/edit/${supplier.id}`}>
+                        <Edit className="h-4 w-4 mr-1" /> Edit
+                      </Link>
                     </Button>
                     <Button size="sm" variant="destructive">
                       <Trash className="h-4 w-4 mr-1" /> Delete
