@@ -7,7 +7,7 @@ import { IncomeStatement } from "@/components/reports/IncomeStatement";
 import { DocumentsOverview } from "@/components/dashboard/DocumentsOverview";
 import { CircleDollarSign, ArrowUpDown, Receipt, Building2, Users, FileText, Briefcase, FileBarChart, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
-import dashboards from "@/components/layouts/dashboardLayout";
+import { dashboards } from "@/components/layouts/dashboardLayout";
 
 export default function FinancialDashboard() {
   const { data: financialSummary } = useQuery({
