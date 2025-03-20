@@ -192,6 +192,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Correctly mapped route for add_clients_stock */}
+              <Route
+                path="/clients/add_clients_stock"
+                element={
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
+                    <AddClientsStock />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Finance Routes */}
               <Route
@@ -254,6 +263,15 @@ function App() {
               />
               <Route
                 path="/customers/add"
+                element={
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                    <AddCustomer />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Correctly mapped route for add_customer */}
+              <Route
+                path="/customers/add_customer"
                 element={
                   <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
                     <AddCustomer />
