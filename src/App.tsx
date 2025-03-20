@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -192,12 +191,19 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Correctly mapped route for add_clients_stock */}
               <Route
                 path="/clients/add_clients_stock"
                 element={
-                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
-                    <AddClientsStock />
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                    <AddClient />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/clients/add"
+                element={
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
+                    <AddClient />
                   </ProtectedRoute>
                 }
               />
@@ -269,7 +275,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Correctly mapped route for add_customer */}
               <Route
                 path="/customers/add_customer"
                 element={

@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -56,7 +55,7 @@ export default function Clients() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Link to="/clients/add_clients_stock">
+            <Link to="/clients/add">
               <Button className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" /> Add Client
               </Button>
@@ -108,12 +107,12 @@ export default function Clients() {
                     )}
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Link to={`/clients/view_clients_stock?id=${client.id}`} className="flex-1">
+                    <Link to={`/clients/view?id=${client.id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Eye className="h-3.5 w-3.5 mr-1" /> View
                       </Button>
                     </Link>
-                    <Link to={`/clients/edit_client?id=${client.id}`} className="flex-1">
+                    <Link to={`/clients/edit?id=${client.id}`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Edit className="h-3.5 w-3.5 mr-1" /> Edit
                       </Button>
@@ -131,7 +130,7 @@ export default function Clients() {
               {searchQuery ? "Try a different search query" : "Add your first client to get started"}
             </p>
             {!searchQuery && (
-              <Link to="/clients/add_clients_stock">
+              <Link to="/clients/add">
                 <Button className="mt-4">
                   <Plus className="h-4 w-4 mr-2" /> Add Client
                 </Button>
