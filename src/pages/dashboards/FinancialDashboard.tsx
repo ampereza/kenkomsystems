@@ -7,7 +7,7 @@ import { IncomeStatement } from "@/components/reports/IncomeStatement";
 import { DocumentsOverview } from "@/components/dashboard/DocumentsOverview";
 import { CircleDollarSign, ArrowUpDown, Receipt, Building2, Users, FileText, Briefcase, FileBarChart, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
-import { dashboards } from "@/components/layouts/dashboardLayout";
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function FinancialDashboard() {
   const { data: financialSummary } = useQuery({
@@ -83,7 +83,6 @@ export default function FinancialDashboard() {
 
   return (
     <DashboardLayout>
-      
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">Financial Management Dashboard</h1>
 
@@ -120,8 +119,6 @@ export default function FinancialDashboard() {
             </CardContent>
           </Card>
 
-          ///list payment vouchers
-
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Payment Vouchers</CardTitle>
@@ -154,15 +151,7 @@ export default function FinancialDashboard() {
             </CardContent>
           </Card>
         </div>
-
-
-
-
-
-          
-          
-          
-          
-  </DashboardLayout>
+      </div>
+    </DashboardLayout>
   );
 }
