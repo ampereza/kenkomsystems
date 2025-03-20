@@ -137,7 +137,7 @@ export default function FinancialDashboard() {
               <FileBarChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <IncomeStatement data={financialSummary} />
+              <IncomeStatement />
             </CardContent>
           </Card>
 
@@ -147,7 +147,7 @@ export default function FinancialDashboard() {
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <FinancialMetrics data={financialSummary} />
+              <FinancialMetrics totals={totals} />
             </CardContent>
           </Card>
         </div>
