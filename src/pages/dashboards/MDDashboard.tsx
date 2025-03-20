@@ -9,6 +9,9 @@ import { CircleDollarSign, TrendingUp, FileBarChart, FileText, Users, Package, T
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { PricingManager } from "@/components/management/PricingManager";
 import { EmployeeManager } from "@/components/management/EmployeeManager";
+import { SupplierManager } from "@/components/management/SupplierManager";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export default function MDDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -144,7 +147,14 @@ export default function MDDashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold">View Reports</div>
+              <div className="flex flex-col space-y-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/reports/financial">Financial Reports</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/reports/stock">Stock Reports</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -156,7 +166,7 @@ export default function MDDashboard() {
             <TabsTrigger value="employees">Employees</TabsTrigger>
             <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="stock">Stock</TabsTrigger>
-            <TabsTrigger value="treatment">Treatment</TabsTrigger>
+            <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -250,7 +260,17 @@ export default function MDDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p>Financial management content will be displayed here.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Button asChild>
+                        <Link to="/reports/financial">View Financial Reports</Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/dashboards/transactions">Transactions</Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/dashboards/expenses">Expenses</Link>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -276,27 +296,23 @@ export default function MDDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p>Stock management content will be displayed here.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button asChild>
+                        <Link to="/reports/stock">View Stock Reports</Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/dashboards/stock">Stock Dashboard</Link>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* Treatment Tab */}
-          <TabsContent value="treatment">
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Treatment Management</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <p>Treatment management content will be displayed here.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Suppliers Tab (formerly Treatment Tab) */}
+          <TabsContent value="suppliers">
+            <SupplierManager />
           </TabsContent>
         </Tabs>
       </div>

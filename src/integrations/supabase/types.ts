@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      actual_stock_movements: {
+        Row: {
+          category: string | null
+          date: string | null
+          from_status: string | null
+          id: string
+          movement_type: string | null
+          notes: string | null
+          performed_by: string | null
+          size: string | null
+          to_status: string | null
+          total_quantity: number | null
+        }
+        Insert: {
+          category?: string | null
+          date?: string | null
+          from_status?: string | null
+          id?: string
+          movement_type?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          size?: string | null
+          to_status?: string | null
+          total_quantity?: number | null
+        }
+        Update: {
+          category?: string | null
+          date?: string | null
+          from_status?: string | null
+          id?: string
+          movement_type?: string | null
+          notes?: string | null
+          performed_by?: string | null
+          size?: string | null
+          to_status?: string | null
+          total_quantity?: number | null
+        }
+        Relationships: []
+      }
       chart_of_accounts: {
         Row: {
           account_category: string
@@ -509,107 +548,6 @@ export type Database = {
           },
         ]
       }
-      financial_goals: {
-        Row: {
-          created_at: string | null
-          current_amount: number
-          deadline: string | null
-          id: string
-          name: string
-          target_amount: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          current_amount?: number
-          deadline?: string | null
-          id?: string
-          name: string
-          target_amount: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          current_amount?: number
-          deadline?: string | null
-          id?: string
-          name?: string
-          target_amount?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      financial_periods: {
-        Row: {
-          created_at: string
-          end_date: string
-          id: string
-          is_closed: boolean | null
-          period_name: string
-          start_date: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          end_date: string
-          id?: string
-          is_closed?: boolean | null
-          period_name: string
-          start_date: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          end_date?: string
-          id?: string
-          is_closed?: boolean | null
-          period_name?: string
-          start_date?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      invoice_items: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string
-          id: string
-          invoice_id: string
-          quantity: number
-          tax_rate: number | null
-          unit_price: number
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          description: string
-          id?: string
-          invoice_id: string
-          quantity: number
-          tax_rate?: number | null
-          unit_price: number
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string
-          id?: string
-          invoice_id?: string
-          quantity?: number
-          tax_rate?: number | null
-          unit_price?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoice_items_invoice_id_fkey"
-            columns: ["invoice_id"]
-            isOneToOne: false
-            referencedRelation: "invoices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       invoices: {
         Row: {
           client_id: string | null
@@ -693,51 +631,6 @@ export type Database = {
         }
         Relationships: []
       }
-      journal_entry_lines: {
-        Row: {
-          account_id: string | null
-          created_at: string | null
-          credit_amount: number | null
-          debit_amount: number | null
-          description: string | null
-          id: string
-          journal_entry_id: string | null
-        }
-        Insert: {
-          account_id?: string | null
-          created_at?: string | null
-          credit_amount?: number | null
-          debit_amount?: number | null
-          description?: string | null
-          id?: string
-          journal_entry_id?: string | null
-        }
-        Update: {
-          account_id?: string | null
-          created_at?: string | null
-          credit_amount?: number | null
-          debit_amount?: number | null
-          description?: string | null
-          id?: string
-          journal_entry_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "journal_entry_lines_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "ledger_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
-            columns: ["journal_entry_id"]
-            isOneToOne: false
-            referencedRelation: "journal_entries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       ledger_accounts: {
         Row: {
           account_code: string | null
@@ -812,38 +705,6 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payment_voucher_items: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          particulars: string
-          payment_voucher_id: string
-        }
-        Insert: {
-          amount?: number
-          created_at?: string
-          id?: string
-          particulars: string
-          payment_voucher_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          particulars?: string
-          payment_voucher_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payment_voucher_items_payment_voucher_id_fkey"
-            columns: ["payment_voucher_id"]
-            isOneToOne: false
-            referencedRelation: "payment_vouchers"
             referencedColumns: ["id"]
           },
         ]
@@ -1563,13 +1424,6 @@ export type Database = {
           total_amount: number | null
           transaction_count: number | null
           type: Database["public"]["Enums"]["transaction_type"] | null
-        }
-        Relationships: []
-      }
-      income_statement_summary: {
-        Row: {
-          account_type: string | null
-          total_amount: number | null
         }
         Relationships: []
       }
