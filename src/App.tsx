@@ -38,6 +38,7 @@ import ViewClientsStock from "./pages/clients/view_clients_stock";
 
 // Reports
 import EmployeeReport from "./pages/dashboards/EmployeeReport";
+import FinancialReport from "./pages/dashboards/FinancialReport";
 
 // Finance pages
 import Expenses from "./pages/dashboards/Expenses";
