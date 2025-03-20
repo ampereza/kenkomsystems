@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, ProtectedRoute } from "./components/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ import TreatmentLog from "./pages/dashboards/TreatmentLog";
 
 // Stock pages
 import StockReport from "./pages/dashboards/StockReport";
+import SortStock from "./pages/stock/SortStock";
 
 // Supplier pages
 import ViewSuppliers from "./pages/dashboards/view_suppliers";
@@ -46,6 +48,9 @@ import Transactions from "./pages/dashboards/Transactions";
 import Employees from "./pages/dashboards/Employees";
 import Receipts from "./pages/dashboards/Receipts";
 import IncomeStatement from "./pages/dashboards/incomestatement";
+
+// Admin pages
+import UserManagement from "./pages/admin/UserManagement";
 
 // Initialize QueryClient
 const queryClient = new QueryClient();
@@ -124,6 +129,14 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
                     <StockReport />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stock/sort"
+                element={
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "stock_manager", "developer"]}>
+                    <SortStock />
                   </ProtectedRoute>
                 }
               />
@@ -278,6 +291,16 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["managing_director", "general_manager", "accountant", "developer"]}>
                     <ViewSuppliers />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute allowedRoles={["managing_director", "general_manager", "developer"]}>
+                    <UserManagement />
                   </ProtectedRoute>
                 }
               />
