@@ -22,11 +22,11 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  contact_person: z.string().optional(),
+  contact_person: z.string().optional().or(z.literal("")),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  notes: z.string().optional(),
+  phone: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
+  notes: z.string().optional().or(z.literal("")),
 });
 
 export default function AddClient() {
@@ -50,11 +50,14 @@ export default function AddClient() {
       setIsSubmitting(true);
       
       // Clean up empty strings to null values for optional fields
-      const clientData = Object.fromEntries(
-        Object.entries(values).map(([key, value]) => 
-          [key, value === "" ? null : value]
-        )
-      );
+      const clientData = {
+        name: values.name, // Ensure name is always provided
+        contact_person: values.contact_person === "" ? null : values.contact_person,
+        email: values.email === "" ? null : values.email,
+        phone: values.phone === "" ? null : values.phone,
+        address: values.address === "" ? null : values.address,
+        notes: values.notes === "" ? null : values.notes,
+      };
       
       const { data, error } = await supabase
         .from("clients")

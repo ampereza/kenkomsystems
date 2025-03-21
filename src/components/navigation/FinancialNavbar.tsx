@@ -2,12 +2,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { DashboardSidebar } from "./DashboardSidebar";
-import { LayoutDashboard, Receipt, DollarSign, Users, FileText } from "lucide-react";
+import { LayoutDashboard, Receipt, DollarSign, Users, FileText, CircleDollarSign, BarChart } from "lucide-react";
 
 export function FinancialNavbar() {
   const location = useLocation();
   
   const navItems = [
+    {
+      href: "/finance/overview",
+      label: "Overview",
+      icon: <BarChart className="h-4 w-4" />
+    },
     {
       href: "/dashboards/financial",
       label: "Dashboard",
@@ -26,7 +31,7 @@ export function FinancialNavbar() {
     {
       href: "/finance/expenses",
       label: "Expenses",
-      icon: <DollarSign className="h-4 w-4" />
+      icon: <CircleDollarSign className="h-4 w-4" />
     },
     {
       href: "/finance/employees",

@@ -143,20 +143,6 @@ export type Database = {
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "client_deliveries_treatment_id_fkey"
-            columns: ["treatment_id"]
-            isOneToOne: false
-            referencedRelation: "treatment_summary"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_deliveries_treatment_id_fkey"
-            columns: ["treatment_id"]
-            isOneToOne: false
-            referencedRelation: "treatments"
-            referencedColumns: ["id"]
-          },
         ]
       }
       client_ledgers: {
@@ -270,6 +256,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "client_poles_stock_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_stock: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          pole_length: string | null
+          quantity: number
+          received_date: string | null
+          status: string
+          supplier_name: string | null
+          treatment_date: string | null
+          updated_at: string | null
+          wood_type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          pole_length?: string | null
+          quantity?: number
+          received_date?: string | null
+          status?: string
+          supplier_name?: string | null
+          treatment_date?: string | null
+          updated_at?: string | null
+          wood_type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          pole_length?: string | null
+          quantity?: number
+          received_date?: string | null
+          status?: string
+          supplier_name?: string | null
+          treatment_date?: string | null
+          updated_at?: string | null
+          wood_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_stock_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
@@ -630,6 +669,57 @@ export type Database = {
           reference_number?: string | null
         }
         Relationships: []
+      }
+      journal_entry_lines: {
+        Row: {
+          account_id: string | null
+          created_at: string | null
+          credit: number | null
+          credit_amount: number | null
+          debit: number | null
+          debit_amount: number | null
+          description: string | null
+          id: number
+          journal_entry_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string | null
+          credit?: number | null
+          credit_amount?: number | null
+          debit?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: number
+          journal_entry_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string | null
+          credit?: number | null
+          credit_amount?: number | null
+          debit?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: number
+          journal_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ledger_accounts: {
         Row: {
@@ -1032,6 +1122,7 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          client_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -1044,6 +1135,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          client_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -1056,6 +1148,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          client_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -1067,6 +1160,13 @@ export type Database = {
           type?: Database["public"]["Enums"]["transaction_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "transactions_sorted_stock_id_fkey"
             columns: ["sorted_stock_id"]
@@ -1085,120 +1185,76 @@ export type Database = {
       }
       treated_stock: {
         Row: {
-          category: string
-          chemical_strength: string | null
-          created_at: string | null
-          diameter_mm: number | null
+          category: string | null
+          created_at: string
+          cylinder_number: string
+          date: string
           id: string
-          length_unit: string | null
-          length_value: number
-          notes: string | null
-          quantity: number
-          source_sorted_stock_id: string | null
-          status: string | null
-          treatment_chemical: string | null
+          kegs_added: number
+          kegs_remaining: number
+          liters_added: number
+          poles_10m: number
+          poles_11m: number
+          poles_12m: number
+          poles_14m: number
+          poles_16m: number
+          poles_9m: number
+          quantity: string | null
+          rafters: number
+          strength_percentage: number
+          telecom_poles: number
+          timber: number
+          total_poles: number
           treatment_date: string | null
+          treatment_purpose: string
         }
         Insert: {
-          category: string
-          chemical_strength?: string | null
-          created_at?: string | null
-          diameter_mm?: number | null
+          category?: string | null
+          created_at?: string
+          cylinder_number?: string
+          date?: string
           id?: string
-          length_unit?: string | null
-          length_value: number
-          notes?: string | null
-          quantity: number
-          source_sorted_stock_id?: string | null
-          status?: string | null
-          treatment_chemical?: string | null
+          kegs_added?: number
+          kegs_remaining?: number
+          liters_added?: number
+          poles_10m?: number
+          poles_11m?: number
+          poles_12m?: number
+          poles_14m?: number
+          poles_16m?: number
+          poles_9m?: number
+          quantity?: string | null
+          rafters?: number
+          strength_percentage?: number
+          telecom_poles?: number
+          timber?: number
+          total_poles?: number
           treatment_date?: string | null
+          treatment_purpose?: string
         }
         Update: {
-          category?: string
-          chemical_strength?: string | null
-          created_at?: string | null
-          diameter_mm?: number | null
+          category?: string | null
+          created_at?: string
+          cylinder_number?: string
+          date?: string
           id?: string
-          length_unit?: string | null
-          length_value?: number
-          notes?: string | null
-          quantity?: number
-          source_sorted_stock_id?: string | null
-          status?: string | null
-          treatment_chemical?: string | null
+          kegs_added?: number
+          kegs_remaining?: number
+          liters_added?: number
+          poles_10m?: number
+          poles_11m?: number
+          poles_12m?: number
+          poles_14m?: number
+          poles_16m?: number
+          poles_9m?: number
+          quantity?: string | null
+          rafters?: number
+          strength_percentage?: number
+          telecom_poles?: number
+          timber?: number
+          total_poles?: number
           treatment_date?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "treated_stock_source_sorted_stock_id_fkey"
-            columns: ["source_sorted_stock_id"]
-            isOneToOne: false
-            referencedRelation: "sorted_stock"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      treatment_costs: {
-        Row: {
-          amount: number
-          cost_type: string
-          created_at: string | null
-          id: string
-          treatment_id: string
-        }
-        Insert: {
-          amount: number
-          cost_type: string
-          created_at?: string | null
-          id?: string
-          treatment_id: string
-        }
-        Update: {
-          amount?: number
-          cost_type?: string
-          created_at?: string | null
-          id?: string
-          treatment_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "treatment_costs_treatment_id_fkey"
-            columns: ["treatment_id"]
-            isOneToOne: false
-            referencedRelation: "treatment_summary"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "treatment_costs_treatment_id_fkey"
-            columns: ["treatment_id"]
-            isOneToOne: false
-            referencedRelation: "treatments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      treatment_cylinders: {
-        Row: {
-          capacity_liters: number
-          created_at: string | null
-          cylinder_number: number
-          id: string
-          notes: string | null
-        }
-        Insert: {
-          capacity_liters: number
-          created_at?: string | null
-          cylinder_number: number
-          id?: string
-          notes?: string | null
-        }
-        Update: {
-          capacity_liters?: number
-          created_at?: string | null
-          cylinder_number?: number
-          id?: string
-          notes?: string | null
+          treatment_purpose?: string
         }
         Relationships: []
       }
@@ -1279,97 +1335,6 @@ export type Database = {
           },
         ]
       }
-      treatments: {
-        Row: {
-          chemical_strength: number | null
-          chemical_used: string | null
-          client_id: string | null
-          created_at: string | null
-          cylinder_id: string | null
-          distribution_poles: number | null
-          facing_poles: number | null
-          high_voltage_poles: number | null
-          id: string
-          is_client_owned: boolean | null
-          kegs_added: number | null
-          kegs_remaining: number | null
-          notes: string | null
-          quantity: number
-          sorted_stock_id: string
-          status: Database["public"]["Enums"]["treatment_status"] | null
-          telecom_poles: number | null
-          total_poles: number | null
-          treatment_date: string | null
-          water_added_liters: number | null
-        }
-        Insert: {
-          chemical_strength?: number | null
-          chemical_used?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          cylinder_id?: string | null
-          distribution_poles?: number | null
-          facing_poles?: number | null
-          high_voltage_poles?: number | null
-          id?: string
-          is_client_owned?: boolean | null
-          kegs_added?: number | null
-          kegs_remaining?: number | null
-          notes?: string | null
-          quantity: number
-          sorted_stock_id: string
-          status?: Database["public"]["Enums"]["treatment_status"] | null
-          telecom_poles?: number | null
-          total_poles?: number | null
-          treatment_date?: string | null
-          water_added_liters?: number | null
-        }
-        Update: {
-          chemical_strength?: number | null
-          chemical_used?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          cylinder_id?: string | null
-          distribution_poles?: number | null
-          facing_poles?: number | null
-          high_voltage_poles?: number | null
-          id?: string
-          is_client_owned?: boolean | null
-          kegs_added?: number | null
-          kegs_remaining?: number | null
-          notes?: string | null
-          quantity?: number
-          sorted_stock_id?: string
-          status?: Database["public"]["Enums"]["treatment_status"] | null
-          telecom_poles?: number | null
-          total_poles?: number | null
-          treatment_date?: string | null
-          water_added_liters?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "treatments_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "treatments_cylinder_id_fkey"
-            columns: ["cylinder_id"]
-            isOneToOne: false
-            referencedRelation: "treatment_cylinders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "treatments_sorted_stock_id_fkey"
-            columns: ["sorted_stock_id"]
-            isOneToOne: false
-            referencedRelation: "sorted_stock"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       unsorted_stock: {
         Row: {
           created_at: string | null
@@ -1427,6 +1392,13 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_movement_counts: {
+        Row: {
+          count: number | null
+          movement_type: string | null
+        }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           category: Database["public"]["Enums"]["pole_category"] | null
@@ -1446,27 +1418,6 @@ export type Database = {
         }
         Relationships: []
       }
-      treatment_summary: {
-        Row: {
-          chemical_strength: number | null
-          chemical_used: string | null
-          client_name: string | null
-          cylinder_number: number | null
-          distribution_poles: number | null
-          facing_poles: number | null
-          high_voltage_poles: number | null
-          id: string | null
-          kegs_added: number | null
-          kegs_remaining: number | null
-          notes: string | null
-          status: Database["public"]["Enums"]["treatment_status"] | null
-          telecom_poles: number | null
-          total_poles: number | null
-          treatment_date: string | null
-          water_added_liters: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       gen_random_uuid: {
@@ -1478,10 +1429,25 @@ export type Database = {
       pole_category:
         | "fencing"
         | "telecom"
-        | "distribution"
-        | "high_voltage"
-        | "rejected"
-      pole_size: "small" | "medium" | "stout"
+        | "9m"
+        | "10m"
+        | "11m"
+        | "timber"
+        | "rafters"
+        | "pole"
+        | "12m"
+        | "14m"
+        | "16m"
+      pole_size:
+        | "small"
+        | "medium"
+        | "stout"
+        | "9m"
+        | "10m"
+        | "11m"
+        | "12m"
+        | "14m"
+        | "16m"
       pole_type:
         | "telecom"
         | "timber"
