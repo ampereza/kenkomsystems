@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import SortStock from "./pages/stock/SortStock";
@@ -26,6 +27,14 @@ import Expenses from "./pages/dashboards/Expenses";
 import Employees from "./pages/dashboards/Employees";
 import FinancialOverview from "./pages/dashboards/FinancialOverview";
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
+// Import the missing components
+import Customers from "./pages/customers/Customers";
+import AddCustomer from "./pages/customers/add_customer";
+import EditCustomers from "./pages/customers/edit_cutomers";
+import AddSuppliers from "./pages/suppliers/AddSuppliers";
+import ViewSuppliers from "./pages/suppliers/ViewSuppliers";
+import SupplierReport from "./pages/suppliers/SupplierReport";
+import TreatmentLog from "./pages/treatments/TreatmentLog";
 
 function App() {
   return (

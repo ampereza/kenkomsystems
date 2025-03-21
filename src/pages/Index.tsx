@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/Navbar";
@@ -28,7 +27,7 @@ const Index = () => {
         .from("sorted_stock")
         .select("quantity")
         .not("quantity", "eq", 0)
-        .neq("category", "rejected");
+        .not("category", "eq", "rejected");
       
       if (sortedError) {
         console.error("Error fetching sorted stock:", sortedError);
@@ -127,33 +126,26 @@ const Index = () => {
   const { data: treatmentStats } = useQuery({
     queryKey: ["treatment-stats"],
     queryFn: async () => {
+      // Use treatment_log table instead of treatments
       const { data, error } = await supabase
-        .from("treatments")
-        .select("status, total_poles")
-        .order("treatment_date", { ascending: false });
+        .from("treatment_log")
+        .select("*")
+        .order("date", { ascending: false });
       
       if (error) {
         console.error("Error fetching treatment stats:", error);
         throw error;
       }
 
-      const pending = data
-        ?.filter(t => t.status === 'pending')
-        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
-      
-      const inProgress = data
-        ?.filter(t => t.status === 'in_progress')
-        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
-      
-      const completed = data
-        ?.filter(t => t.status === 'completed')
-        .reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
+      // Since we don't have a status column, we'll count all treatment logs as "completed"
+      // and set others to 0 to avoid errors
+      const total = data?.reduce((acc, curr) => acc + (curr.total_poles || 0), 0) || 0;
 
       return {
-        pending,
-        inProgress,
-        completed,
-        total: pending + inProgress + completed
+        pending: 0,
+        inProgress: 0,
+        completed: total,
+        total: total
       };
     },
     meta: {
