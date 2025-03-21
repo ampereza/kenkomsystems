@@ -12,6 +12,7 @@ import AddClientsStock from "./pages/clients/add_clients_stock";
 import InsertClientsStock from "./pages/clients/insertclientsstock";
 import ViewClientsStock from "./pages/clients/view_clients_stock";
 import EditClient from "./pages/clients/edit_client";
+import Clients from "./pages/clients/clients";
 import StockDashboard from "./pages/dashboards/StockDashboard";
 import TreatmentDashboardWrapper from "./pages/dashboards/TreatmentDashboard";
 import FinancialDashboard from "./pages/dashboards/FinancialDashboard";
@@ -20,20 +21,11 @@ import Transactions from "./pages/dashboards/Transactions";
 import IncomeStatement from "./pages/dashboards/incomestatement";
 import MDDashboard from "./pages/dashboards/MDDashboard";
 import GeneralManagerDashboard from "./pages/dashboards/GeneralManagerDashboard";
-import StockReport from "./pages/reports/StockReport";
-import EmployeeReport from "./pages/reports/EmployeeReport";
 import Receipts from "./pages/dashboards/Receipts";
 import Expenses from "./pages/dashboards/Expenses";
 import Employees from "./pages/dashboards/Employees";
-import Customers from "./pages/customers/Customers";
-import AddCustomer from "./pages/customers/AddCustomer";
-import EditCustomers from "./pages/customers/EditCustomers";
-import AddSuppliers from "./pages/suppliers/AddSuppliers";
-import ViewSuppliers from "./pages/suppliers/ViewSuppliers";
-import SupplierReport from "./pages/reports/SupplierReport";
-import TreatmentLog from "./pages/treatment/TreatmentLog";
-import EmailConfirmationHandler from "./pages/authentication/EmailConfirmationHandler";
 import FinancialOverview from "./pages/dashboards/FinancialOverview";
+import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
 
 function App() {
   return (
@@ -57,8 +49,6 @@ function App() {
           <Route path="/dashboards/incomestatement" element={<IncomeStatement />} />
           <Route path="/dashboards/md" element={<MDDashboard />} />
           <Route path="/dashboards/gm" element={<GeneralManagerDashboard />} />
-          <Route path="/dashboards/stock-report" element={<StockReport />} />
-          <Route path="/dashboards/employee-report" element={<EmployeeReport />} />
           
           {/* Finance routes */}
           <Route path="/finance/transactions" element={<Transactions />} />
@@ -71,7 +61,7 @@ function App() {
           {/* Client routes */}
           <Route path="/clients" element={<Clients />} />
           <Route path="/clients/add" element={<AddClient />} />
-          <Route path="/clients/add_clients_stock" element={<AddClient />} />
+          <Route path="/clients/add_clients_stock" element={<AddClientsStock />} />
           <Route path="/clients/insert_client_stock" element={<InsertClientsStock />} />
           <Route path="/clients/view" element={<ViewClientsStock />} />
           <Route path="/clients/edit" element={<EditClient />} />

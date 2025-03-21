@@ -1,305 +1,517 @@
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { DashboardLayout } from '@/components/layouts/DashboardLayout';
+import { FinancialNavbar } from '@/components/navigation/FinancialNavbar';
 import { 
-  ShoppingCart, 
-  Droplet, 
-  DollarSign, 
-  ShoppingBag, 
-  ArrowUpDown,
-  Calendar, 
-  FileText, 
-  Eye, 
-  Edit,
-  ArrowUpDown as Sort
-} from "lucide-react";
-import { DashboardLayout } from "@/components/layouts/DashboardLayout";
-import { format } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { format } from 'date-fns';
+import { Eye, Download, ArrowUpDown } from 'lucide-react';
 
-export default function FinancialOverview() {
+// Define types
+type Transaction = {
+  id: string;
+  type: string;
+  amount: number;
+  transaction_date: string;
+  description: string;
+  reference_number: string;
+};
+
+type Receipt = {
+  id: string;
+  date: string;
+  amount: number;
+  for_payment: string;
+  received_from: string;
+  payment_method: string;
+  receipt_number: string;
+  created_at: string;
+  signature: string;
+};
+
+const FinancialOverview = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("sales");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [summary, setSummary] = useState({
+    totalSales: 0,
+    totalTreatment: 0,
+    totalPurchases: 0,
+    totalExpenses: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  // Fetch financial summary data
-  const { data: financialSummary, isLoading: summaryLoading } = useQuery({
-    queryKey: ["financial-summary"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("financial_summary")
-        .select("*")
-        .order("date", { ascending: false })
-        .limit(60);
-
-      if (error) {
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch transactions
+        const { data: transactionsData, error: transactionsError } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('transaction_date', { ascending: false });
+        
+        if (transactionsError) throw transactionsError;
+        
+        // Fetch receipts
+        const { data: receiptsData, error: receiptsError } = await supabase
+          .from('receipts')
+          .select('*')
+          .order('date', { ascending: false });
+        
+        if (receiptsError) throw receiptsError;
+        
+        // Fetch expenses
+        const { data: expensesData, error: expensesError } = await supabase
+          .from('expenses')
+          .select('*')
+          .order('date', { ascending: false });
+        
+        if (expensesError) throw expensesError;
+        
+        // Set state
+        if (transactionsData) setTransactions(transactionsData);
+        if (receiptsData) setReceipts(receiptsData);
+        if (expensesData) setExpenses(expensesData);
+        
+        // Calculate summary values
+        if (transactionsData) {
+          const sales = transactionsData
+            .filter(t => t.type === 'sale')
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+            
+          const treatment = transactionsData
+            .filter(t => t.type === 'treatment_income')
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+            
+          const purchases = transactionsData
+            .filter(t => t.type === 'purchase')
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
+            
+          const expensesSum = expensesData
+            ? expensesData.reduce((sum, e) => sum + (e.amount || 0), 0)
+            : 0;
+            
+          setSummary({
+            totalSales: sales,
+            totalTreatment: treatment,
+            totalPurchases: purchases,
+            totalExpenses: expensesSum,
+          });
+        }
+      } catch (error: any) {
         toast({
           variant: "destructive",
-          title: "Error fetching financial summary",
+          title: "Error fetching data",
           description: error.message,
         });
-        throw error;
+      } finally {
+        setLoading(false);
       }
-      return data;
-    },
-  });
+    };
 
-  // Fetch transactions based on active tab
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
-    queryKey: ["transactions", activeTab],
-    queryFn: async () => {
-      let query = supabase.from("transactions").select("*");
-      
-      // Filter by transaction type
-      if (activeTab === "sales") {
-        query = query.eq("type", "sale");
-      } else if (activeTab === "treatment") {
-        query = query.eq("type", "treatment_income");
-      } else if (activeTab === "purchases") {
-        query = query.eq("type", "purchase");
-      } else if (activeTab === "expense") {
-        query = query.eq("type", "expense");
-      }
-      
-      // Apply sorting
-      query = query.order("transaction_date", { ascending: sortOrder === "asc" });
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching transactions",
-          description: error.message,
-        });
-        throw error;
-      }
-      
-      return data;
-    },
-  });
+    fetchFinancialData();
+  }, [toast]);
 
-  // Fetch receipts data
-  const { data: receipts } = useQuery({
-    queryKey: ["receipts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("receipts")
-        .select("*")
-        .order("date", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Calculate summary totals
-  const summaryTotals = financialSummary?.reduce(
-    (acc, curr) => {
-      if (curr.type === "sale") {
-        acc.sales += Number(curr.total_amount);
-      } else if (curr.type === "treatment_income") {
-        acc.treatmentIncome += Number(curr.total_amount);
-      } else if (curr.type === "expense" || curr.type === "salary") {
-        acc.expenses += Number(curr.total_amount);
-      } else if (curr.type === "purchase") {
-        acc.purchases += Number(curr.total_amount);
-      }
-      return acc;
-    },
-    { sales: 0, treatmentIncome: 0, expenses: 0, purchases: 0 }
-  ) || { sales: 0, treatmentIncome: 0, expenses: 0, purchases: 0 };
-
-  // Calculate net income
-  const netIncome = 
-    summaryTotals.sales + 
-    summaryTotals.treatmentIncome - 
-    summaryTotals.expenses - 
-    summaryTotals.purchases;
-
-  // Toggle sort order
-  const toggleSortOrder = () => {
-    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
   };
 
-  // Format currency
+  // Get all transactions formatted for display in the table
+  const getAllTransactions = () => {
+    const formattedTransactions = transactions.map(t => ({
+      id: t.id,
+      date: t.transaction_date ? format(new Date(t.transaction_date), 'dd/MM/yyyy') : 'N/A',
+      description: t.description || `${t.type} transaction`,
+      amount: t.amount,
+      type: t.type,
+      reference: t.reference_number || 'N/A',
+      receipt: false
+    }));
+
+    const formattedReceipts = receipts.map(r => ({
+      id: r.id,
+      date: r.date ? format(new Date(r.date), 'dd/MM/yyyy') : 'N/A',
+      description: r.for_payment || `Receipt from ${r.received_from}`,
+      amount: r.amount,
+      type: 'receipt',
+      reference: r.receipt_number || 'N/A',
+      receipt: true
+    }));
+
+    const formattedExpenses = expenses.map(e => ({
+      id: e.id,
+      date: e.date ? format(new Date(e.date), 'dd/MM/yyyy') : 'N/A',
+      description: e.description || 'Expense transaction',
+      amount: e.amount,
+      type: 'expense',
+      reference: e.reference_number || 'N/A',
+      receipt: false
+    }));
+
+    let allTransactions = [
+      ...formattedTransactions,
+      ...formattedReceipts,
+      ...formattedExpenses
+    ];
+
+    // Apply sorting
+    if (sortColumn) {
+      allTransactions.sort((a, b) => {
+        if (sortColumn === 'amount') {
+          return sortDirection === 'asc' 
+            ? a.amount - b.amount 
+            : b.amount - a.amount;
+        } else if (sortColumn === 'date') {
+          return sortDirection === 'asc'
+            ? new Date(a.date).getTime() - new Date(b.date).getTime()
+            : new Date(b.date).getTime() - new Date(a.date).getTime();
+        } else {
+          // For string columns
+          const aValue = a[sortColumn as keyof typeof a] as string;
+          const bValue = b[sortColumn as keyof typeof b] as string;
+          return sortDirection === 'asc'
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+      });
+    }
+
+    return allTransactions;
+  };
+
+  // Filter transactions by type
+  const getFilteredTransactions = (type: string) => {
+    return getAllTransactions().filter(t => {
+      if (type === 'sales') return t.type === 'sale';
+      if (type === 'treatment') return t.type === 'treatment_income';
+      if (type === 'purchases') return t.type === 'purchase';
+      if (type === 'expenses') return t.type === 'expense';
+      return true;
+    });
+  };
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-UG", {
-      style: "currency",
-      currency: "UGX",
-      maximumFractionDigits: 0
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 2
     }).format(amount);
-  };
-
-  const getReceiptForTransaction = (transactionId: string) => {
-    return receipts?.find(receipt => receipt.transaction_id === transactionId);
   };
 
   return (
     <DashboardLayout>
-      <div className="container mx-auto p-4">
-        {/* Financial summary boxes */}
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Financial Overview</h1>
-          <Button
-            variant="outline"
-            onClick={toggleSortOrder}
-            className="flex items-center gap-2"
-          >
-            <Sort className="h-4 w-4" />
-            Sort by: date {sortOrder === "asc" ? "↑" : "↓"}
-          </Button>
-        </div>
-
+      <FinancialNavbar />
+      <div className="container mx-auto p-4 space-y-6">
+        <h1 className="text-3xl font-bold">Financial Overview</h1>
+        
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-          <Card className="bg-orange-50 border-orange-300">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Total Sales</p>
-                  <p className="text-xl font-bold">{formatCurrency(summaryTotals.sales)}</p>
-                </div>
-                <ShoppingCart className="h-8 w-8 text-orange-500" />
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatCurrency(summary.totalSales)}</p>
             </CardContent>
           </Card>
-
-          <Card className="bg-blue-50 border-blue-300">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Treatment Income</p>
-                  <p className="text-xl font-bold">{formatCurrency(summaryTotals.treatmentIncome)}</p>
-                </div>
-                <Droplet className="h-8 w-8 text-blue-500" />
-              </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Treatment Income</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatCurrency(summary.totalTreatment)}</p>
             </CardContent>
           </Card>
-
-          <Card className="bg-red-50 border-red-300">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Total Expenses</p>
-                  <p className="text-xl font-bold">{formatCurrency(summaryTotals.expenses)}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-red-500" />
-              </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Purchases</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatCurrency(summary.totalPurchases)}</p>
             </CardContent>
           </Card>
-
-          <Card className="bg-purple-50 border-purple-300">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Total Purchases</p>
-                  <p className="text-xl font-bold">{formatCurrency(summaryTotals.purchases)}</p>
-                </div>
-                <ShoppingBag className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className={`${netIncome >= 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-muted-foreground text-xs">Net Income</p>
-                  <p className={`text-xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(netIncome)}
-                  </p>
-                </div>
-                <ArrowUpDown className={`h-8 w-8 ${netIncome >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-              </div>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{formatCurrency(summary.totalExpenses)}</p>
             </CardContent>
           </Card>
         </div>
-
-        {/* Transaction tabs and table */}
-        <Tabs 
-          value={activeTab} 
-          onValueChange={setActiveTab}
-          className="bg-white rounded-lg border p-4"
-        >
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="sales" className={activeTab === 'sales' ? 'bg-orange-100' : ''}>Sales</TabsTrigger>
-            <TabsTrigger value="treatment" className={activeTab === 'treatment' ? 'bg-blue-100' : ''}>Treatment</TabsTrigger>
-            <TabsTrigger value="purchases" className={activeTab === 'purchases' ? 'bg-purple-100' : ''}>Purchases</TabsTrigger>
-            <TabsTrigger value="expense" className={activeTab === 'expense' ? 'bg-red-100' : ''}>Expense</TabsTrigger>
+        
+        {/* Transaction Tabs */}
+        <Tabs defaultValue="all" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="all">All Transactions</TabsTrigger>
+            <TabsTrigger value="sales">Sales</TabsTrigger>
+            <TabsTrigger value="treatment">Treatment</TabsTrigger>
+            <TabsTrigger value="purchases">Purchases</TabsTrigger>
+            <TabsTrigger value="expenses">Expenses</TabsTrigger>
           </TabsList>
-
-          {/* Table for all tabs */}
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>View Receipt</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactionsLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      Loading transactions...
-                    </TableCell>
-                  </TableRow>
-                ) : transactions && transactions.length > 0 ? (
-                  transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          {format(new Date(transaction.transaction_date), "dd MMM yyyy")}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          {transaction.description || `${transaction.type} transaction`}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(Number(transaction.amount))}
-                      </TableCell>
-                      <TableCell>
-                        {getReceiptForTransaction(transaction.id) ? (
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-1" /> View
-                          </Button>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">No receipt</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No {activeTab} transactions found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          
+          {/* All Transactions Tab */}
+          <TabsContent value="all" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>All Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead onClick={() => handleSort('date')} className="cursor-pointer">
+                          Date <ArrowUpDown className="inline h-4 w-4" />
+                        </TableHead>
+                        <TableHead onClick={() => handleSort('description')} className="cursor-pointer">
+                          Description <ArrowUpDown className="inline h-4 w-4" />
+                        </TableHead>
+                        <TableHead onClick={() => handleSort('amount')} className="cursor-pointer">
+                          Amount <ArrowUpDown className="inline h-4 w-4" />
+                        </TableHead>
+                        <TableHead onClick={() => handleSort('reference')} className="cursor-pointer">
+                          Reference <ArrowUpDown className="inline h-4 w-4" />
+                        </TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getAllTransactions().map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className={transaction.type === 'expense' || transaction.type === 'purchase' ? "text-red-500" : "text-green-500"}>
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell>{transaction.reference}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Sales Tab */}
+          <TabsContent value="sales" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Reference</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getFilteredTransactions('sales').map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className="text-green-500">
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell>{transaction.reference}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Treatment Tab */}
+          <TabsContent value="treatment" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Treatment Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Reference</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getFilteredTransactions('treatment').map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className="text-green-500">
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell>{transaction.reference}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Purchases Tab */}
+          <TabsContent value="purchases" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Purchase Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Reference</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getFilteredTransactions('purchases').map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className="text-red-500">
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell>{transaction.reference}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Expenses Tab */}
+          <TabsContent value="expenses" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Expense Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Reference</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getFilteredTransactions('expenses').map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell className="text-red-500">
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                          <TableCell>{transaction.reference}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
   );
-}
+};
+
+export default FinancialOverview;
