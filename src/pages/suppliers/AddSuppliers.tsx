@@ -1,15 +1,13 @@
 
-import React from 'react';
+import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function AddSuppliers() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="container py-6 flex-1">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Add Suppliers</h1>
-          <p className="text-muted-foreground">This page is under construction</p>
-        </div>
-      </main>
-    </div>
+    <DashboardLayout>
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-6">Add Suppliers</h1>
+        <p>This is a placeholder for the Add Suppliers page.</p>
+      </div>
+    </DashboardLayout>
   );
 }

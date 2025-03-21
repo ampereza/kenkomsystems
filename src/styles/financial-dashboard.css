@@ -1,0 +1,30 @@
+
+/* Financial Dashboard Custom Styles */
+.financial-header {
+  color: #f97316;
+}
+
+.orange-tab[data-state="active"] {
+  background-color: #f97316;
+  color: white;
+}
+
+.orange-tab {
+  color: #f97316;
+}
+
+.orange-tab:hover {
+  background-color: #fdba74;
+}
+
+.transaction-row:nth-child(odd) {
+  background-color: #ffedd5;
+}
+
+.transaction-row:nth-child(even) {
+  background-color: #fff7ed;
+}
+
+.transaction-row:hover {
+  background-color: #fed7aa;
+}

@@ -28,11 +28,10 @@ import Employees from "./pages/dashboards/Employees";
 import FinancialOverview from "./pages/dashboards/FinancialOverview";
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
 // Import with correct casing
-import CustomersPage from "./pages/customers/customers";
-import AddCustomer from "./pages/customers/add_customer";
-import EditCustomers from "./pages/customers/edit_cutomers";
+import CustomersPage from "./pages/customers/CustomersPage";
+// Import these placeholder components
 import AddSuppliers from "./pages/suppliers/AddSuppliers";
-import ViewSuppliers from "./pages/suppliers/ViewSuppliers";
+import ViewSuppliers from "./pages/suppliers/ViewSuppliers"; 
 import SupplierReport from "./pages/suppliers/SupplierReport";
 import TreatmentLog from "./pages/treatments/TreatmentLog";
 
@@ -85,8 +84,8 @@ function App() {
           
           {/* Customer routes */}
           <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/customers/add_customer" element={<AddCustomer />} />
-          <Route path="/customers/edit_customers" element={<EditCustomers />} />
+          <Route path="/customers/add_customer" element={<CustomersPage />} />
+          <Route path="/customers/edit_customers" element={<CustomersPage />} />
           
           {/* Supplier routes */}
           <Route path="/suppliers/add" element={<AddSuppliers />} />
