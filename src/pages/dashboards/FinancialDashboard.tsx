@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FinancialMetrics } from "@/components/reports/FinancialMetrics";
 import { IncomeStatement } from "@/components/reports/IncomeStatement";
 import { DocumentsOverview } from "@/components/dashboard/DocumentsOverview";
-import { CircleDollarSign, ArrowUpDown, Receipt, Building2, Users, FileText, Briefcase, FileBarChart, CreditCard } from "lucide-react";
-import { Link } from "react-router-dom";
+import { CircleDollarSign, ArrowUpDown, Receipt, CreditCard } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 
 export default function FinancialDashboard() {
@@ -36,10 +35,19 @@ export default function FinancialDashboard() {
         console.error("Error fetching payment vouchers:", voucherError);
       }
       
-      // Combine the financial data with payment vouchers
-      const combinedData = [...(data || [])];
+      // Handle empty data case
+      if (!data || data.length === 0) {
+        // Return default data
+        return [
+          { date: new Date().toISOString(), type: "expense", transaction_count: 0, total_amount: 0 },
+          { date: new Date().toISOString(), type: "sale", transaction_count: 0, total_amount: 0 }
+        ];
+      }
       
-      if (paymentVouchers) {
+      // Combine the financial data with payment vouchers
+      const combinedData = [...data];
+      
+      if (paymentVouchers && paymentVouchers.length > 0) {
         // Group payment vouchers by date
         const vouchersByDate = paymentVouchers.reduce((acc, voucher) => {
           const dateStr = voucher.date.toString();
@@ -79,7 +87,7 @@ export default function FinancialDashboard() {
       return acc;
     },
     { income: 0, expenses: 0 }
-  );
+  ) || { income: 0, expenses: 0 };
 
   return (
     <DashboardLayout>
@@ -114,7 +122,7 @@ export default function FinancialDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${(totals ? totals.income - totals.expenses : 0).toFixed(2)}
+                ${(totals.income - totals.expenses).toFixed(2)}
               </div>
             </CardContent>
           </Card>
@@ -125,7 +133,7 @@ export default function FinancialDashboard() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{financialSummary?.filter((item) => item.type === "expense").length}</div>
+              <div className="text-2xl font-bold">{financialSummary?.filter((item) => item.type === "expense").length || 0}</div>
             </CardContent>
           </Card>
         </div>
@@ -133,8 +141,7 @@ export default function FinancialDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Income Statement</CardTitle>
-              <FileBarChart className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-md font-medium">Income Statement</CardTitle>
             </CardHeader>
             <CardContent>
               <IncomeStatement />
@@ -143,14 +150,15 @@ export default function FinancialDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Financial Metrics</CardTitle>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-md font-medium">Financial Metrics</CardTitle>
             </CardHeader>
             <CardContent>
               <FinancialMetrics totals={totals} />
             </CardContent>
           </Card>
         </div>
+
+        <DocumentsOverview />
       </div>
     </DashboardLayout>
   );

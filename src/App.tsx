@@ -27,8 +27,8 @@ import Expenses from "./pages/dashboards/Expenses";
 import Employees from "./pages/dashboards/Employees";
 import FinancialOverview from "./pages/dashboards/FinancialOverview";
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
-// Import the missing components
-import Customers from "./pages/customers/Customers";
+// Import with correct casing
+import CustomersPage from "./pages/customers/customers";
 import AddCustomer from "./pages/customers/add_customer";
 import EditCustomers from "./pages/customers/edit_cutomers";
 import AddSuppliers from "./pages/suppliers/AddSuppliers";
@@ -84,7 +84,7 @@ function App() {
           <Route path="/stock/sort" element={<SortStock />} />
           
           {/* Customer routes */}
-          <Route path="/customers" element={<Customers />} />
+          <Route path="/customers" element={<CustomersPage />} />
           <Route path="/customers/add_customer" element={<AddCustomer />} />
           <Route path="/customers/edit_customers" element={<EditCustomers />} />
           
