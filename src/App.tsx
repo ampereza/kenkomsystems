@@ -27,13 +27,12 @@ import Expenses from "./pages/dashboards/Expenses";
 import Employees from "./pages/dashboards/Employees";
 import FinancialOverview from "./pages/dashboards/FinancialOverview";
 import { EmailConfirmationHandler } from "./components/auth/EmailConfirmationHandler";
-// Import with correct casing
 import CustomersPage from "./pages/customers/CustomersPage";
-// Import these placeholder components
 import AddSuppliers from "./pages/suppliers/AddSuppliers";
 import ViewSuppliers from "./pages/suppliers/ViewSuppliers"; 
 import SupplierReport from "./pages/suppliers/SupplierReport";
 import TreatmentLog from "./pages/treatments/TreatmentLog";
+import MainDashboard from "./pages/MainDashboard";
 
 function App() {
   return (
@@ -48,6 +47,7 @@ function App() {
           <Route path="/auth/confirm" element={<EmailConfirmationHandler />} />
           
           {/* Dashboard routes */}
+          <Route path="/dashboard" element={<MainDashboard />} />
           <Route path="/dashboards/stock" element={<StockDashboard />} />
           <Route path="/dashboards/treatment" element={<TreatmentDashboardWrapper />} />
           <Route path="/dashboards/financial" element={<FinancialDashboard />} />
@@ -84,16 +84,16 @@ function App() {
           
           {/* Customer routes */}
           <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/customers/add_customer" element={<CustomersPage />} />
-          <Route path="/customers/edit_customers" element={<CustomersPage />} />
+          <Route path="/customers/add" element={<CustomersPage />} />
+          <Route path="/customers/edit" element={<CustomersPage />} />
           
           {/* Supplier routes */}
           <Route path="/suppliers/add" element={<AddSuppliers />} />
-          <Route path="/suppliers/view" element={<ViewSuppliers />} />
-          <Route path="/suppliers/report" element={<SupplierReport />} />
+          <Route path="/suppliers/view-suppliers" element={<ViewSuppliers />} />
+          <Route path="/suppliers/supplier-report" element={<SupplierReport />} />
           
           {/* Treatment routes */}
-          <Route path="/treatment-log" element={<TreatmentLog />} />
+          <Route path="/treatment/log" element={<TreatmentLog />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
